@@ -12,8 +12,9 @@ import sys
 import functools
 from .advice_dispatch import AdviceDispatcher
 
-#TODO: Use TOML configuration to support multiple advice
-advice_kind = 'ChromeTracing'
+# TODO: Use TOML configuration to support multiple advice
+advice_kind = "ChromeTracing"
+
 
 def critical_path(pointcut="around", scope=""):
     def decorator_critical_path(func):
@@ -24,10 +25,13 @@ def critical_path(pointcut="around", scope=""):
                 global advice_kind
                 f = AdviceDispatcher.get(advice_kind, pointcut, scope)(func)
             except KeyError as e:
-                print('perfflow error:', str(e), file=sys.stderr)
+                print("perfflow error:", str(e), file=sys.stderr)
             return f(*args, **kwargs)
+
         return wrapper_critial_path
+
     return decorator_critical_path
+
 
 #
 # vi: ts=4 sw=4 expandtab
