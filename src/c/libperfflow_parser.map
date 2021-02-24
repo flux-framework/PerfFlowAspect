@@ -1,0 +1,4 @@
+LIBPERFFLOW_PARSER {
+    global: perfflow_*;
+    local: *;
+};
