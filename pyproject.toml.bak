@@ -1,0 +1,27 @@
+# TOML files will be phasing out setup.py as the de facto way to
+# install packages. I've included it here as reference/reminder for
+# future. It currently can be installed with the TOML file via poetry.
+# The current drawback with pyproject.toml is that it does not allow
+# for pip install in editable mode.
+# To install via poetry, rename pyproject.toml.bak to remove .bak
+# and move setup.py to setup.py.bak (so that pip won't find it).
+
+[tool.poetry]
+name = "perfflowaspect"
+version = "0.0.1"
+description = "A tool to analyze cross-cutting performance concerns of composite scientific workflows."
+authors = [
+    "Dong H. Ahn <ahn1@llnl.gov>",
+    "Stephen Herbein <herbein@llnl.gov>",
+    "James Corbett <corbett8@llnl.gov>",
+    "Francesco Di Natale <dinatale3@llnl.gov>",
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
