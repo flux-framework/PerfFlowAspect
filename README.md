@@ -44,9 +44,9 @@ as to how performance is measured and controlled.
 ### Quick Start
 `perfflow` is the python package that contains
 the PerfFlowAspect tool for the python language.
-`perfflow/aspect.py` contains a key annotating
+`src/python/perfflowaspect/aspect.py` contains a key annotating
 decorator. Users can use the
-`@perfflow.aspect.critical_path()` decorator
+`@perfflowaspect.aspect.critical_path()` decorator
 to annotate their
 functions that are likely to be on the critical path
 of the workflow's end-to-end performance.
@@ -58,14 +58,14 @@ The following shows a simple snippet that
 annotates two functions.
 
 ```python
-import perfflow.aspect
+import perfflowaspect.aspect
 
-@perfflow.aspect.critical_path()
+@perfflowaspect.aspect.critical_path()
 def bar(message):
     time.sleep(1)
     print(message)
 
-@perfflow.aspect.critical_path()
+@perfflowaspect.aspect.critical_path()
 def foo():
     time.sleep(2)
     bar("hello")
@@ -96,14 +96,14 @@ They are often referred to as
 
 PerfFlowAspect currently supports only one type
 of advice: **ChromeTracingAdvice**.
-`perfflow/advice_chrome.py` implements
+`src/python/perfflowaspect/advice_chrome.py` implements
 this advice class.
 This particular advice simply logs a performance event data
 in CTF.
 
 PerfFlowAspect's annotation also supports
 the notion of pointcut: a predicate that matches join points.
-In fact, `@perfflow.aspect.critical_path()` can take an
+In fact, `@perfflowaspect.aspect.critical_path()` can take an
 optional keyword argument called `pointcut` whose value
 can be `around`, `before`, `after` or their
 async variations (`around_async`, `before_async`,
