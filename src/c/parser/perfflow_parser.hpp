@@ -17,7 +17,8 @@ int perfflow_parser_validate (const char *anno);
 
 int perfflow_parser_parse (const char *anno,
                            std::string &pointcut,
-                           std::string &scope);
+                           std::string &scope,
+                           std::string &flow);
 	
 #endif // PERFFLOW_PARSER_HPP
 

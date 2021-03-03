@@ -17,6 +17,7 @@
 #include "parser.tab.h"
 %}
 
+flowtype           ['](in|out|inout|outin)[']
 label              [']([^'\\\n]|\\(.|\n))*[']
 pcutop             ['](around|before|after)(_async)?[']
 
@@ -27,6 +28,8 @@ pcutop             ['](around|before|after)(_async)?[']
 "@critical_path" { return T_CPA; }
 "pointcut"       { snprintf (yylval.str, 4096, "%s", yytext); return T_PCUT; }
 {pcutop}         { snprintf (yylval.str, 4096, "%s", yytext); return T_PC_OP; }
+"flow"           { snprintf (yylval.str, 4096, "%s", yytext); return T_FLOW; }
+{flowtype}       { snprintf (yylval.str, 4096, "%s", yytext); return T_FW_TY; }
 "scope"          { snprintf (yylval.str, 4096, "%s", yytext); return T_SCOPE; }
 {label}          { snprintf (yylval.str, 4096, "%s", yytext); return T_LABEL; }
 \n               { return T_NEWLINE; }

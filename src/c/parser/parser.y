@@ -33,6 +33,8 @@ extern void yyerror (const char* s);
 %token T_CPA
 %token<str> T_PCUT
 %token<str> T_PC_OP
+%token<str> T_FLOW
+%token<str> T_FW_TY
 %token<str> T_SCOPE
 %token<str> T_LABEL
 %token T_COMMA
@@ -53,16 +55,25 @@ line: T_NEWLINE
 ;
 
 args:
-    | pointcut_assignment
+    | assignments
+;
+
+assignments: assignment
+     | assignment T_COMMA assignments
+;
+
+assignment: pointcut_assignment
     | scope_assignment
-    | pointcut_assignment T_COMMA scope_assignment
-    | scope_assignment T_COMMA pointcut_assignment
+    | flow_assignment
 ;
 
 pointcut_assignment: T_PCUT T_ASSIGN T_PC_OP { params[$1] = $3; }
 ;
 
 scope_assignment: T_SCOPE T_ASSIGN T_LABEL { params[$1] = $3; }
+;
+
+flow_assignment: T_FLOW T_ASSIGN T_FW_TY { params[$1] = $3; }
 ;
 
 %%
@@ -85,7 +96,8 @@ int validate (const char *in)
     return rc;
 }
 
-int parse (const char *in, std::string &pointcut, std::string &scope)
+int parse (const char *in, std::string &pointcut,
+           std::string &scope, std::string &flow)
 {
     int rc = -1;
     if (!in) {
@@ -112,8 +124,16 @@ int parse (const char *in, std::string &pointcut, std::string &scope)
         scope = "NA";
     }
 
+    auto p_iter3 = params.find ("flow");
+    if (p_iter3 != params.end ()) {
+        flow = p_iter3->second;
+        flow = flow.substr (1, flow.size () - 2);
+    } else {
+        flow = "NA";
+    }
+
     params.clear ();
-    return rc;
+    return (rc != 0) ? -1 : 0;
 }
 
 /*

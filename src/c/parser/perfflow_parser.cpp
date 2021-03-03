@@ -13,7 +13,7 @@
 #include "perfflow_parser.hpp"
 
 extern int validate (const char *);
-extern int parse (const char *, std::string &, std::string &);
+extern int parse (const char *, std::string &, std::string &, std::string &);
 
 int perfflow_parser_validate (const char *anno)
 {
@@ -26,13 +26,14 @@ int perfflow_parser_validate (const char *anno)
 
 int perfflow_parser_parse (const char *anno,
                            std::string &pointcut,
-                           std::string &scope)
+                           std::string &scope,
+                           std::string &flow)
 {
     if (!anno) {
         errno = EINVAL;
         return -1;
     }
-    return parse (anno, pointcut, scope);
+    return parse (anno, pointcut, scope, flow);
 }
 
 /*
