@@ -32,7 +32,7 @@ using namespace llvm;
  ******************************************************************************/
 
 bool WeavingPass::insertAfter (Module &m, Function &f, StringRef &a,
-                               int async, std::string &scope)
+                               int async, std::string &scope, std::string &flow)
 {
     if (m.empty () || f.empty ())
         return false;
@@ -43,6 +43,7 @@ bool WeavingPass::insertAfter (Module &m, Function &f, StringRef &a,
     Type *int8PtrType = Type::getInt8PtrTy (context);
     std::vector<llvm::Type *> params;
     params.push_back (int32Type);
+    params.push_back (int8PtrType);
     params.push_back (int8PtrType);
     params.push_back (int8PtrType);
     params.push_back (int8PtrType);
@@ -62,11 +63,13 @@ bool WeavingPass::insertAfter (Module &m, Function &f, StringRef &a,
             Value *v1 = builder.CreateGlobalStringPtr (m.getName (), "str");
             Value *v2 = builder.CreateGlobalStringPtr (f.getName (), "str");
             Value *v3 = builder.CreateGlobalStringPtr (StringRef (scope), "str");
+            Value *v4 = builder.CreateGlobalStringPtr (StringRef (flow), "str");
             std::vector<Value *> args;
             args.push_back (ConstantInt::get(Type::getInt32Ty (context), async));
             args.push_back (v1);
             args.push_back (v2);
             args.push_back (v3);
+            args.push_back (v4);
             builder.CreateCall (after, args);
         }
     }
@@ -74,7 +77,7 @@ bool WeavingPass::insertAfter (Module &m, Function &f, StringRef &a,
 }
 
 bool WeavingPass::insertBefore (Module &m, Function &f, StringRef &a,
-                                int async, std::string &scope)
+                                int async, std::string &scope, std::string &flow)
 {
     if (m.empty () || f.empty ())
         return false;
@@ -85,6 +88,7 @@ bool WeavingPass::insertBefore (Module &m, Function &f, StringRef &a,
     Type *int8PtrType = Type::getInt8PtrTy (context);
     std::vector<llvm::Type *> params;
     params.push_back (int32Type);
+    params.push_back (int8PtrType);
     params.push_back (int8PtrType);
     params.push_back (int8PtrType);
     params.push_back (int8PtrType);
@@ -100,12 +104,14 @@ bool WeavingPass::insertBefore (Module &m, Function &f, StringRef &a,
     Value *v1 = builder.CreateGlobalStringPtr (m.getName (), "str");
     Value *v2 = builder.CreateGlobalStringPtr (f.getName (), "str");
     Value *v3 = builder.CreateGlobalStringPtr (StringRef (scope), "str");
+    Value *v4 = builder.CreateGlobalStringPtr (StringRef (flow), "str");
     builder.SetInsertPoint (&entry, entry.begin ());
     std::vector<Value *> args;
     args.push_back (ConstantInt::get(Type::getInt32Ty (context), async));
     args.push_back (v1);
     args.push_back (v2);
     args.push_back (v3);
+    args.push_back (v4);
     builder.CreateCall (before, args);
 
     return true;
@@ -133,16 +139,20 @@ bool WeavingPass::doInitialization (Module &m)
                           cast<GlobalVariable>(e->getOperand(1)->getOperand(0))
                               ->getOperand(0))
                           ->getAsCString();
-	  std::string pcut, scope;
-          if (perfflow_parser_parse (anno.data (), pcut, scope) == 0) {
+	  std::string pcut, scope, flow;
+          if (perfflow_parser_parse (anno.data (), pcut, scope, flow) == 0) {
 	      if (pcut == "around" || pcut == "before")
-                  changed = insertBefore (m, *fn, anno, 0, scope) || changed;
+                  changed = insertBefore (m, *fn,
+                                          anno, 0, scope, flow) || changed;
               else if (pcut == "around_async" || pcut == "before_async")
-                  changed = insertBefore (m, *fn, anno, 1, scope) || changed;
+                  changed = insertBefore (m, *fn,
+                                          anno, 1, scope, flow) || changed;
 	      if (pcut == "around" || pcut == "after")
-                  changed = insertAfter (m, *fn, anno, 0, scope) || changed;
+                  changed = insertAfter (m, *fn,
+                                         anno, 0, scope, flow) || changed;
               else if (pcut == "around_async" || pcut == "after_async")
-                  changed = insertBefore (m, *fn, anno, 1, scope) || changed;
+                  changed = insertAfter (m, *fn,
+                                         anno, 1, scope, flow) || changed;
           } else {
               errs () << "WeavePass[WARN]: Ignoring " << anno << "\n";
           }
