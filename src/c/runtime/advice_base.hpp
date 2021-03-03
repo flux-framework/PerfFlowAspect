@@ -13,6 +13,7 @@
 
 struct advice_base_t
 {
+    virtual ~advice_base_t () {}
     virtual int before (const char *module,
                         const char *function,
                         const char *flow) = 0;

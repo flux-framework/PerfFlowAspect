@@ -18,7 +18,7 @@ class advice_chrome_tracing_t : public advice_base_t
 {
 public:
     advice_chrome_tracing_t ();
-    ~advice_chrome_tracing_t ();
+    virtual ~advice_chrome_tracing_t ();
     virtual int before (const char *module,
                         const char *function, const char *flow);
     virtual int after (const char *module,
