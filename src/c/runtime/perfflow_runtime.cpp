@@ -39,27 +39,33 @@ void perfflow_weave_init ()
     return;
 }
 
-extern "C" void perfflow_weave_before (int async, const char *mn,
-                                       const char *fn, const char *scope)
+extern "C" void perfflow_weave_before (int async,
+                                       const char *module,
+                                       const char *function,
+                                       const char *scope,
+                                       const char *flow)
 {
     if (advice == nullptr)
         return;
     if (async)
-        advice->before_async (mn, fn, scope);
+        advice->before_async (module, function, scope, flow);
     else
-        advice->before (mn, fn);
+        advice->before (module, function, flow);
     return;
 }
 
-extern "C" void perfflow_weave_after (int async, const char *mn,
-                                      const char *fn, const char *scope)
+extern "C" void perfflow_weave_after (int async,
+                                      const char *module,
+                                      const char *function,
+                                      const char *scope,
+                                      const char *flow)
 {
     if (advice == nullptr)
         return;
     if (async)
-        advice->after_async (mn, fn, scope);
+        advice->after_async (module, function, scope, flow);
     else
-        advice->after (mn, fn);
+        advice->after (module, function, flow);
     return;
 }
 
