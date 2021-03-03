@@ -12,13 +12,13 @@
 #include <string>
 #include <unistd.h>
 
-__attribute__((annotate("@critical_path(pointcut=\"after\", scope=\"bar\")")))
+__attribute__((annotate("@critical_path(pointcut='around')")))
 void bas ()
 {
     printf ("bas\n");
 }
 
-__attribute__((annotate("@critical_path(pointcut=\"before\", scope=\"bar\")")))
+__attribute__((annotate("@critical_path(pointcut='around')")))
 void bar ()
 {
    printf ("bar\n");
