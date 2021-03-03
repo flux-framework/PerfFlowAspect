@@ -24,27 +24,27 @@ void test_valid_annotations ()
     rc = perfflow_parser_validate (anno2.c_str ());
     ok (rc == 0, "%s is valid", anno2.c_str ());
 
-    std::string anno3 ("@perfflow.aspect.critical_path ()");
+    std::string anno3 ("@perfflowaspect.aspect.critical_path ()");
     rc = perfflow_parser_validate (anno3.c_str ());
     ok (rc == 0, "%s is valid", anno3.c_str ());
 
-    std::string anno4 ("@critical_path (pointcut=\"around\")");
+    std::string anno4 ("@critical_path (pointcut='around')");
     rc = perfflow_parser_validate (anno4.c_str ());
     ok (rc == 0, "%s is valid", anno4.c_str ());
 
-    std::string anno5 ("@critical_path (pointcut	=\"around\")");
+    std::string anno5 ("@critical_path (pointcut	='around')");
     rc = perfflow_parser_validate (anno5.c_str ());
     ok (rc == 0, "%s is valid", anno5.c_str ());
 
-    std::string anno6 ("@critical_path (pointcut=\"before\", scope=\"foo\")");
+    std::string anno6 ("@critical_path (pointcut='before', scope='foo')");
     rc = perfflow_parser_validate (anno6.c_str ());
     ok (rc == 0, "%s is valid", anno6.c_str ());
 
-    std::string anno7 ("@critical_path (scope=\"foo\", pointcut=\"before\")");
+    std::string anno7 ("@critical_path (scope='foo', pointcut='before')");
     rc = perfflow_parser_validate (anno7.c_str ());
     ok (rc == 0, "%s is valid", anno7.c_str ());
 
-    std::string anno8 ("@critical_path (scope=\"\", pointcut=\"before\")");
+    std::string anno8 ("@critical_path (scope='', flow='out', pointcut='before')");
     rc = perfflow_parser_validate (anno8.c_str ());
     ok (rc == 0, "%s is valid", anno8.c_str ());
 }
@@ -64,19 +64,19 @@ void test_invalid_annotations ()
     rc = perfflow_parser_validate (anno3.c_str ());
     ok (rc != 0, "%s is not valid", anno3.c_str ());
 
-    std::string anno4 ("@critical_path (pointcut=\"arond\")");
+    std::string anno4 ("@critical_path (pointcut='arond')");
     rc = perfflow_parser_validate (anno4.c_str ());
     ok (rc != 0, "%s is not valid", anno4.c_str ());
 
-    std::string anno5 ("@critical_path (point_cut=\"around\")");
+    std::string anno5 ("@critical_path (point_cut='around')");
     rc = perfflow_parser_validate (anno5.c_str ());
     ok (rc != 0, "%s is not valid", anno5.c_str ());
 
-    std::string anno6 ("@critical_path (pointcut=\"before\" scope=\"foo\")");
+    std::string anno6 ("@critical_path (pointcut='before' scope='foo')");
     rc = perfflow_parser_validate (anno6.c_str ());
     ok (rc != 0, "%s is not valid", anno6.c_str ());
 
-    std::string anno7 ("@critical_path (scope=\"bar\", pointcut=\"\")");
+    std::string anno7 ("@critical_path (scope='bar', pointcut='')");
     rc = perfflow_parser_validate (anno7.c_str ());
     ok (rc != 0, "%s is not valid", anno7.c_str ());
 }
