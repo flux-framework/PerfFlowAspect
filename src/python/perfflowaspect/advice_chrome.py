@@ -54,7 +54,7 @@ class ChromeTracingAdvice:
             "cat": func.__module__,
             "pid": os.getpid(),
             "tid": threading.get_ident(),
-            "ts": time.time(),
+            "ts": time.time() * 1000000,
         }
 
     @staticmethod
@@ -88,7 +88,7 @@ class ChromeTracingAdvice:
             event["ph"] = "B"
             ChromeTracingAdvice.logger.debug(json.dumps(event) + ",")
             rc = func(*args, **kwargs)
-            event["ts"] = time.time()
+            event["ts"] = time.time() * 1000000
             event["ph"] = "E"
             ChromeTracingAdvice.logger.debug(json.dumps(event) + ",")
             return rc
@@ -149,7 +149,7 @@ class ChromeTracingAdvice:
             counter_mutex.release()
             ChromeTracingAdvice.logger.debug(json.dumps(event) + ",")
             rc = func(*args, **kwargs)
-            event["ts"] = time.time()
+            event["ts"] = time.time() * 1000000
             event["ph"] = "e"
             ChromeTracingAdvice.logger.debug(json.dumps(event) + ",")
             return rc
