@@ -37,6 +37,7 @@ private:
     int with_flow (const char *module, const char *function,
                    const char *flow, int64_t id);
     int flush_if (size_t size);
+    int write_to_sstream (const char *str);
 
     const int FLUSH_SIZE = 16777216;
     std::ostringstream m_oss;
@@ -46,6 +47,7 @@ private:
     int m_after_counter = 0;
     pthread_mutex_t m_before_counter_mutex;
     pthread_mutex_t m_after_counter_mutex;
+    pthread_mutex_t m_mutex;
 };
 
 /*

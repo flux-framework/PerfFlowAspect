@@ -120,6 +120,8 @@ int advice_chrome_tracing_t::flush_if (size_t size)
 {
     int rc = 0;
     try {
+        if ( (rc = pthread_mutex_lock (&m_mutex)) < 0)
+            return rc;
         m_oss.seekp (0, std::ios::end);
         std::stringstream::pos_type offset = m_oss.tellp ();
         if (offset >= size) {
@@ -131,6 +133,8 @@ int advice_chrome_tracing_t::flush_if (size_t size)
             m_oss.str ("");
             m_oss.clear ();
         }
+     if ( (rc = pthread_mutex_unlock (&m_mutex)) < 0)
+         return rc;
     } catch (std::ostream::failure &e) {
         if (errno == 0)
             errno = EIO;
@@ -162,6 +166,7 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
            + std::string (".pfw");
     m_before_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
     m_after_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
+    m_mutex = PTHREAD_MUTEX_INITIALIZER;
 }
 
 advice_chrome_tracing_t::~advice_chrome_tracing_t ()
@@ -169,6 +174,17 @@ advice_chrome_tracing_t::~advice_chrome_tracing_t ()
     flush_if (1);
     if (m_ofs.is_open ())
         m_ofs.close ();
+}
+
+int advice_chrome_tracing_t::write_to_sstream (const char *str)
+{
+    int rc;
+    if ( (rc = pthread_mutex_lock (&m_mutex)) < 0)
+        return rc;
+    m_oss << str << "," << std::endl;
+    if ( (rc = pthread_mutex_unlock (&m_mutex)) < 0)
+        return rc;
+    return rc;
 }
 
 int advice_chrome_tracing_t::with_flow (const char *module,
@@ -213,7 +229,10 @@ int advice_chrome_tracing_t::with_flow (const char *module,
         errno = ENOMEM;
         return -1;
     }
-    m_oss << json_str << "," << std::endl;
+    if ( (rc = write_to_sstream (json_str)) < 0) {
+        json_decref (event);
+        return rc;
+    }
     free (json_str);
     json_decref (event);
     return flush_if (FLUSH_SIZE);
@@ -236,9 +255,13 @@ int advice_chrome_tracing_t::before (const char *module,
     if (!(json_str = json_dumps (event, JSON_INDENT(0)))) {
         json_decref (event);
         errno = ENOMEM;
-	return -1;
+        return -1;
     }
-    m_oss << json_str << "," << std::endl;
+    if ( (rc = write_to_sstream (json_str)) < 0) {
+        json_decref (event);
+        return rc;
+    }
+
     free (json_str);
     json_decref (event);
     if ( (rc = flush_if (FLUSH_SIZE)) < 0)
@@ -282,7 +305,10 @@ int advice_chrome_tracing_t::after (const char *module,
         errno = ENOMEM;
         return -1;
     }
-    m_oss << json_str << "," << std::endl;
+    if ( (rc = write_to_sstream (json_str)) < 0) {
+        json_decref (event);
+        return rc;
+    }
     free (json_str);
     json_decref (event);
     return flush_if (FLUSH_SIZE);
@@ -318,7 +344,10 @@ int advice_chrome_tracing_t::before_async (const char *module,
         errno = ENOMEM;
         return -1;
     }
-    m_oss << json_str << "," << std::endl;
+    if ( (rc = write_to_sstream (json_str)) < 0) {
+        json_decref (event);
+        return rc;
+    }
     free (json_str);
     json_decref (event);
     if ( (rc = flush_if (FLUSH_SIZE)) < 0)
@@ -373,7 +402,10 @@ int advice_chrome_tracing_t::after_async (const char *module,
         errno = ENOMEM;
         return -1;
     }
-    m_oss << json_str << "," << std::endl;
+    if ( (rc = write_to_sstream (json_str)) < 0) {
+        json_decref (event);
+        return rc;
+    }
     free (json_str);
     json_decref (event);
     return flush_if (FLUSH_SIZE);
