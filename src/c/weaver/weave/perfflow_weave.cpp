@@ -141,18 +141,27 @@ bool WeavingPass::doInitialization (Module &m)
                           ->getAsCString();
 	  std::string pcut, scope, flow;
           if (perfflow_parser_parse (anno.data (), pcut, scope, flow) == 0) {
-	      if (pcut == "around" || pcut == "before")
+              if (pcut == "around" || pcut == "before")
                   changed = insertBefore (m, *fn,
                                           anno, 0, scope, flow) || changed;
               else if (pcut == "around_async" || pcut == "before_async")
                   changed = insertBefore (m, *fn,
                                           anno, 1, scope, flow) || changed;
-	      if (pcut == "around" || pcut == "after")
+              if (pcut == "around" || pcut == "after") {
+                  if (pcut == "around") {
+                      if (flow == "in" || flow == "out")
+                          flow = "NA";
+                  }
                   changed = insertAfter (m, *fn,
                                          anno, 0, scope, flow) || changed;
-              else if (pcut == "around_async" || pcut == "after_async")
+               } else if (pcut == "around_async" || pcut == "after_async") {
+                  if (pcut == "around") {
+                      if (flow == "in" || flow == "out")
+                          flow = "NA";
+                  }
                   changed = insertAfter (m, *fn,
                                          anno, 1, scope, flow) || changed;
+               }
           } else {
               errs () << "WeavePass[WARN]: Ignoring " << anno << "\n";
           }
