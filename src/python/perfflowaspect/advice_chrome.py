@@ -55,6 +55,7 @@ class ChromeTracingAdvice:
         if ChromeTracingAdvice.logger == None:
             ChromeTracingAdvice.logger = logging.getLogger("perfflow")
             ChromeTracingAdvice.logger.setLevel(logging.DEBUG)
+            ChromeTracingAdvice.logger.propagate = False
             fh = logging.FileHandler(ChromeTracingAdvice.fn)
             fh.setLevel(logging.DEBUG)
             formatter = logging.Formatter("%(message)s")
