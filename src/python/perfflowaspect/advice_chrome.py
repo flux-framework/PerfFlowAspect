@@ -34,7 +34,7 @@ class ChromeTracingAdvice:
     # TODO: add support for PERFLOW_OPTIONS
     # TODO: especially PERFLOW_OPTIONS="log_file=my_name.log"
     # TODO: support for TOML config
-    fn = "perfflow.out" + os.uname()[1] + "." + str(os.getpid()) + ".pfw"
+    fn = "perfflow." + os.uname()[1] + "." + str(os.getpid()) + ".pfw"
     logger = None
 
     def __init__(self):
