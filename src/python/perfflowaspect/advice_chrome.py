@@ -34,15 +34,8 @@ class ChromeTracingAdvice:
     # TODO: add support for PERFLOW_OPTIONS
     # TODO: especially PERFLOW_OPTIONS="log_file=my_name.log"
     # TODO: support for TOML config
-    fn = "perfflow.out" + os.uname()[1] + "." + str(os.getpid())
-    logger = logging.getLogger("perfflow")
-    logger.setLevel(logging.DEBUG)
-    fh = logging.FileHandler(fn)
-    fh.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("%(message)s")
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
-    logger.debug("[")
+    fn = "perfflow." + os.uname()[1] + "." + str(os.getpid()) + ".pfw"
+    logger = None
 
     def __init__(self):
         pass
@@ -54,8 +47,22 @@ class ChromeTracingAdvice:
             "cat": func.__module__,
             "pid": os.getpid(),
             "tid": threading.get_ident(),
-            "ts": time.time(),
+            "ts": time.time() * 1000000,
         }
+
+    @staticmethod
+    def __flush_log(s):
+        if ChromeTracingAdvice.logger == None:
+            ChromeTracingAdvice.logger = logging.getLogger("perfflow")
+            ChromeTracingAdvice.logger.setLevel(logging.DEBUG)
+            ChromeTracingAdvice.logger.propagate = False
+            fh = logging.FileHandler(ChromeTracingAdvice.fn)
+            fh.setLevel(logging.DEBUG)
+            formatter = logging.Formatter("%(message)s")
+            fh.setFormatter(formatter)
+            ChromeTracingAdvice.logger.addHandler(fh)
+            ChromeTracingAdvice.logger.debug("[")
+        ChromeTracingAdvice.logger.debug(s)
 
     @staticmethod
     def before(func):
@@ -63,7 +70,7 @@ class ChromeTracingAdvice:
         def trace(*args, **kwargs):
             event = ChromeTracingAdvice.__create_event(func)
             event["ph"] = "B"
-            ChromeTracingAdvice.logger.debug(json.dumps(event) + ",")
+            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             return func(*args, **kwargs)
 
         return trace
@@ -75,7 +82,7 @@ class ChromeTracingAdvice:
             rc = func(*args, **kwargs)
             event = ChromeTracingAdvice.__create_event(func)
             event["ph"] = "E"
-            ChromeTracingAdvice.logger.debug(json.dumps(event) + ",")
+            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             return rc
 
         return trace
@@ -86,11 +93,11 @@ class ChromeTracingAdvice:
         def trace(*args, **kwargs):
             event = ChromeTracingAdvice.__create_event(func)
             event["ph"] = "B"
-            ChromeTracingAdvice.logger.debug(json.dumps(event) + ",")
+            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             rc = func(*args, **kwargs)
-            event["ts"] = time.time()
+            event["ts"] = time.time() * 1000000
             event["ph"] = "E"
-            ChromeTracingAdvice.logger.debug(json.dumps(event) + ",")
+            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             return rc
 
         return trace
@@ -108,7 +115,7 @@ class ChromeTracingAdvice:
                 event["ph"] = "b"
                 before_counter = before_counter + 1
                 before_counter_mutex.release()
-                ChromeTracingAdvice.logger.debug(json.dumps(event) + ",")
+                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
                 return func(*args, **kwargs)
 
             return trace
@@ -129,7 +136,7 @@ class ChromeTracingAdvice:
                 event["ph"] = "e"
                 after_counter = after_counter + 1
                 after_counter_mutex.release()
-                ChromeTracingAdvice.logger.debug(json.dumps(event) + ",")
+                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
                 return func(*args, **kwargs)
 
             return trace
@@ -147,11 +154,11 @@ class ChromeTracingAdvice:
             event["ph"] = "b"
             counter = counter + 1
             counter_mutex.release()
-            ChromeTracingAdvice.logger.debug(json.dumps(event) + ",")
+            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             rc = func(*args, **kwargs)
-            event["ts"] = time.time()
+            event["ts"] = time.time() * 1000000
             event["ph"] = "e"
-            ChromeTracingAdvice.logger.debug(json.dumps(event) + ",")
+            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             return rc
 
         return trace

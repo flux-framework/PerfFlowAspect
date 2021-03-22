@@ -17,6 +17,10 @@ authors = [
     "Francesco Di Natale <dinatale3@llnl.gov>",
 ]
 
+packages = [
+    { include = "perfflowaspect", from = "src/python" },
+]
+
 [tool.poetry.dependencies]
 python = "^3.6"
 
