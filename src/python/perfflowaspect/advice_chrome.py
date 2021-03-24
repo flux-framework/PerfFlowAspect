@@ -41,14 +41,65 @@ class ChromeTracingAdvice:
         pass
 
     @staticmethod
-    def __create_event(func):
+    def __create_event(name, cat):
         return {
-            "name": func.__name__,
-            "cat": func.__module__,
+            "name": name,
+            "cat": cat,
             "pid": os.getpid(),
             "tid": threading.get_ident(),
             "ts": time.time() * 1000000,
         }
+
+    @classmethod
+    def create_sync_event(cls, name, cat, ph):
+        if ph not in ['B', 'E']:
+            raise ValueError("Invalid Phase: {}".format(ph))
+        event = cls.__create_event(name, cat)
+        event["ph"] = ph
+        return event
+
+    @classmethod
+    def create_async_event(cls, name, cat, ph, scope=None, id=None):
+        if ph not in ['b', 'n', 'e', 's', 't', 'f']:
+            raise ValueError("Invalid Phase: {}".format(ph))
+        event = cls.__create_event(name, cat)
+        event["ph"] = ph
+        if id:
+            event["id"] = id
+        if scope:
+            event["scope"] = scope
+        return event
+
+    sync_pointcut_phase_map = {
+        "before": "B",
+        "after": "E"
+    }
+    @classmethod
+    def sync_event(cls, pointcut, *args, **kwargs):
+        try:
+            phase = cls.sync_pointcut_phase_map[pointcut]
+        except KeyError:
+            raise ValueError("Invalid pointcut: {}".format(pointcut))
+        event = cls.create_sync_event(*args, phase, **kwargs)
+        cls.__flush_log(json.dumps(event) + ",")
+
+    async_pointcut_phase_map = {
+        "before": "b",
+        "instant": "n",
+        "after": "e"
+    }
+    @classmethod
+    def async_event(cls, pointcut, *args, **kwargs):
+        try:
+            phase = cls.async_pointcut_phase_map[pointcut]
+        except KeyError:
+            raise ValueError("Invalid pointcut: {}".format(pointcut))
+        event = cls.create_async_event(*args, phase, **kwargs)
+        cls.__flush_log(json.dumps(event) + ",")
+
+    @classmethod
+    def __create_event_from_func(cls, func):
+        return cls.__create_event(func.__name__, func.__module__)
 
     @staticmethod
     def __flush_log(s):
@@ -68,7 +119,7 @@ class ChromeTracingAdvice:
     def before(func):
         @functools.wraps(func)
         def trace(*args, **kwargs):
-            event = ChromeTracingAdvice.__create_event(func)
+            event = ChromeTracingAdvice.__create_event_from_func(func)
             event["ph"] = "B"
             ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             return func(*args, **kwargs)
@@ -80,7 +131,7 @@ class ChromeTracingAdvice:
         @functools.wraps(func)
         def trace(*args, **kwargs):
             rc = func(*args, **kwargs)
-            event = ChromeTracingAdvice.__create_event(func)
+            event = ChromeTracingAdvice.__create_event_from_func(func)
             event["ph"] = "E"
             ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             return rc
@@ -91,7 +142,7 @@ class ChromeTracingAdvice:
     def around(func):
         @functools.wraps(func)
         def trace(*args, **kwargs):
-            event = ChromeTracingAdvice.__create_event(func)
+            event = ChromeTracingAdvice.__create_event_from_func(func)
             event["ph"] = "B"
             ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             rc = func(*args, **kwargs)
@@ -109,7 +160,7 @@ class ChromeTracingAdvice:
             def trace(*args, **kwargs):
                 global before_counter, before_counter_mutex
                 before_counter_mutex.acquire()
-                event = ChromeTracingAdvice.__create_event(func)
+                event = ChromeTracingAdvice.__create_event_from_func(func)
                 event["scope"] = scope
                 event["id"] = before_counter
                 event["ph"] = "b"
@@ -130,7 +181,7 @@ class ChromeTracingAdvice:
                 rc = func(*args, **kwargs)
                 global after_counter, after_counter_mutex
                 after_counter_mutex.acquire()
-                event = ChromeTracingAdvice.__create_event(func)
+                event = ChromeTracingAdvice.__create_event_from_func(func)
                 event["scope"] = scope
                 event["id"] = after_counter
                 event["ph"] = "e"
@@ -149,7 +200,7 @@ class ChromeTracingAdvice:
         def trace(*args, **kwargs):
             global counter, counter_mutex
             counter_mutex.acquire()
-            event = ChromeTracingAdvice.__create_event(func)
+            event = ChromeTracingAdvice.__create_event_from_func(func)
             event["id"] = 8192
             event["ph"] = "b"
             counter = counter + 1

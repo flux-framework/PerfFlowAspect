@@ -37,6 +37,9 @@ class AdviceDispatcher:
         clobj = AdviceDispatcher.advice_dict[key]
         return AdviceDispatcher._dispatch(clobj, pointcut, scope)
 
+    def get_advice(key):
+        return AdviceDispatcher.advice_dict[key]
+
 
 #
 # vi: ts=4 sw=4 expandtab
