@@ -109,10 +109,36 @@ def set_perfflow_instance_path(path):
 class ChromeTracingAdvice:
     """ Chrome Tracing Advice Class: define pointcuts for this advice """
 
-    # TODO: add support for PERFLOW_OPTIONS
-    # TODO: especially PERFLOW_OPTIONS="log_file=my_name.log"
-    # TODO: support for TOML config
-    fn = "perfflow." + os.uname()[1] + "." + str(os.getpid()) + ".pfw"
+    # PERFFLOW_OPTIONS envVar
+    # To specify the name of this workflow component (default: name=generic)
+    #     PERFFLOW_OPTIONS="name=foo"
+    # To constomize output filename (default: log-filename-include=hostname,pid)
+    #     PERFFLOW_OPTIONS="log-filename-include=<metadata1, metadata2, ...>
+    #         Supported metadata:
+    #             name: workflow component name
+    #             instance-path: hierarchical component path
+    #             hostname: name of the host where this process is running
+    #             pid: process id
+    # You can combine the options in colon (:) delimited format
+
+    parse_perfflow_options()
+    inst_path = get_perfflow_instance_path()
+    set_perfflow_instance_path(inst_path)
+
+    fn = "perfflow"
+    for inc in perfflow_options['log-filename-include'].split(","):
+        if inc == "name":
+            fn += "." + perfflow_options["name"]
+        elif inc == "instance-path":
+            fn += ".{" + inst_path + "}"
+        elif inc == "hostname":
+            fn += "." + os.uname()[1]
+        elif inc == "pid":
+            fn += "." + str(os.getpid())
+        else:
+            print("perfflow warning: unknown option param={}".format(inc), file=sys.stderr)
+
+    fn += ".pfw"
     logger = None
 
     def __init__(self):
