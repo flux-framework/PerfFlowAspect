@@ -11,11 +11,14 @@
 ##############################################################
 
 import os
+import sys
 import threading
 import time
 import json
 import logging
 import functools
+import hashlib
+from urllib.parse import urlparse
 from .aspect_base import perfflowaspect
 
 # TODO: move those into ChromeTracingAdvice
@@ -25,6 +28,81 @@ counter_mutex = threading.Lock()
 before_counter = 0
 after_counter = 0
 counter = 0
+perfflow_options = {}
+
+
+def cannonicalize_perfflow_options():
+    if perfflow_options.get("name") is None:
+        perfflow_options["name"] = "generic"
+    if perfflow_options.get("log-filename-include") is None:
+        perfflow_options["log-filename-include"] = "hostname,pid"
+
+def parse_perfflow_options():
+    options_list = []
+    options = os.getenv("PERFFLOW_OPTIONS")
+    if options is not None:
+        options_list = options.split(":")
+    for opt in options_list:
+        kv = opt.split("=")
+        if len(kv) == 2:
+            perfflow_options[kv[0]] = kv[1]
+        else:
+            print("Ill-formed option: {}".format(opt), file=sys.stderr)
+    cannonicalize_perfflow_options()
+
+def get_foreign_wm():
+    foreign_job_id = os.getenv("SLURM_JOB_ID")
+    if foreign_job_id is not None:
+        return "slurm"
+    foreign_job_id = os.getenv("LSB_JOBID")
+    if foreign_job_id is not None:
+        return "lsf"
+
+def get_uniq_id_from_foreign_wm():
+    uniq_id = None
+    foreign_wm = get_foreign_wm()
+    if foreign_wm == "slurm":
+        job_id = os.getenv("SLURM_JOB_ID")
+        step_id = os.getenv("SLURM_STEP_ID")
+        if job_id is not None and step_id is not None:
+            uniq_id = job_id + "." + step_id
+    elif foreign_wm == "lsf":
+        job_id = os.getenv("LSB_JOBID")
+        step_id = os.getenv("LS_JOBPID")
+        if job_id is not None and step_id is not None:
+            uniq_id = job_id + "." + step_id
+    return uniq_id
+
+def get_perfflow_instance_path():
+    instance_id = ""
+    flux_job_id = os.getenv("FLUX_JOB_ID")
+    if flux_job_id is None:
+        foreign_id = get_uniq_id_from_foreign_wm()
+        if foreign_id is not None:
+            hash = hashlib.md5(foreign_id.encode("utf-8"))
+            instance_id = hash.hexdigest()[0:8]
+        else:
+            uniq_id = os.getenv("FLUX_URI")
+            if uniq_id is None:
+                uniq_id = "1"
+            else:
+                uniq_id = urlparse(uniq_id).path
+                uniq_id = os.path.dirname(uniq_id)
+            uniq_id = hashlib.md5(uniq_id.encode("utf-8"))
+            instance_id = uniq_id.hexdigest()[0:8]
+    else:
+        instance_id = flux_job_id
+
+    instance_path = os.getenv("PERFFLOW_INSTANCE_PATH")
+    if instance_path is None:
+        instance_path = instance_id
+    else:
+        instance_path = instance_path + "." + instance_id
+
+    return instance_path
+
+def set_perfflow_instance_path(path):
+    os.environ["PERFFLOW_INSTANCE_PATH"] = path
 
 
 @perfflowaspect
