@@ -1,6 +1,6 @@
 CXX := clang++
 CXXFLAGS := -std=c++11 -Xclang -load -Xclang ../weaver/build/weave/libWeavePass.so
-LDFLAGS := -L../runtime -lperfflow_runtime
+LDFLAGS := -L../runtime -lperfflow_runtime -lcrypto
 
 all: smoketest smoketest2
 

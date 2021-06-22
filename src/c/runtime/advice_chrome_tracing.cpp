@@ -10,12 +10,19 @@
 
 #include <string>
 #include <fstream>
+#include <vector>
 #include <system_error>
+#include <iomanip>
+#include <cstdlib>
 #include <unistd.h>
 #include <cxxabi.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/syscall.h>
+#include <openssl/sha.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
 // TODO: only works for Linux
 #define my_gettid() ((pid_t)syscall(SYS_gettid))
 #include "advice_chrome_tracing.hpp"
@@ -143,6 +150,139 @@ int advice_chrome_tracing_t::flush_if (size_t size)
     return 0;
 }
 
+int advice_chrome_tracing_t::cannonicalize_perfflow_options ()
+{
+    if (m_perfflow_options.find ("name") == m_perfflow_options.end ()) {
+        m_perfflow_options["name"] = "generic";
+    }
+    if (m_perfflow_options.find ("log-filename-include")
+        == m_perfflow_options.end ()) {
+        m_perfflow_options["log-filename-include"] = "hostname,pid";
+    }
+    if (m_perfflow_options.find ("log-dir") == m_perfflow_options.end ()) {
+        m_perfflow_options["log-dir"] = "./";
+    }
+    return 0;
+}
+
+int advice_chrome_tracing_t::parse_perfflow_options ()
+{
+    int rc = 0;
+    std::vector<std::string> options_list;
+    char *options = getenv ("PERFFLOW_OPTIONS");
+    if (options) {
+        std::stringstream ss;
+        std::string entry;
+        ss << options;
+        while (getline (ss, entry, ':'))
+            options_list.push_back (entry);
+    }
+    for (auto &opt: options_list) {
+        size_t found = opt.find_first_of ("=");
+        if (found != std::string::npos) {
+            std::string k = opt.substr (0, found);
+            std::string v = opt.substr (found+1);
+            m_perfflow_options[k] = v;
+        } else {
+            errno = EINVAL;
+            rc -= 1;
+        }
+    }
+    return (cannonicalize_perfflow_options () + rc);
+}
+
+const std::string advice_chrome_tracing_t::get_foreign_wm ()
+{
+    char *foreign_job_id = getenv ("SLURM_JOB_ID");
+    if (foreign_job_id)
+        return "slurm";
+    foreign_job_id = getenv ("LSB_JOBID");
+    if (foreign_job_id)
+        return "lsf";
+    return "";
+}
+
+const std::string advice_chrome_tracing_t::get_uniq_id_from_foreign_wm ()
+{
+    std::string uniq_id = "";
+    const std::string foreign_wm = get_foreign_wm ();
+    if (foreign_wm == "slurm") {
+        char *job_id = getenv ("SLURM_JOB_ID");
+        char *step_id = getenv ("SLURM_STEP_ID");
+        if (job_id && step_id)
+            uniq_id = std::string (job_id) + "." + std::string (step_id);
+    } else if (foreign_wm == "lsf") {
+        char *job_id = getenv ("LSB_JOBID");
+        char *step_id = getenv ("LS_JOBPID");
+        if (job_id && step_id)
+            uniq_id = std::string (job_id) + "." + std::string (step_id);
+    }
+    return uniq_id;
+}
+
+const std::string advice_chrome_tracing_t::get_perfflow_instance_path ()
+{
+    int i;
+    std::stringstream ss;
+    std::string instance_id = "";
+    std::string instance_path = "";
+    char *instance_path_c_str = nullptr;
+    char *flux_job_id = getenv ("FLUX_JOB_ID");
+    if (!flux_job_id) {
+        const std::string foreign_id = get_uniq_id_from_foreign_wm ();
+        if (foreign_id != "") {
+            unsigned char sha1[SHA_DIGEST_LENGTH];
+            unsigned char *data = reinterpret_cast<unsigned char *> (
+                                      const_cast<char *> (foreign_id.c_str ()));
+            SHA1 (data, foreign_id.length (), sha1);
+            for (i = 0; i < 4; i++) {
+                ss << std::setw (2) << std::setfill ('0')
+                   << std::hex << static_cast<int> (sha1[i]);
+            }
+            instance_id = ss.str ();
+        } else {
+            std::string uniq_id = "1";
+            char *uri = getenv ("FLUX_URI");
+            if (uri) {
+                std::string uri_copy = uri;
+                size_t found = uri_copy.find_first_of (":");
+                if (found != std::string::npos
+                    && (found + 2) < uri_copy.length ()) {
+                    std::string uri_path = uri_copy.substr (found+3);
+                    found = uri_path.find_last_of ("/");
+                    if (found != std::string::npos)
+                        uniq_id = uri_path.substr (0, found);
+                 }
+            }
+            unsigned char sha1[SHA_DIGEST_LENGTH];
+            unsigned char *data = reinterpret_cast<unsigned char *> (
+                                      const_cast<char *> (uniq_id.c_str ()));
+            SHA1 (data, uniq_id.length (), sha1);
+            for (i = 0; i < 4; i++) {
+                ss << std::setw (2) << std::setfill ('0')
+                   << std::hex << static_cast<int> (sha1[i]);
+            }
+            instance_id = ss.str ();
+        }
+    } else {
+        instance_id = flux_job_id;
+    }
+
+    instance_path_c_str = getenv ("PERFFLOW_INSTANCE_PATH");
+    if (!instance_path_c_str)
+        instance_path = instance_id;
+    else
+        instance_path = std::string (instance_path_c_str) + "." + instance_id;
+
+    return instance_path;
+}
+
+int advice_chrome_tracing_t::set_perfflow_instance_path (
+        const std::string &path)
+{
+    return setenv ("PERFFLOW_INSTANCE_PATH", path.c_str (), 1);
+}
+
 
 /******************************************************************************
  *                                                                            *
@@ -153,17 +293,66 @@ int advice_chrome_tracing_t::flush_if (size_t size)
 // Can throw std:::system_error or std::ofstream::failure exceptions
 advice_chrome_tracing_t::advice_chrome_tracing_t ()
 {
-    // TODO: add support for PERFLOW_OPTIONS
-    // TODO: especially PERFLOW_OPTIONS="log_file=my_name.log"
-    // TODO: support for TOML config
+    // PERFFLOW_OPTIONS envVar
+    // To specify the name of this workflow component (default: name=generic)
+    //     PERFFLOW_OPTIONS="name=foo"
+    // To constomize output filename (default: log-filename-include=hostname,pid)
+    //     PERFFLOW_OPTIONS="log-filename-include=<metadata1, metadata2, ...>
+    //         Supported metadata:
+    //             name: workflow component name
+    //             instance-path: hierarchical component path
+    //             hostname: name of the host where this process is running
+    //             pid: process id
+    // To change the directory in which the log file is created
+    //     PERFFLOW_OPTIONS="log-dir=DIR"
+    // You can combine the options in colon (:) delimited format
+
+    if (parse_perfflow_options () < 0)
+        throw std::system_error (errno, std::system_category (),
+                                 "parse_perfflow_options");
+
+    std::string inst_path = get_perfflow_instance_path();
+    if (set_perfflow_instance_path (inst_path))
+        throw std::system_error (errno, std::system_category (),
+                                 "set_perfflow_instance_path");
+
+    std::string include = m_perfflow_options["log-filename-include"];
+    std::vector<std::string> include_list;
+    std::stringstream ss;
+    std::string entry;
+
+    ss << include;
+    while (getline (ss, entry, ','))
+        include_list.push_back (entry);
+
     char hn[128];
     if (gethostname (hn, 128) < 0)
         throw std::system_error (errno,
                                  std::system_category (),
                                  "gethostname failed");
-    m_fn = std::string ("perfflow.") + std::string (hn)
-           + std::string (".") + std::to_string (getpid ())
-           + std::string (".pfw");
+
+    m_fn = "perfflow";
+    for (auto &inc : include_list) {
+        if (inc == "name")
+            m_fn += "." + m_perfflow_options["name"];
+        else if (inc == "instance-path")
+            m_fn += ".{" + inst_path + "}";
+        else if (inc == "hostname")
+            m_fn += "." + std::string (hn);
+        else if (inc == "pid")
+            m_fn += "." + std::to_string (getpid ());
+    }
+
+    m_fn += ".pfw";
+
+    std::string log_dir = m_perfflow_options["log-dir"];
+    if (mkdir (log_dir.c_str (), S_IRUSR | S_IWUSR | S_IXUSR) < 0
+        && errno != EEXIST)
+        throw std::system_error (errno,
+                                 std::system_category (),
+                                 "log-dir creation failed");
+    m_fn = log_dir + "/" + m_fn;
+
     m_before_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
     m_after_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
     m_mutex = PTHREAD_MUTEX_INITIALIZER;
