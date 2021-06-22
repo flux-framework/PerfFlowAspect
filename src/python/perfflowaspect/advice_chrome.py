@@ -36,6 +36,8 @@ def cannonicalize_perfflow_options():
         perfflow_options["name"] = "generic"
     if perfflow_options.get("log-filename-include") is None:
         perfflow_options["log-filename-include"] = "hostname,pid"
+    if perfflow_options.get("log-dir") is None:
+        perfflow_options["log-dir"] = "./"
 
 def parse_perfflow_options():
     options_list = []
@@ -57,6 +59,7 @@ def get_foreign_wm():
     foreign_job_id = os.getenv("LSB_JOBID")
     if foreign_job_id is not None:
         return "lsf"
+    return ""
 
 def get_uniq_id_from_foreign_wm():
     uniq_id = None
@@ -119,6 +122,8 @@ class ChromeTracingAdvice:
     #             instance-path: hierarchical component path
     #             hostname: name of the host where this process is running
     #             pid: process id
+    # To change the directory in which the log file is created
+    #     PERFFLOW_OPTIONS="log-dir=DIR"
     # You can combine the options in colon (:) delimited format
 
     parse_perfflow_options()
@@ -139,6 +144,12 @@ class ChromeTracingAdvice:
             print("perfflow warning: unknown option param={}".format(inc), file=sys.stderr)
 
     fn += ".pfw"
+
+    log_dir = perfflow_options["log-dir"]
+    if log_dir is not None:
+        os.makedirs(log_dir, exist_ok=True)
+        fn = os.path.join(log_dir, fn)
+
     logger = None
 
     def __init__(self):
