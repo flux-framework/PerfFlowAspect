@@ -22,7 +22,7 @@ __attribute__((annotate("@critical_path(pointcut='around')")))
 void bar ()
 {
    printf ("bar\n");
-   sleep (1);
+   usleep (1000);
    bas ();
 }
 
@@ -30,7 +30,7 @@ __attribute__((annotate("@critical_path()")))
 int foo (const std::string &str)
 {
    printf ("foo\n");
-   sleep (1);
+   usleep (1000);
    bar ();
    if (str == "hello")
        return 1;

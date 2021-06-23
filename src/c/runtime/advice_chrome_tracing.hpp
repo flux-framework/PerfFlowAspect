@@ -12,6 +12,8 @@
 #include <pthread.h>
 #include <fstream>
 #include <sstream>
+#include <map>
+#include <string>
 #include "advice_base.hpp"
 
 class advice_chrome_tracing_t : public advice_base_t
@@ -39,6 +41,13 @@ private:
     int flush_if (size_t size);
     int write_to_sstream (const char *str);
 
+    int cannonicalize_perfflow_options ();
+    int parse_perfflow_options ();
+    const std::string get_foreign_wm ();
+    const std::string get_uniq_id_from_foreign_wm ();
+    const std::string get_perfflow_instance_path ();
+    int set_perfflow_instance_path (const std::string &path);
+
     const int FLUSH_SIZE = 16777216;
     std::ostringstream m_oss;
     std::ofstream m_ofs;
@@ -48,6 +57,7 @@ private:
     pthread_mutex_t m_before_counter_mutex;
     pthread_mutex_t m_after_counter_mutex;
     pthread_mutex_t m_mutex;
+    std::map<std::string, std::string> m_perfflow_options;
 };
 
 /*

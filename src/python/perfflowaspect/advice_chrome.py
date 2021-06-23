@@ -11,11 +11,14 @@
 ##############################################################
 
 import os
+import sys
 import threading
 import time
 import json
 import logging
 import functools
+import hashlib
+from urllib.parse import urlparse
 from .aspect_base import perfflowaspect
 
 # TODO: move those into ChromeTracingAdvice
@@ -25,16 +28,128 @@ counter_mutex = threading.Lock()
 before_counter = 0
 after_counter = 0
 counter = 0
+perfflow_options = {}
+
+
+def cannonicalize_perfflow_options():
+    if perfflow_options.get("name") is None:
+        perfflow_options["name"] = "generic"
+    if perfflow_options.get("log-filename-include") is None:
+        perfflow_options["log-filename-include"] = "hostname,pid"
+    if perfflow_options.get("log-dir") is None:
+        perfflow_options["log-dir"] = "./"
+
+def parse_perfflow_options():
+    options_list = []
+    options = os.getenv("PERFFLOW_OPTIONS")
+    if options is not None:
+        options_list = options.split(":")
+    for opt in options_list:
+        kv = opt.split("=")
+        if len(kv) == 2:
+            perfflow_options[kv[0]] = kv[1]
+        else:
+            print("Ill-formed option: {}".format(opt), file=sys.stderr)
+    cannonicalize_perfflow_options()
+
+def get_foreign_wm():
+    foreign_job_id = os.getenv("SLURM_JOB_ID")
+    if foreign_job_id is not None:
+        return "slurm"
+    foreign_job_id = os.getenv("LSB_JOBID")
+    if foreign_job_id is not None:
+        return "lsf"
+    return ""
+
+def get_uniq_id_from_foreign_wm():
+    uniq_id = None
+    foreign_wm = get_foreign_wm()
+    if foreign_wm == "slurm":
+        job_id = os.getenv("SLURM_JOB_ID")
+        step_id = os.getenv("SLURM_STEP_ID")
+        if job_id is not None and step_id is not None:
+            uniq_id = job_id + "." + step_id
+    elif foreign_wm == "lsf":
+        job_id = os.getenv("LSB_JOBID")
+        step_id = os.getenv("LS_JOBPID")
+        if job_id is not None and step_id is not None:
+            uniq_id = job_id + "." + step_id
+    return uniq_id
+
+def get_perfflow_instance_path():
+    instance_id = ""
+    flux_job_id = os.getenv("FLUX_JOB_ID")
+    if flux_job_id is None:
+        foreign_id = get_uniq_id_from_foreign_wm()
+        if foreign_id is not None:
+            hash = hashlib.md5(foreign_id.encode("utf-8"))
+            instance_id = hash.hexdigest()[0:8]
+        else:
+            uniq_id = os.getenv("FLUX_URI")
+            if uniq_id is None:
+                uniq_id = "1"
+            else:
+                uniq_id = urlparse(uniq_id).path
+                uniq_id = os.path.dirname(uniq_id)
+            uniq_id = hashlib.md5(uniq_id.encode("utf-8"))
+            instance_id = uniq_id.hexdigest()[0:8]
+    else:
+        instance_id = flux_job_id
+
+    instance_path = os.getenv("PERFFLOW_INSTANCE_PATH")
+    if instance_path is None:
+        instance_path = instance_id
+    else:
+        instance_path = instance_path + "." + instance_id
+
+    return instance_path
+
+def set_perfflow_instance_path(path):
+    os.environ["PERFFLOW_INSTANCE_PATH"] = path
 
 
 @perfflowaspect
 class ChromeTracingAdvice:
     """ Chrome Tracing Advice Class: define pointcuts for this advice """
 
-    # TODO: add support for PERFLOW_OPTIONS
-    # TODO: especially PERFLOW_OPTIONS="log_file=my_name.log"
-    # TODO: support for TOML config
-    fn = "perfflow." + os.uname()[1] + "." + str(os.getpid()) + ".pfw"
+    # PERFFLOW_OPTIONS envVar
+    # To specify the name of this workflow component (default: name=generic)
+    #     PERFFLOW_OPTIONS="name=foo"
+    # To constomize output filename (default: log-filename-include=hostname,pid)
+    #     PERFFLOW_OPTIONS="log-filename-include=<metadata1, metadata2, ...>
+    #         Supported metadata:
+    #             name: workflow component name
+    #             instance-path: hierarchical component path
+    #             hostname: name of the host where this process is running
+    #             pid: process id
+    # To change the directory in which the log file is created
+    #     PERFFLOW_OPTIONS="log-dir=DIR"
+    # You can combine the options in colon (:) delimited format
+
+    parse_perfflow_options()
+    inst_path = get_perfflow_instance_path()
+    set_perfflow_instance_path(inst_path)
+
+    fn = "perfflow"
+    for inc in perfflow_options['log-filename-include'].split(","):
+        if inc == "name":
+            fn += "." + perfflow_options["name"]
+        elif inc == "instance-path":
+            fn += ".{" + inst_path + "}"
+        elif inc == "hostname":
+            fn += "." + os.uname()[1]
+        elif inc == "pid":
+            fn += "." + str(os.getpid())
+        else:
+            print("perfflow warning: unknown option param={}".format(inc), file=sys.stderr)
+
+    fn += ".pfw"
+
+    log_dir = perfflow_options["log-dir"]
+    if log_dir is not None:
+        os.makedirs(log_dir, exist_ok=True)
+        fn = os.path.join(log_dir, fn)
+
     logger = None
 
     def __init__(self):
