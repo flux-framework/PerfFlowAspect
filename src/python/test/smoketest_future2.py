@@ -3,8 +3,8 @@
 import time
 import logging
 import threading
-import perfflow
-import perfflow.aspect
+import perfflowaspect
+import perfflowaspect.aspect
 
 from concurrent.futures import ThreadPoolExecutor
 from time import sleep
@@ -13,18 +13,18 @@ pool = ThreadPoolExecutor(4)
 
 # Introduce a dummy function work around a lack of support
 # of PerfflowAspect prototype
-@perfflow.aspect.critical_path(pointcut="before_async", scope="foo")
+@perfflowaspect.aspect.critical_path(pointcut="before_async", scope="foo")
 def async_begin_in_foo():
     pass
 
 
-@perfflow.aspect.critical_path(pointcut="after_async", scope="foo")
+@perfflowaspect.aspect.critical_path(pointcut="after_async", scope="foo")
 def bar(message):
     sleep(1)
     return message
 
 
-@perfflow.aspect.critical_path()
+@perfflowaspect.aspect.critical_path()
 def foo():
     futures = []
     time.sleep(2)

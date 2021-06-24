@@ -3,8 +3,8 @@
 import time
 import logging
 import threading
-import perfflow
-import perfflow.aspect
+import perfflowaspect
+import perfflowaspect.aspect
 
 from concurrent.futures import ThreadPoolExecutor
 from time import sleep
@@ -12,13 +12,13 @@ from time import sleep
 pool = ThreadPoolExecutor(3)
 
 
-@perfflow.aspect.critical_path(pointcut="around_async")
+@perfflowaspect.aspect.critical_path(pointcut="around_async")
 def bar(message):
     sleep(3)
     return message
 
 
-@perfflow.aspect.critical_path(pointcut="around")
+@perfflowaspect.aspect.critical_path(pointcut="around")
 def foo():
     time.sleep(2)
     future = pool.submit(bar, ("hello"))

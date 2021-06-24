@@ -3,16 +3,16 @@
 import time
 import logging
 import threading
-import perfflow
-import perfflow.aspect
+import perfflowaspect
+import perfflowaspect.aspect
 
 
-@perfflow.aspect.critical_path()
+@perfflowaspect.aspect.critical_path()
 def bar(message):
     time.sleep(1)
 
 
-@perfflow.aspect.critical_path()
+@perfflowaspect.aspect.critical_path()
 def foo(message):
     time.sleep(2)
     bar(message)
