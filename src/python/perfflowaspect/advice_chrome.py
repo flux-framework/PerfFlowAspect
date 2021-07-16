@@ -82,7 +82,7 @@ def get_perfflow_instance_path():
     if flux_job_id is None:
         foreign_id = get_uniq_id_from_foreign_wm()
         if foreign_id is not None:
-            hash = hashlib.md5(foreign_id.encode("utf-8"))
+            hash = hashlib.sha1(foreign_id.encode("utf-8"))
             instance_id = hash.hexdigest()[0:8]
         else:
             uniq_id = os.getenv("FLUX_URI")
@@ -91,7 +91,7 @@ def get_perfflow_instance_path():
             else:
                 uniq_id = urlparse(uniq_id).path
                 uniq_id = os.path.dirname(uniq_id)
-            uniq_id = hashlib.md5(uniq_id.encode("utf-8"))
+            uniq_id = hashlib.sha1(uniq_id.encode("utf-8"))
             instance_id = uniq_id.hexdigest()[0:8]
     else:
         instance_id = flux_job_id
