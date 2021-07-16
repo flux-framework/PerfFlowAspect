@@ -124,6 +124,14 @@ PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
     rm perfflow.{123456}.pfw
 '
 
+test_expect_success 'PERFFLOW_OPTIONS: Flux f58-encoded jobid supported' '
+    FLUX_JOB_ID=ƒeF9QZG3 \
+PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest.py &&
+    test -f perfflow.{ƒeF9QZG3}.pfw &&
+    sanity_check perfflow.{ƒeF9QZG3}.pfw &&
+    rm perfflow.{ƒeF9QZG3}.pfw
+'
+
 test_expect_success 'PERFFLOW_OPTIONS: nested instance-path supported' '
     PERFFLOW_INSTANCE_PATH=fffffff.444444 FLUX_JOB_ID=123456 \
 PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
