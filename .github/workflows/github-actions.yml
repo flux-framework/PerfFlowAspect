@@ -1,0 +1,73 @@
+name: PerfFlowAspect CI
+
+on: [ push, pull_request ]
+
+jobs:
+
+  build-c:
+    runs-on: ubuntu-18.04
+
+    steps:
+      # Checkout PerfFlowAspect repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v2
+
+      - name: Setup Build Env
+        run: |
+          sudo apt-get update
+          sudo apt install clang llvm-dev libjansson-dev libssl-dev bison flex make cmake
+          clang++ --version
+
+      - name: Build Parser
+        run: |
+          cd src/c/parser
+          make VERBOSE=1
+
+      - name: Build Runtime
+        run: |
+          cd src/c/runtime
+          make VERBOSE=1
+
+      - name: Configure Weaver with CMake
+        run: |
+          cd src/c/weaver
+          mkdir build
+          cd build
+          LLVM_DIR=/usr/lib/llvm-6.0/lib/cmake cmake ..
+
+      - name: Build Weaver
+        run: |
+          cd src/c/weaver/build
+          make VERBOSE=1
+
+      - name: Run C Smoke Tests
+        run: |
+          cd src/c/test
+          make
+          ./t0001-cbinding-basic.t
+
+  build-python:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.6, 3.7, 3.8]
+
+    steps:
+      # Checkout PerfFlowAspect repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip pytest setuptools
+          python src/python/setup.py install
+          python -m pip list
+
+      - name: Run Python Smoke Tests
+        run: |
+          cd src/python/test
+          ./t0001-pybinding-basic.t
