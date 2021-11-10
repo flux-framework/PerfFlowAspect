@@ -1,0 +1,16 @@
+src/c/parser/lex.yy.c
+src/c/parser/lex.yy.o
+src/c/parser/libperfflow_parser.so
+src/c/parser/parser.tab.c
+src/c/parser/parser.tab.h
+src/c/parser/parser.tab.o
+src/c/parser/perfflow_parser.o
+src/c/runtime/advice_chrome_tracing.o
+src/c/runtime/advice_dispatcher.o
+src/c/runtime/libperfflow_runtime.so
+src/c/runtime/perfflow_runtime.o
+src/c/test/smoketest
+src/c/test/smoketest.o
+src/c/test/smoketest2
+src/c/test/smoketest2.o
+src/c/weaver/build/
