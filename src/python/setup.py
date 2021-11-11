@@ -35,7 +35,7 @@ setup(
     package_dir = {
         '': 'src/python'
         },
-    packages=['perfflowaspect']
+    packages=['perfflowaspect'],
     entry_points={},
     install_requires=[],
     extras_require={},
