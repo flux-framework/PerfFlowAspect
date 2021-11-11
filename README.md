@@ -2,6 +2,8 @@
 are not yet stable.* The github issue tracker is the primary way to
 communicate with the developers.
 
+[![Build Status](https://github.com/flux-framework/PerfFlowAspect/actions/workflows/github-actions.yaml/badge.svg)](https://github.com/flux-framework/PerfFlowAspect/actions)
+
 ## PerfFlowAspect: a tool to analyze cross-cutting performance concerns of composite scientific workflows.
 
 
