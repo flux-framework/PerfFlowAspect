@@ -126,7 +126,7 @@ PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
 
 test_expect_success 'PERFFLOW_OPTIONS: Flux f58-encoded jobid supported' '
     FLUX_JOB_ID=ƒeF9QZG3 \
-PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest.py &&
+PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
     test -f perfflow.{ƒeF9QZG3}.pfw &&
     sanity_check perfflow.{ƒeF9QZG3}.pfw &&
     rm perfflow.{ƒeF9QZG3}.pfw
