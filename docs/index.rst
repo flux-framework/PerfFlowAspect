@@ -4,9 +4,9 @@
    #
    # SPDX-License-Identifier: LGPL-3.0
 
-###############
- PerfFlowAspect
-###############
+##############
+PerfFlowAspect
+##############
 
 PerfFlowAspect is a tool to analyze cross-cutting performance concerns of
 composite scientific workflows.
