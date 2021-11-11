@@ -2,7 +2,7 @@
    # PerfFlowAspect Project Developers. See the top-level LICENSE file for
    # details.
    #
-   # SPDX-License-Identifier: LGPL-3.0-or-later
+   # SPDX-License-Identifier: LGPL-3.0
 
 ###############
  PerfFlowAspect
