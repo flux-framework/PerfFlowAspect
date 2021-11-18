@@ -32,7 +32,8 @@ as the Join points that can be weaved with PerfFlowAspect to be acted upon.
 
 The following shows a simple snippet that annotates two functions.
 
-.. code:: python
+.. code-block:: python
+
     import perfflowaspect.aspect
 
     @perfflowaspect.aspect.critical_path()
@@ -47,6 +48,7 @@ The following shows a simple snippet that annotates two functions.
 
     def main():
         foo()
+
 
 Once annotated, running this python code will produce a performance trace data 
 file named perfflow.<hostname>.<pid>. It uses Chrome Tracing Format in JSON so 
