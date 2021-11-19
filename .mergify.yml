@@ -15,7 +15,7 @@ pull_request_rules:
       - status-success="check python bindings"
       - label=status-merge-when-passing
       - label!=status-work-in-progress
-      - "approved-reviews-by=@flux-framework/core"
+      - "approved-reviews-by=@flux-framework/pfa"
       - "#approved-reviews-by>0"
       - "#changes-requested-reviews-by=0"
       - -title~=^\[*[Ww][Ii][Pp]
@@ -26,7 +26,7 @@ pull_request_rules:
         update_method: rebase
   - name: remove approved reviews when updated
     conditions:
-      - author!=@core
+      - author!=@flux-framework/pfa
     actions:
       dismiss_reviews:
         approved: true
