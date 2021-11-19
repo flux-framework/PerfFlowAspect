@@ -1,0 +1,36 @@
+queue_rules:
+  - name: default
+    conditions:
+      # conditions for a PR to get merged (i.e., out of the queue)
+      - base=main
+      - status-success="check c bindings"
+      - status-success="check python bindings"
+
+pull_request_rules:
+  - name: rebase and merge when passing all checks
+    conditions:
+      # conditions for a PR to get queued
+      - base=main
+      - status-success="check c bindings"
+      - status-success="check python bindings"
+      - label=status-merge-when-passing
+      - label!=status-work-in-progress
+      - "approved-reviews-by=@flux-framework/core"
+      - "#approved-reviews-by>0"
+      - "#changes-requested-reviews-by=0"
+      - -title~=^\[*[Ww][Ii][Pp]
+    actions:
+      queue:
+        name: default
+        method: merge
+        update_method: rebase
+  - name: remove approved reviews when updated
+    conditions:
+      - author!=@core
+    actions:
+      dismiss_reviews:
+        approved: true
+        changes_requested: false
+        message: |
+          All approving reviews have been removed because this pull request
+          was updated.
