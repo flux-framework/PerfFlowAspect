@@ -26,6 +26,7 @@ pull_request_rules:
         update_method: rebase
   - name: remove approved reviews when updated
     conditions:
+      # conditions for approving reviews to be removed
       - author!=@flux-framework/pfa
     actions:
       dismiss_reviews:
