@@ -5,6 +5,7 @@ on: [ push, pull_request ]
 jobs:
 
   build-c:
+    name: check c bindings
     runs-on: ubuntu-18.04
 
     steps:
@@ -46,6 +47,7 @@ jobs:
           ./t0001-cbinding-basic.t
 
   build-python:
+    name: check python bindings
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
