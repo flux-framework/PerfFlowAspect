@@ -30,7 +30,7 @@ Build Dependencies and Versions
 .. note::
 
     If you use Clang >=9.0, there are two source code changes you need to make
-    in `src/c/weaver/weave/perfflow_weave.cpp`.
+    in ``src/c/weaver/weave/perfflow_weave.cpp``.
 
 
 Building PerfFlowAspect Annotation Parser and Runtime
@@ -48,12 +48,12 @@ Building PerfFlowAspect WeavePass LLVM Plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PerfFlowAspect WeavePass requires Clang and LLVM development packages as well
-as a jansson-devel package for JSON manipulation. It also depends on
+as a ``jansson-devel`` package for JSON manipulation. It also depends on
 ``src/c/parser/libperfflow_parser.so`` so it additionally requires the
 dependencies of our annotation parser code: i.e., ``flex`` and ``bison``.
 
-Note that LLVM_DIR must be set to the corresponding LLVM cmake directory which
-may differ across different Linux distributions.
+Note that ``LLVM_DIR`` must be set to the corresponding LLVM cmake directory
+which may differ across different Linux distributions.
 
 .. code:: bash
 

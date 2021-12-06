@@ -57,6 +57,6 @@ The following shows a simple snippet that annotates two functions.
 
 
 Once annotated, running this python code will produce a performance trace data
-file named perfflow.<hostname>.<pid>. It uses Chrome Tracing Format in JSON so
-that it can be loaded into Google Chrome Tracing to render the critical path
+file named ``perfflow.<hostname>.<pid>``. It uses Chrome Tracing Format in JSON
+so that it can be loaded into Google Chrome Tracing to render the critical path
 events on the global tracing timeline, using the Perfetto visualization tool.
