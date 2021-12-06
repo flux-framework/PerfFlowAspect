@@ -78,6 +78,7 @@ jobs:
       - name: Format check with flake8 and black
         if: ${{ matrix.python-version == 3.7 }}
         run: |
+          cd src/python
           black --diff --check .
           flake8
 
