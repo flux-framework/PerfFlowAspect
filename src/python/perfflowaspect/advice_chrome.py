@@ -295,7 +295,6 @@ class ChromeTracingAdvice:
         def after_async_(func):
             @functools.wraps(func)
             def trace(*args, **kwargs):
-                rc = func(*args, **kwargs)
                 global after_counter, after_counter_mutex
                 after_counter_mutex.acquire()
                 event = ChromeTracingAdvice.__create_event_from_func(func)
