@@ -14,18 +14,18 @@ C Build
 Build Dependencies and Versions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
- ================ ================ =========== ======
+ ================ ================ =========== ================
    redhat          ubuntu           version     note
- ================ ================ =========== ======
-   clang           clang            >= 6.0      *1*
-   llvm-devel      llvm-dev         >= 6.0      *1*
+ ================ ================ =========== ================
+   clang           clang            >= 6.0      see note below
+   llvm-devel      llvm-dev         >= 6.0      see note below
    jansson-devel   libjansson-dev   >= 2.6
    openssl-devel   libssl-dev       >= 1.0.2
    cmake           cmake            >= 3.10
    flex            flex             >= 2.5.37
    bison           bison            >= 3.0.4
    make            make             >= 3.82
- ================ ================ =========== ======
+ ================ ================ =========== ================
 
 .. note::
 
