@@ -220,7 +220,7 @@ class ChromeTracingAdvice:
 
     @staticmethod
     def __flush_log(s):
-        if ChromeTracingAdvice.logger == None:
+        if ChromeTracingAdvice.logger is None:
             ChromeTracingAdvice.logger = logging.getLogger("perfflow")
             ChromeTracingAdvice.logger.setLevel(logging.DEBUG)
             ChromeTracingAdvice.logger.propagate = False

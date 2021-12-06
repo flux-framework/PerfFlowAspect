@@ -1,8 +1,6 @@
 #! /usr/bin/python3
 
 import time
-import logging
-import threading
 import perfflowaspect
 import perfflowaspect.aspect
 
