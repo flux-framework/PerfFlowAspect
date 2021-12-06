@@ -11,10 +11,17 @@ Quick Start Guide
 PerfFlowAspect is based on Aspect-Oriented Programming (AOP). Some common terms
 used in AOP are described below.
 
-- Pointcuts
-- Join Points
-- Advice
-- Weaver
+- **Join Points**: A point in a program's execution in which the behavior can
+  be modified by AOP. The candidate points are method invocations.
+- **Pointcuts**: An expression used to match join points (creating a set of
+  join points), allows you to specify to AOP where and when in the code to make
+  modifications.
+- **Advice**: Defines the additional behavior or action that will be inserted into
+  the code, specifically at each join point matched by the pointcut.
+- **Aspect**: The collection of the pointcut expression and the advice.
+- **Weaver**: Applies aspects into the code, modifying code at join points with
+  matching pointcuts and associated advices. The combining of aspects and code
+  enables execution of cross-cutting concerns.
 
 PerfFlowAspect relies on annotated functions in the user's source code and can
 invoke specific performance-analysis actions, a piece of tracing code, etc. on
