@@ -49,8 +49,8 @@ Building PerfFlowAspect WeavePass LLVM Plugin
 
 PerfFlowAspect WeavePass requires Clang and LLVM development packages as well
 as a jansson-devel package for JSON manipulation. It also depends on
-`src/c/parser/libperfflow_parser.so` so it additionally requires the
-dependencies of our annotation parser code: i.e., `flex` and `bison`.
+``src/c/parser/libperfflow_parser.so`` so it additionally requires the
+dependencies of our annotation parser code: i.e., ``flex`` and ``bison``.
 
 Note that LLVM_DIR must be set to the corresponding LLVM cmake directory which
 may differ across different Linux distributions.
