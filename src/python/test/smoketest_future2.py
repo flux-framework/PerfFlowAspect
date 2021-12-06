@@ -9,6 +9,7 @@ from time import sleep
 
 pool = ThreadPoolExecutor(4)
 
+
 # Introduce a dummy function work around a lack of support
 # of PerfflowAspect prototype
 @perfflowaspect.aspect.critical_path(pointcut="before_async", scope="foo")
