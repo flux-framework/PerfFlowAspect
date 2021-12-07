@@ -214,7 +214,7 @@ class ChromeTracingAdvice:
 
     @classmethod
     def __create_event_from_func(cls, func):
-        return cls.__create_event(func.__name__, func.__module__)
+        return cls.__create_event(func.__qualname__, func.__module__)
 
     @staticmethod
     def __flush_log(s):
