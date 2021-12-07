@@ -64,7 +64,8 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip pytest setuptools
-          python src/python/setup.py install
+          cd src/python
+          python setup.py install
           python -m pip list
 
       - name: Run Python Smoke Tests
