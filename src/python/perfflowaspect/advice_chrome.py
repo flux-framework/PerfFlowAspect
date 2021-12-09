@@ -38,6 +38,8 @@ def cannonicalize_perfflow_options():
         perfflow_options["log-filename-include"] = "hostname,pid"
     if perfflow_options.get("log-dir") is None:
         perfflow_options["log-dir"] = "./"
+    if perfflow_options.get("log-enable") is None:
+        perfflow_options["log-enable"] = "True"
 
 
 def parse_perfflow_options():
@@ -129,6 +131,8 @@ class ChromeTracingAdvice:
     #             pid: process id
     # To change the directory in which the log file is created
     #     PERFFLOW_OPTIONS="log-dir=DIR"
+    # To disable logging (default: log-enable=True)
+    #     PERFFLOW_OPTIONS="log-enable=False"
     # You can combine the options in colon (:) delimited format
 
     parse_perfflow_options()
@@ -156,6 +160,14 @@ class ChromeTracingAdvice:
     if log_dir is not None:
         os.makedirs(log_dir, exist_ok=True)
         fn = os.path.join(log_dir, fn)
+
+    log_enable = perfflow_options["log-enable"]
+    if log_enable in ["True", "true", "TRUE"]:
+        enable_logging = True
+    elif log_enable in ["False", "false", "FALSE"]:
+        enable_logging = False
+    else:
+        raise ValueError("perfflow invalid option: log-enable=[True|False]")
 
     logger = None
 
