@@ -120,7 +120,7 @@ class ChromeTracingAdvice:
     # PERFFLOW_OPTIONS envVar
     # To specify the name of this workflow component (default: name=generic)
     #     PERFFLOW_OPTIONS="name=foo"
-    # To constomize output filename (default: log-filename-include=hostname,pid)
+    # To customize output filename (default: log-filename-include=hostname,pid)
     #     PERFFLOW_OPTIONS="log-filename-include=<metadata1, metadata2, ...>
     #         Supported metadata:
     #             name: workflow component name
