@@ -33,7 +33,7 @@ Python language. The file ``src/python/perfflowaspect/aspect.py`` contains a
 key annotating decorator. Users can use the
 ``@perfflowaspect.aspect.critical_path()`` decorator to annotate their
 functions that are likely to be on the critical path of the workflow's
-end-to-end performance. These annotated functions then serve as the Join points
+end-to-end performance. These annotated functions then serve as the join points
 that can be weaved with PerfFlowAspect to be acted upon.
 
 The following shows a simple snippet that annotates two functions.
@@ -59,4 +59,9 @@ The following shows a simple snippet that annotates two functions.
 Once annotated, running this python code will produce a performance trace data
 file named ``perfflow.<hostname>.<pid>``. It uses Chrome Tracing Format in JSON
 so that it can be loaded into Google Chrome Tracing to render the critical path
-events on the global tracing timeline, using the Perfetto visualization tool.
+events on the global tracing timeline, using the Perfetto visualization tool. 
+Details on these can be found at the links below:
+
+Chrome Tracing Tool: https://www.chromium.org/developers/how-tos/trace-event-profiling-tool/
+
+Perfetto Visualizer: https://chrome.google.com/webstore/detail/perfetto-ui/lfmkphfpdbjijhpomgecfikhfohaoine 
