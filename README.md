@@ -115,3 +115,9 @@ and `after_async`).
 after the execution of the annotated function whereas
 `pointcut=before` or `pointcut=after` will only advise
 either corresponding point of function execution.
+
+### License
+
+SPDX-License-Identifier: LGPL-3.0
+
+LLNL-CODE-764420
