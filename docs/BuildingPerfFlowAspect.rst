@@ -8,6 +8,16 @@
 Build Instructions
 ##################
 
+Python Build
+------------
+
+The minimum Python version needed is 3.6.
+
+.. code:: bash
+
+   python src/python/setup.py install
+
+
 C Build
 -------
 
@@ -63,11 +73,3 @@ may differ across different Linux distributions.
    LLVM_DIR=/usr/lib/llvm-6.0/lib/cmake/llvm cmake ..
    make
 
-Python Build
-------------
-
-The minimum Python version needed is 3.6.
-
-.. code:: bash
-
-   python src/python/setup.py install
