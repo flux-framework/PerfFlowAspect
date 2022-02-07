@@ -116,7 +116,7 @@ after the execution of the annotated function whereas
 either corresponding point of function execution.
 
 
-#### License
+### License
 
 SPDX-License-Identifier: LGPL-3.0
 
