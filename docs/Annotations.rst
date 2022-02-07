@@ -119,5 +119,3 @@ with the help of futures and thread pools:
         filename = os.path.basename(__file__)                                          
         main()                      
 
-
-(TBD: Add more detail about each of the pointcuts and default values, etc.)
