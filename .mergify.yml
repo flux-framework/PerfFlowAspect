@@ -3,16 +3,20 @@ queue_rules:
     conditions:
       # conditions for a PR to get merged (i.e., out of the queue)
       - base=main
-      - status-success="check c bindings"
-      - status-success="check python bindings"
+      - status-success="build c"
+      - status-success="build-python (ubuntu-latest, 3.6)"
+      - status-success="build-python (ubuntu-latest, 3.7)"
+      - status-success="build-python (ubuntu-latest, 3.8)"
 
 pull_request_rules:
   - name: rebase and merge when passing all checks
     conditions:
       # conditions for a PR to get queued
       - base=main
-      - status-success="check c bindings"
-      - status-success="check python bindings"
+      - status-success="build c"
+      - status-success="build-python (ubuntu-latest, 3.6)"
+      - status-success="build-python (ubuntu-latest, 3.7)"
+      - status-success="build-python (ubuntu-latest, 3.8)"
       - label=status-merge-when-passing
       - label!=status-work-in-progress
       - "approved-reviews-by=@flux-framework/pfa"
