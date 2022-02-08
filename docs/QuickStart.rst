@@ -55,12 +55,12 @@ The following shows a simple snippet that annotates two functions.
     def main():
         foo()
 
-
 Once annotated, running this python code will produce a performance trace data
 file named ``perfflow.<hostname>.<pid>``. It uses Chrome Tracing Format in JSON
 so that it can be loaded into Google Chrome Tracing to render the critical path
-events on the global tracing timeline, using the Perfetto visualization tool. 
+events on the global tracing timeline, using the Perfetto visualization tool.
 Details on these can be found at the links below:
 
-- **Chrome Tracing Tool:** https://www.chromium.org/developers/how-tos/trace-event-profiling-tool/
-- **Perfetto Visualizer:** https://chrome.google.com/webstore/detail/perfetto-ui/lfmkphfpdbjijhpomgecfikhfohaoine 
+- **Chrome Tracing Tool:**
+https://www.chromium.org/developers/how-tos/trace-event-profiling-tool/
+- **Perfetto Visualizer:** https://perfetto.dev/
