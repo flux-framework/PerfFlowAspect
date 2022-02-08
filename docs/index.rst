@@ -30,17 +30,17 @@ single application running at scale), there has been a lack of studies and
 tools to understand the effectiveness and efficiency of this emerging workflow
 paradigm.
 
-Enter PerfFlowAspect. It is a simple Aspect-Oriented Programming-based tool
-that can cast a cross-cutting performance-analysis concern or aspect across a
-heterogeneous set of components (e.g, combining Maestro and custom workflow
-pipeline with Flux along with microservices running on on-premises kubernetes
-machines) used to create a modern-day composite science workflow.
+Enter PerfFlowAspect. It is a simple Aspect-Oriented Programming-based (AOP)
+tool that can cast a cross-cutting performance-analysis concern or aspect
+across a heterogeneous set of components (e.g, combining Maestro and a custom
+workflow pipeline with Flux along with microservices running on on-premises
+Kubernetes machines) used to create a modern-day composite science workflow.
 
-PerfFlowAspect will provide multiple language support most relevant for HPC
-workflows including Python. It is designed specifically to allow researchers to
-weave the performance aspect into critical points of execution across many
-workflow components without having to lose the modularity and uniformity as to
-how performance is measured and controlled.
+PerfFlowAspect will provide multi-language support, particularly for those most
+relevant in HPC workflows including Python. It is designed specifically to
+allow researchers to weave the performance aspect into critical points of
+execution across many workflow components without having to lose the modularity
+and uniformity as to how performance is measured and controlled.
 
 *********************************
  PerfFlowAspect Project Resources
@@ -63,7 +63,7 @@ https://github.com/flux-framework/PerfFlowAspect/issues
 -  Stephanie Brink
 -  James Corbett
 -  Stephen Herbein (NVIDIA)
--  Francesco Di Natale
+-  Francesco Di Natale (NVIDIA)
 -  Tapasya Patki
 
 *****************************
