@@ -39,6 +39,7 @@ def cannonicalize_perfflow_options():
     if perfflow_options.get("log-dir") is None:
         perfflow_options["log-dir"] = "./"
 
+
 def parse_perfflow_options():
     options_list = []
     options = os.getenv("PERFFLOW_OPTIONS")
@@ -52,6 +53,7 @@ def parse_perfflow_options():
             print("Ill-formed option: {}".format(opt), file=sys.stderr)
     cannonicalize_perfflow_options()
 
+
 def get_foreign_wm():
     foreign_job_id = os.getenv("SLURM_JOB_ID")
     if foreign_job_id is not None:
@@ -60,6 +62,7 @@ def get_foreign_wm():
     if foreign_job_id is not None:
         return "lsf"
     return ""
+
 
 def get_uniq_id_from_foreign_wm():
     uniq_id = None
@@ -75,6 +78,7 @@ def get_uniq_id_from_foreign_wm():
         if job_id is not None and step_id is not None:
             uniq_id = job_id + "." + step_id
     return uniq_id
+
 
 def get_perfflow_instance_path():
     instance_id = ""
@@ -104,13 +108,14 @@ def get_perfflow_instance_path():
 
     return instance_path
 
+
 def set_perfflow_instance_path(path):
     os.environ["PERFFLOW_INSTANCE_PATH"] = path
 
 
 @perfflowaspect
 class ChromeTracingAdvice:
-    """ Chrome Tracing Advice Class: define pointcuts for this advice """
+    """Chrome Tracing Advice Class: define pointcuts for this advice"""
 
     # PERFFLOW_OPTIONS envVar
     # To specify the name of this workflow component (default: name=generic)
@@ -131,7 +136,7 @@ class ChromeTracingAdvice:
     set_perfflow_instance_path(inst_path)
 
     fn = "perfflow"
-    for inc in perfflow_options['log-filename-include'].split(","):
+    for inc in perfflow_options["log-filename-include"].split(","):
         if inc == "name":
             fn += "." + perfflow_options["name"]
         elif inc == "instance-path":
@@ -141,7 +146,9 @@ class ChromeTracingAdvice:
         elif inc == "pid":
             fn += "." + str(os.getpid())
         else:
-            print("perfflow warning: unknown option param={}".format(inc), file=sys.stderr)
+            print(
+                "perfflow warning: unknown option param={}".format(inc), file=sys.stderr
+            )
 
     fn += ".pfw"
 
@@ -167,7 +174,7 @@ class ChromeTracingAdvice:
 
     @classmethod
     def create_sync_event(cls, name, cat, ph):
-        if ph not in ['B', 'E']:
+        if ph not in ["B", "E"]:
             raise ValueError("Invalid Phase: {}".format(ph))
         event = cls.__create_event(name, cat)
         event["ph"] = ph
@@ -175,7 +182,7 @@ class ChromeTracingAdvice:
 
     @classmethod
     def create_async_event(cls, name, cat, ph, scope=None, id=None):
-        if ph not in ['b', 'n', 'e', 's', 't', 'f']:
+        if ph not in ["b", "n", "e", "s", "t", "f"]:
             raise ValueError("Invalid Phase: {}".format(ph))
         event = cls.__create_event(name, cat)
         event["ph"] = ph
@@ -185,10 +192,8 @@ class ChromeTracingAdvice:
             event["scope"] = scope
         return event
 
-    sync_pointcut_phase_map = {
-        "before": "B",
-        "after": "E"
-    }
+    sync_pointcut_phase_map = {"before": "B", "after": "E"}
+
     @classmethod
     def sync_event(cls, pointcut, *args, **kwargs):
         try:
@@ -198,11 +203,8 @@ class ChromeTracingAdvice:
         event = cls.create_sync_event(*args, phase, **kwargs)
         cls.__flush_log(json.dumps(event) + ",")
 
-    async_pointcut_phase_map = {
-        "before": "b",
-        "instant": "n",
-        "after": "e"
-    }
+    async_pointcut_phase_map = {"before": "b", "instant": "n", "after": "e"}
+
     @classmethod
     def async_event(cls, pointcut, *args, **kwargs):
         try:
@@ -218,7 +220,7 @@ class ChromeTracingAdvice:
 
     @staticmethod
     def __flush_log(s):
-        if ChromeTracingAdvice.logger == None:
+        if ChromeTracingAdvice.logger is None:
             ChromeTracingAdvice.logger = logging.getLogger("perfflow")
             ChromeTracingAdvice.logger.setLevel(logging.DEBUG)
             ChromeTracingAdvice.logger.propagate = False
@@ -293,7 +295,6 @@ class ChromeTracingAdvice:
         def after_async_(func):
             @functools.wraps(func)
             def trace(*args, **kwargs):
-                rc = func(*args, **kwargs)
                 global after_counter, after_counter_mutex
                 after_counter_mutex.acquire()
                 event = ChromeTracingAdvice.__create_event_from_func(func)

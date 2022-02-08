@@ -32,13 +32,16 @@ def critical_path(pointcut="around", scope=""):
 
     return decorator_critical_path
 
+
 def sync_event(pointcut, name, category):
     clobj = AdviceDispatcher.get_advice(advice_kind)
     clobj.sync_event(pointcut, name, category)
 
+
 def async_event(pointcut, name, category, scope=None, id=None):
     clobj = AdviceDispatcher.get_advice(advice_kind)
     clobj.async_event(pointcut, name, category, scope=scope, id=id)
+
 
 #
 # vi: ts=4 sw=4 expandtab
