@@ -8,14 +8,25 @@
 Build Instructions
 ##################
 
-Python Build
-------------
+Python Install
+--------------
 
-The minimum Python version needed is 3.6.
+The minimum Python version needed is 3.6. You can get PerfFlowAspect from its
+GitHub repository using this command:
 
 .. code:: bash
 
-   python src/python/setup.py install
+   $ git clone https://github.com/flux-framework/PerfFlowAspect
+
+This will create a directory called ``PerfFlowAspect``.
+
+To use PerfFlowAspect, you will need to update your ``PYTHONPATH`` with the
+path to the PerfFlowAspect python directory:
+
+.. code:: bash
+
+   $ cd src/python
+   $ export PYTHONPATH=$PWD:$PYTHONPATH
 
 
 C Build
@@ -48,10 +59,10 @@ Building PerfFlowAspect Annotation Parser and Runtime
 
 .. code:: bash
 
-   cd src/c/parser
-   make
-   cd ../runtime
-   make
+   $ cd src/c/parser
+   $ make
+   $ cd ../runtime
+   $ make
 
 
 Building PerfFlowAspect WeavePass LLVM Plugin
@@ -67,9 +78,9 @@ which may differ across different Linux distributions.
 
 .. code:: bash
 
-   cd ../weaver
-   mkdir build
-   cd build
-   LLVM_DIR=/usr/lib/llvm-6.0/lib/cmake/llvm cmake ..
-   make
+   $ cd ../weaver
+   $ mkdir build
+   $ cd build
+   $ LLVM_DIR=/usr/lib/llvm-6.0/lib/cmake/llvm cmake ..
+   $ make
 
