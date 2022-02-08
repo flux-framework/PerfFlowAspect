@@ -2,8 +2,6 @@
 
 import os.path
 import time
-import logging
-import threading
 from perfflowaspect import aspect
 
 from concurrent.futures import ThreadPoolExecutor

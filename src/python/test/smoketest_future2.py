@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 
 import time
-import logging
-import threading
 import perfflowaspect
 import perfflowaspect.aspect
 
@@ -10,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from time import sleep
 
 pool = ThreadPoolExecutor(4)
+
 
 # Introduce a dummy function work around a lack of support
 # of PerfflowAspect prototype

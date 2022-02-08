@@ -4,6 +4,7 @@ communicate with the developers.
 
 [![Build Status](https://github.com/flux-framework/PerfFlowAspect/actions/workflows/github-actions.yml/badge.svg)](https://github.com/flux-framework/PerfFlowAspect/actions)
 [![Read the Docs](http://readthedocs.org/projects/PerfFlowAspect/badge/?version=latest)](http://perfflowaspect.readthedocs.io)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ## PerfFlowAspect: a tool to analyze cross-cutting performance concerns of composite scientific workflows.
 
