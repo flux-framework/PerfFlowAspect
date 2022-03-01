@@ -139,7 +139,7 @@ PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest.py &&
 
 test_expect_success 'PERFFLOW_OPTIONS: disable logging' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest.py &&
-    ! -f perfflow.$(hostname).[0-9]*.pfw
+    ! test -f perfflow.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: enable logging' '
@@ -148,19 +148,30 @@ test_expect_success 'PERFFLOW_OPTIONS: enable logging' '
     rm perfflow.$(hostname).[0-9]*.pfw
 '
 
-test_expect_success 'PERFFLOW_OPTIONS: disable logging smoktest_future' '
+test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_future' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest_future.py &&
-    ! -f perfflow.$(hostname).[0-9]*.pfw
+    ! test -f perfflow.$(hostname).[0-9]*.pfw
 '
 
-test_expect_success 'PERFFLOW_OPTIONS: disable logging smoktest_future2' '
+test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_future2' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest_future2.py &&
-    ! -f perfflow.$(hostname).[0-9]*.pfw
+    ! test -f perfflow.$(hostname).[0-9]*.pfw
 '
 
-test_expect_success 'PERFFLOW_OPTIONS: disable logging smoktest_future_direct' '
+test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_direct' '
+    PERFFLOW_OPTIONS="log-enable=False" ../smoketest_direct.py &&
+    ! test -f perfflow.$(hostname).[0-9]*.pfw
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then
+        rm perfflow.$(hostname).[0-9]*.pfw
+    fi
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_future_direct' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest_future_direct.py &&
-    ! -f perfflow.$(hostname).[0-9]*.pfw
+    ! test -f perfflow.$(hostname).[0-9]*.pfw
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then
+        rm perfflow.$(hostname).[0-9]*.pfw
+    fi
 '
 
 test_done
