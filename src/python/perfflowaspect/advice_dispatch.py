@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: LGPL-3.0
 ##############################################################
 
-import sys
 from .advice_chrome import ChromeTracingAdvice
 
 

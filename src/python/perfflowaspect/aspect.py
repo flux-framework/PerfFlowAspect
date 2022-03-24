@@ -10,7 +10,6 @@
 
 import sys
 import functools
-import inspect
 from .advice_dispatch import AdviceDispatcher
 from .advice_chrome import ChromeTracingAdvice
 
