@@ -10,10 +10,29 @@
 
 import sys
 import functools
+import inspect
 from .advice_dispatch import AdviceDispatcher
+from .advice_chrome import ChromeTracingAdvice
 
 # TODO: Use TOML configuration to support multiple advice
 advice_kind = "ChromeTracing"
+
+
+def _disable(func):
+    "Do nothing decorator (e.g., disables func)"
+
+    def do_nothing_func(*args, **kargs):
+        print(
+            "perfflow warning: logging has been disabled for {}".format(func.__name__),
+            file=sys.stderr,
+        )
+        pass
+
+    print(
+        "perfflow warning: logging has been disabled for {}".format(func),
+        file=sys.stderr,
+    )
+    return do_nothing_func
 
 
 def critical_path(pointcut="around", scope=""):
@@ -30,17 +49,23 @@ def critical_path(pointcut="around", scope=""):
 
         return wrapper_critial_path
 
-    return decorator_critical_path
+    return decorator_critical_path if ChromeTracingAdvice.enable_logging else _disable
 
 
 def sync_event(pointcut, name, category):
-    clobj = AdviceDispatcher.get_advice(advice_kind)
-    clobj.sync_event(pointcut, name, category)
+    if ChromeTracingAdvice.enable_logging:
+        clobj = AdviceDispatcher.get_advice(advice_kind)
+        clobj.sync_event(pointcut, name, category)
+    else:
+        return _disable
 
 
 def async_event(pointcut, name, category, scope=None, id=None):
-    clobj = AdviceDispatcher.get_advice(advice_kind)
-    clobj.async_event(pointcut, name, category, scope=scope, id=id)
+    if ChromeTracingAdvice.enable_logging:
+        clobj = AdviceDispatcher.get_advice(advice_kind)
+        clobj.async_event(pointcut, name, category, scope=scope, id=id)
+    else:
+        return _disable
 
 
 #

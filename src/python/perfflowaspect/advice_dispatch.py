@@ -12,19 +12,6 @@ import sys
 from .advice_chrome import ChromeTracingAdvice
 
 
-def _disable(func):
-    "Do nothing decorator (e.g., disables func)"
-
-    def do_nothing_func(*args, **kargs):
-        print(
-            "perfflow warning: logging has been disabled for {}".format(func.__name__),
-            file=sys.stderr,
-        )
-        pass
-
-    return do_nothing_func
-
-
 class AdviceDispatcher:
 
     # Note that you need to extend advice_dict When you add
@@ -34,27 +21,17 @@ class AdviceDispatcher:
 
     def _dispatch(clobj, pointcut, scope):
         if pointcut == "around":
-            return clobj.around if ChromeTracingAdvice.enable_logging else _disable
+            return clobj.around
         elif pointcut == "before":
-            return clobj.before if ChromeTracingAdvice.enable_logging else _disable
+            return clobj.before
         elif pointcut == "after":
-            return clobj.after if ChromeTracingAdvice.enable_logging else _disable
+            return clobj.after
         elif pointcut == "around_async":
-            return (
-                clobj.around_async if ChromeTracingAdvice.enable_logging else _disable
-            )
+            return clobj.around_async
         elif pointcut == "before_async":
-            return (
-                clobj.before_async(scope)
-                if ChromeTracingAdvice.enable_logging
-                else _disable
-            )
+            return clobj.before_async(scope)
         elif pointcut == "after_async":
-            return (
-                clobj.after_async(scope)
-                if ChromeTracingAdvice.enable_logging
-                else _disable
-            )
+            return clobj.after_async(scope)
         raise KeyError("unknown pointcut", pointcut)
 
     def get(key, pointcut, scope):
