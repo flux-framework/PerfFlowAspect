@@ -137,12 +137,12 @@ PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest.py &&
     rm perfflow.{fffffff.444444.123456}.pfw
 '
 
-test_expect_success 'PERFFLOW_OPTIONS: disable logging' '
+test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest.py &&
     ! test -f perfflow.$(hostname).[0-9]*.pfw
 '
 
-test_expect_success 'PERFFLOW_OPTIONS: enable logging' '
+test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest' '
     PERFFLOW_OPTIONS="log-enable=True" ../smoketest.py &&
     test -f perfflow.$(hostname).[0-9]*.pfw &&
     rm perfflow.$(hostname).[0-9]*.pfw
