@@ -21,16 +21,8 @@ def _disable(func):
     "Do nothing decorator (e.g., disables func)"
 
     def do_nothing_func(*args, **kargs):
-        print(
-            "perfflow warning: logging has been disabled for {}".format(func.__name__),
-            file=sys.stderr,
-        )
         pass
 
-    print(
-        "perfflow warning: logging has been disabled for {}".format(func),
-        file=sys.stderr,
-    )
     return do_nothing_func
 
 
