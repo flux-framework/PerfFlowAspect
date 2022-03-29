@@ -162,6 +162,9 @@ int advice_chrome_tracing_t::cannonicalize_perfflow_options ()
     if (m_perfflow_options.find ("log-dir") == m_perfflow_options.end ()) {
         m_perfflow_options["log-dir"] = "./";
     }
+    if (m_perfflow_options.find ("log-enable") == m_perfflow_options.end ()) {
+        m_perfflow_options["log-enable"] = "True";
+    }
     return 0;
 }
 
@@ -305,6 +308,8 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     //             pid: process id
     // To change the directory in which the log file is created
     //     PERFFLOW_OPTIONS="log-dir=DIR"
+    // To disable logging (default: log-enable=True)
+    //     PERFFLOW_OPTIONS="log-enable=False"
     // You can combine the options in colon (:) delimited format
 
     if (parse_perfflow_options () < 0)
@@ -352,6 +357,19 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
                                  std::system_category (),
                                  "log-dir creation failed");
     m_fn = log_dir + "/" + m_fn;
+
+    std::string log_enable = m_perfflow_options["log-enable"];
+    if (log_enable == "True") {
+        m_enable_logging = 1;
+    }
+    else if (log_enable == "False" || log_enable == "false" || log_enable == "FALSE") {
+        m_enable_logging = 0;
+    }
+    else {
+        throw std::system_error (errno,
+                                 std::system_category (),
+                                 "invalid log-enable value");
+    }
 
     m_before_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
     m_after_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
