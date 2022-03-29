@@ -140,4 +140,26 @@ PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
     rm perfflow.{fffffff.444444.123456}.pfw
 '
 
+test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest' '
+    PERFFLOW_OPTIONS="log-enable=False" ../smoketest &&
+    ! test -f perfflow.$(hostname).[0-9]*.pfw
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then
+        rm perfflow.$(hostname).[0-9]*.pfw
+    fi
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest' '
+    PERFFLOW_OPTIONS="log-enable=True" ../smoketest &&
+    test -f perfflow.$(hostname).[0-9]*.pfw &&
+    rm perfflow.$(hostname).[0-9]*.pfw
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest2' '
+    PERFFLOW_OPTIONS="log-enable=False" ../smoketest2 &&
+    ! test -f perfflow.$(hostname).[0-9]*.pfw
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then
+        rm perfflow.$(hostname).[0-9]*.pfw
+    fi
+'
+
 test_done
