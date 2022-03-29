@@ -403,46 +403,51 @@ int advice_chrome_tracing_t::with_flow (const char *module,
     char *json_str;
     json_t *event, *ph;
 
-    if ( (rc = create_event (&event, module, function)) < 0)
-        return rc;
-    if (std::string ("in") == flow) {
-        if ( (rc = encode_event (event, "f", nullptr, "e", -1)) < 0) {
+    if (m_enable_logging) {
+        if ( (rc = create_event (&event, module, function)) < 0)
+            return rc;
+        if (std::string ("in") == flow) {
+            if ( (rc = encode_event (event, "f", nullptr, "e", -1)) < 0) {
+                json_decref (event);
+                return rc;
+            }
+        } else if (std::string ("out") == flow) {
+            if ( (rc = encode_event (event, "s", nullptr, "e", -1)) < 0) {
+                json_decref (event);
+                return rc;
+            }
+        } else {
+            json_decref (event);
+            errno = EINVAL;
+            return -1;
+        }
+        json_t *id_o;
+        if (!(id_o = json_integer (static_cast<json_int_t> (id)))) {
+            json_decref (event);
+            errno = ENOMEM;
+            return -1;
+        }
+        if (json_object_set_new (event, "id", id_o) < 0) {
+            json_decref (event);
+            errno = ENOMEM;
+            return -1;
+        }
+        if (!(json_str = json_dumps (event, JSON_INDENT(0)))) {
+            json_decref (event);
+            errno = ENOMEM;
+            return -1;
+        }
+        if ( (rc = write_to_sstream (json_str)) < 0) {
             json_decref (event);
             return rc;
         }
-    } else if (std::string ("out") == flow) {
-        if ( (rc = encode_event (event, "s", nullptr, "e", -1)) < 0) {
-            json_decref (event);
-            return rc;
-        }
-    } else {
+        free (json_str);
         json_decref (event);
-        errno = EINVAL;
-        return -1;
+        return flush_if (FLUSH_SIZE);
     }
-    json_t *id_o;
-    if (!(id_o = json_integer (static_cast<json_int_t> (id)))) {
-        json_decref (event);
-        errno = ENOMEM;
-        return -1;
+    else {
+        return 0;
     }
-    if (json_object_set_new (event, "id", id_o) < 0) {
-        json_decref (event);
-        errno = ENOMEM;
-        return -1;
-    }
-    if (!(json_str = json_dumps (event, JSON_INDENT(0)))) {
-        json_decref (event);
-        errno = ENOMEM;
-        return -1;
-    }
-    if ( (rc = write_to_sstream (json_str)) < 0) {
-        json_decref (event);
-        return rc;
-    }
-    free (json_str);
-    json_decref (event);
-    return flush_if (FLUSH_SIZE);
 }
 
 int advice_chrome_tracing_t::before (const char *module,
@@ -453,35 +458,40 @@ int advice_chrome_tracing_t::before (const char *module,
     char *json_str;
     json_t *event, *ph;
 
-    if ( (rc = create_event (&event, module, function)) < 0)
-        return rc;
-    if ( (rc = encode_event (event, "B", nullptr, nullptr, -1)) < 0) {
-        json_decref (event);
-        return rc;
-    }
-    if (!(json_str = json_dumps (event, JSON_INDENT(0)))) {
-        json_decref (event);
-        errno = ENOMEM;
-        return -1;
-    }
-    if ( (rc = write_to_sstream (json_str)) < 0) {
-        json_decref (event);
-        return rc;
-    }
+    if (m_enable_logging) {
+        if ( (rc = create_event (&event, module, function)) < 0)
+            return rc;
+        if ( (rc = encode_event (event, "B", nullptr, nullptr, -1)) < 0) {
+            json_decref (event);
+            return rc;
+        }
+        if (!(json_str = json_dumps (event, JSON_INDENT(0)))) {
+            json_decref (event);
+            errno = ENOMEM;
+            return -1;
+        }
+        if ( (rc = write_to_sstream (json_str)) < 0) {
+            json_decref (event);
+            return rc;
+        }
 
-    free (json_str);
-    json_decref (event);
-    if ( (rc = flush_if (FLUSH_SIZE)) < 0)
+        free (json_str);
+        json_decref (event);
+        if ( (rc = flush_if (FLUSH_SIZE)) < 0)
+            return rc;
+        if (std::string ("NA") != flow) {
+        const char *eff_flow = flow;
+            if (std::string ("inout") == flow)
+                eff_flow = "in";
+        else if (std::string ("outin") == flow)
+                eff_flow = "out";
+            rc = with_flow ("flow", "flow", eff_flow, 100);
+        }
         return rc;
-    if (std::string ("NA") != flow) {
-	const char *eff_flow = flow;
-        if (std::string ("inout") == flow)
-            eff_flow = "in";
-	else if (std::string ("outin") == flow)
-            eff_flow = "out";
-        rc = with_flow ("flow", "flow", eff_flow, 100);
     }
-    return rc;
+    else {
+        return 0;
+    }
 }
 
 int advice_chrome_tracing_t::after (const char *module,
@@ -492,33 +502,38 @@ int advice_chrome_tracing_t::after (const char *module,
     char *json_str;
     json_t *event, *ph;
 
-    if (std::string ("NA") != flow) {
-        const char *eff_flow = flow;
-        if (std::string ("inout") == flow)
-            eff_flow = "out";
-        else if (std::string ("outin") == flow)
-            eff_flow = "in";
-        if ( (rc = with_flow ("flow", "flow", eff_flow, 100)) < 0)
+    if (m_enable_logging) {
+        if (std::string ("NA") != flow) {
+            const char *eff_flow = flow;
+            if (std::string ("inout") == flow)
+                eff_flow = "out";
+            else if (std::string ("outin") == flow)
+                eff_flow = "in";
+            if ( (rc = with_flow ("flow", "flow", eff_flow, 100)) < 0)
+                return rc;
+        }
+        if ( (rc = create_event (&event, module, function)) < 0)
             return rc;
-    }
-    if ( (rc = create_event (&event, module, function)) < 0)
-        return rc;
-    if ( (rc = encode_event (event, "E", nullptr, nullptr, -1)) < 0) {
+        if ( (rc = encode_event (event, "E", nullptr, nullptr, -1)) < 0) {
+            json_decref (event);
+            return rc;
+        }
+        if (!(json_str = json_dumps (event, JSON_INDENT(0)))) {
+            json_decref (event);
+            errno = ENOMEM;
+            return -1;
+        }
+        if ( (rc = write_to_sstream (json_str)) < 0) {
+            json_decref (event);
+            return rc;
+        }
+        free (json_str);
         json_decref (event);
-        return rc;
+        return flush_if (FLUSH_SIZE);
     }
-    if (!(json_str = json_dumps (event, JSON_INDENT(0)))) {
-        json_decref (event);
-        errno = ENOMEM;
-        return -1;
+    else {
+        return 0;
     }
-    if ( (rc = write_to_sstream (json_str)) < 0) {
-        json_decref (event);
-        return rc;
-    }
-    free (json_str);
-    json_decref (event);
-    return flush_if (FLUSH_SIZE);
 }
 
 int advice_chrome_tracing_t::before_async (const char *module,
@@ -530,44 +545,49 @@ int advice_chrome_tracing_t::before_async (const char *module,
     char *json_str;
     json_t *event, *ph, *sc;
 
-    if ( (rc = create_event (&event, module, function)) < 0)
-        return rc;
-    if ( (rc = pthread_mutex_lock (&m_before_counter_mutex)) < 0) {
+    if (m_enable_logging) {
+        if ( (rc = create_event (&event, module, function)) < 0)
+            return rc;
+        if ( (rc = pthread_mutex_lock (&m_before_counter_mutex)) < 0) {
+            json_decref (event);
+            return rc;
+        }
+        if ( (rc = encode_event (event, "b", scope, nullptr,
+                                 m_before_counter)) < 0) {
+            json_decref (event);
+            return rc;
+        }
+        m_before_counter++;
+        if ( (rc = pthread_mutex_unlock (&m_before_counter_mutex)) < 0) {
+            json_decref (event);
+            return rc;
+        }
+        if (!(json_str = json_dumps (event, JSON_INDENT(0)))) {
+            json_decref (event);
+            errno = ENOMEM;
+            return -1;
+        }
+        if ( (rc = write_to_sstream (json_str)) < 0) {
+            json_decref (event);
+            return rc;
+        }
+        free (json_str);
         json_decref (event);
+        if ( (rc = flush_if (FLUSH_SIZE)) < 0)
+            return rc;
+        if (std::string ("NA") != flow) {
+        const char *eff_flow = flow;
+            if (std::string ("inout") == flow)
+                eff_flow = "in";
+            else if (std::string ("outin") == flow)
+                eff_flow = "out";
+            rc = with_flow ("flow", "flow", flow, 100);
+        }
         return rc;
     }
-    if ( (rc = encode_event (event, "b", scope, nullptr,
-                             m_before_counter)) < 0) {
-        json_decref (event);
-        return rc;
+    else {
+        return 0;
     }
-    m_before_counter++;
-    if ( (rc = pthread_mutex_unlock (&m_before_counter_mutex)) < 0) {
-        json_decref (event);
-        return rc;
-    }
-    if (!(json_str = json_dumps (event, JSON_INDENT(0)))) {
-        json_decref (event);
-        errno = ENOMEM;
-        return -1;
-    }
-    if ( (rc = write_to_sstream (json_str)) < 0) {
-        json_decref (event);
-        return rc;
-    }
-    free (json_str);
-    json_decref (event);
-    if ( (rc = flush_if (FLUSH_SIZE)) < 0)
-        return rc;
-    if (std::string ("NA") != flow) {
-	const char *eff_flow = flow;
-        if (std::string ("inout") == flow)
-            eff_flow = "in";
-        else if (std::string ("outin") == flow)
-            eff_flow = "out";
-        rc = with_flow ("flow", "flow", flow, 100);
-    }
-    return rc;
 }
 
 int advice_chrome_tracing_t::after_async (const char *module,
@@ -579,43 +599,48 @@ int advice_chrome_tracing_t::after_async (const char *module,
     char *json_str;
     json_t *event, *ph, *sc;
 
-    if (std::string ("NA") != flow) {
-        const char *eff_flow = flow;
-        if (std::string ("inout") == flow)
-            eff_flow = "out";
-        else if (std::string ("outin") == flow)
-            eff_flow = "in";
-        if ( (rc = with_flow ("flow", "flow", eff_flow, 100)) < 0)
+    if (m_enable_logging) {
+        if (std::string ("NA") != flow) {
+            const char *eff_flow = flow;
+            if (std::string ("inout") == flow)
+                eff_flow = "out";
+            else if (std::string ("outin") == flow)
+                eff_flow = "in";
+            if ( (rc = with_flow ("flow", "flow", eff_flow, 100)) < 0)
+                return rc;
+        }
+        if ( (rc = create_event (&event, module, function)) < 0)
             return rc;
-    }
-    if ( (rc = create_event (&event, module, function)) < 0)
-        return rc;
-    if ( (rc = pthread_mutex_lock (&m_after_counter_mutex)) < 0) {
+        if ( (rc = pthread_mutex_lock (&m_after_counter_mutex)) < 0) {
+            json_decref (event);
+            return rc;
+        }
+        if ( (rc = encode_event (event, "e", scope,
+                                 nullptr, m_after_counter)) < 0) {
+            json_decref (event);
+            return rc;
+        }
+        m_after_counter++;
+        if ( (rc = pthread_mutex_unlock (&m_before_counter_mutex)) < 0) {
+            json_decref (event);
+            return rc;
+        }
+        if (!(json_str = json_dumps (event, JSON_INDENT(0)))) {
+            json_decref (event);
+            errno = ENOMEM;
+            return -1;
+        }
+        if ( (rc = write_to_sstream (json_str)) < 0) {
+            json_decref (event);
+            return rc;
+        }
+        free (json_str);
         json_decref (event);
-        return rc;
+        return flush_if (FLUSH_SIZE);
     }
-    if ( (rc = encode_event (event, "e", scope,
-                             nullptr, m_after_counter)) < 0) {
-        json_decref (event);
-        return rc;
+    else {
+        return 0;
     }
-    m_after_counter++;
-    if ( (rc = pthread_mutex_unlock (&m_before_counter_mutex)) < 0) {
-        json_decref (event);
-        return rc;
-    }
-    if (!(json_str = json_dumps (event, JSON_INDENT(0)))) {
-        json_decref (event);
-        errno = ENOMEM;
-        return -1;
-    }
-    if ( (rc = write_to_sstream (json_str)) < 0) {
-        json_decref (event);
-        return rc;
-    }
-    free (json_str);
-    json_decref (event);
-    return flush_if (FLUSH_SIZE);
 }
 
 /*
