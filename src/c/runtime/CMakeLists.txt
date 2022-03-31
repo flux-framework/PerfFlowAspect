@@ -21,3 +21,10 @@ add_library(perfflow_runtime SHARED
 )
 
 target_link_libraries(perfflow_runtime ${perfflow_runtime_deps})
+
+install(TARGETS perfflow_runtime
+        EXPORT perfflow_runtime
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION lib
+)
