@@ -3,15 +3,21 @@ set(SMOKETESTS
     smoketest2
 )
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c++11 -Xclang -load -Xclang ../weaver/build/weave/libWeavePass.so")
 set(perfflow_deps "-L../runtime -lperfflow_runtime -lcrypto")
 
 message(STATUS "Adding CXX unit tests")
 foreach(TEST ${SMOKETESTS})
     message(STATUS " [*] Adding test: ${TEST}")
     add_executable(${TEST} ${TEST}.cpp)
+    set_source_files_properties(${TEST}.cpp COMPILE_FLAGS "-std=c++11 -Xclang -load -Xclang ../weaver/weave/libWeavePass.so -fPIC")
     target_link_libraries(${TEST} ${perfflow_deps})
 endforeach()
 
 install(TARGETS ${SMOKETESTS}
-        DESTINATION tests)
+        DESTINATION test)
+
+install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/t0001-cbinding-basic.t
+        DESTINATION test)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../common/sharness
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/../common)

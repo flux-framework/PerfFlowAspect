@@ -1,13 +1,9 @@
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
-set(CMAKE_CXXFLAGS "${CMAKE_CXXFLAGS} -std=c++11")
-
 set(LEX_FLAGS "--nodefault")
 
 set(YACC_FLAGS "-t --report=none")
-
-#set_target_properties(lex.yy PROPERTIES COMPILE_FLAGS "-Wno-deprecated-register" )
 
 # builds lex.yy.cpp
 flex_target(lexer lex.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.cpp
@@ -27,6 +23,8 @@ set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS} "-Wl,--version-script
 set(perfflow_parser_sources
     perfflow_parser.cpp
 )
+
+set_source_files_properties(${perfflow_parser_sources} PROPERTIES COMPILE_FLAGS -std=c++11)
 
 set_source_files_properties(${FLEX_lexer_OUTPUTS} PROPERTIES COMPILE_FLAGS "-Wno-deprecated-register")
 
