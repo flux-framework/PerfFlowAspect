@@ -6,7 +6,7 @@ jobs:
 
   build-c:
     name: check c bindings
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
       # Checkout PerfFlowAspect repository under $GITHUB_WORKSPACE
@@ -23,7 +23,7 @@ jobs:
           cd src/c
           mkdir build install
           cd build
-          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install"
+          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm-10/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install"
           echo -e ${CMAKE_OPTS}
           cmake ${CMAKE_OPTS} ..
           # build
