@@ -2,8 +2,10 @@
 
 test_description='Test basics of Perfflow Aspect C-binding'
 
-. ../../common/sharness/sharness.sh
-export LD_LIBRARY_PATH=../../runtime
+SHARNESS_DIR=${SHARNESS_DIR:-$(dirname "$(readlink -fm $BASH_SOURCE)")}
+
+. ${SHARNESS_DIR}/sharness.sh
+export LD_LIBRARY_PATH=../../lib
 
 fixup_ctf_file(){
     ifn=$1 &&

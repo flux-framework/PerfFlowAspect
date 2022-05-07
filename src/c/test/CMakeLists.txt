@@ -19,5 +19,5 @@ install(TARGETS ${SMOKETESTS}
 install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/t0001-cbinding-basic.t
         DESTINATION test)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../common/sharness
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/../common)
+install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../common/sharness/sharness.sh
+        DESTINATION test)
