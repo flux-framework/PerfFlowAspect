@@ -13,11 +13,12 @@ foreach(TEST ${SMOKETESTS})
     target_link_libraries(${TEST} ${perfflow_deps})
 endforeach()
 
+configure_file(t0001-cbinding-basic.t.in
+    ${CMAKE_CURRENT_BINARY_DIR}/t0001-cbinding-basic.t
+    @ONLY)
+
 install(TARGETS ${SMOKETESTS}
         DESTINATION test)
 
-install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/t0001-cbinding-basic.t
-        DESTINATION test)
-
-install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../common/sharness/sharness.sh
+install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/t0001-cbinding-basic.t
         DESTINATION test)
