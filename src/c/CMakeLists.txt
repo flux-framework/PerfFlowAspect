@@ -9,6 +9,16 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
                        "out-of-source build in another directory.")
 endif()
 
+# Fail if using Clang < 9.0
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    # require at least Clang 9.0
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
+        message(FATAL_ERROR "Clang++ version must be at least 9.0!")
+    endif()
+else()
+    message(WARNING "Unsupported CXX compiler: please use Clang >= 9.0")
+endif()
+
 # Always use position independent code
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
