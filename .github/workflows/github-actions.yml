@@ -85,4 +85,5 @@ jobs:
       - name: Run Python Smoke Tests
         run: |
           cd src/python/test
-          ./t0001-pybinding-basic.t
+          python -m pip list
+          ./t0001-pybinding-basic.t --verbose
