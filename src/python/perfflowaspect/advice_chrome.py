@@ -18,6 +18,7 @@ import json
 import logging
 import functools
 import hashlib
+import toml
 from urllib.parse import urlparse
 from .aspect_base import perfflowaspect
 
@@ -40,10 +41,31 @@ def cannonicalize_perfflow_options():
         perfflow_options["log-dir"] = "./"
 
 
+def load_perfflow_toml_config(toml_config):
+    config = toml.load(toml_config)
+    print("Loaded specification -- %s\n" % toml_config)
+
+    perfflow_opts = None
+    count = 0
+
+    for k,v in config["perfflow-options"].items():
+        if not perfflow_opts:
+            perfflow_opts = k + "=" + v
+        perfflow_opts += ":" + k + "=" + v
+    os.environ["PERFFLOW_OPTIONS"] = perfflow_opts
+
 def parse_perfflow_options():
     options_list = []
     options = os.getenv("PERFFLOW_OPTIONS")
-    if options is not None:
+
+    toml_config = os.getenv("PERFFLOW_TOML_FILE")
+
+    # set PERFFLOW_OPTIONS from TOML config file
+    if options is None and toml_config:
+        load_perfflow_toml_config(toml_config)
+        options = os.getenv("PERFFLOW_OPTIONS")
+
+    if options:
         options_list = options.split(":")
     for opt in options_list:
         kv = opt.split("=")
@@ -52,6 +74,9 @@ def parse_perfflow_options():
         else:
             print("Ill-formed option: {}".format(opt), file=sys.stderr)
     cannonicalize_perfflow_options()
+    print("PerfFlow Config:")
+    for k, v in perfflow_options.items():
+        print("  ", k, "=", v)
 
 
 def get_foreign_wm():
