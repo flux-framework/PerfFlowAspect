@@ -34,7 +34,7 @@ setup(
     author_email="ahn1@llnl.gov, herbein1@llnl.gov, corbett8@llnl.gov, dinatale3@llnl.gov",
     packages=["perfflowaspect"],
     entry_points={},
-    install_requires=[],
+    install_requires=["toml"],
     extras_require={},
     long_description=load_readme(),
     long_description_content_type="text/markdown",

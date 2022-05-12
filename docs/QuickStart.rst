@@ -63,3 +63,39 @@ Details on these can be found at the links below:
 
 - **Chrome Tracing Tool:** https://www.chromium.org/developers/how-tos/trace-event-profiling-tool/
 - **Perfetto Visualizer:** https://perfetto.dev/
+
+Users are able to customize PerfFlowAspect at runtime by changing the following
+environment variable: ``export PERFFLOW_OPTIONS=``. Combining options are in
+the colon (:) delimited form:``<parameter>=<value>:<parameter>=<value>...``
+
+ ====================== =============== =================================================
+  parameter              default value   supported metadata
+ ====================== =============== =================================================
+  name                   generic
+  log-filename-include   hostname,pid    | name: workflow component name
+                                         | instance-path: hierarchical component path
+                                         | hostname: name of host where process is running
+                                         | pid: process ID
+  log-dir                ./
+ ====================== =============== =================================================
+
+Alternatively, PerfFlowOptions can be specified in a TOML config file.
+
+Create a TOML file named ``perfflowaspect_config.toml`` and paste the following content into the file:
+
+.. code-block:: toml
+
+    title = "PerfFlowAspect TOML Config"
+
+    [perfflow-options]
+    log-dir = "output-dir"
+    log-filename-include = "name,hostname,pid"
+    name = "helloworld"
+
+Running the test example can be done as follows:
+
+.. code:: bash
+
+    PERFFLOW_TOML_FILE="perfflowaspect_config.toml" ./smoketest.py
+
+This will create a directory called ``output-dir`` where all PerfFlowAspect output files (``*.pfw``) will be located. The PerfFlowAspect output files will be in the form of ``perfflow.helloworld.<hostname>.<pid>.pfw``.

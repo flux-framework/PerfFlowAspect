@@ -137,4 +137,10 @@ PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest.py &&
     rm perfflow.{fffffff.444444.123456}.pfw
 '
 
+test_expect_success 'PERFFLOW_OPTIONS: TOML config works' '
+    PERFFLOW_TOML_FILE="../perfflowaspect_config.toml" ../smoketest.py
+    sanity_check ./logdir-test/perfflow.helloworld.$(hostname).[0-9]*.pfw
+    rm -rf ./logdir-test
+'
+
 test_done
