@@ -63,3 +63,10 @@ Details on these can be found at the links below:
 
 - **Chrome Tracing Tool:** https://www.chromium.org/developers/how-tos/trace-event-profiling-tool/
 - **Perfetto Visualizer:** https://perfetto.dev/
+
+To disable all PerfFlowAspect annotations, set the
+``PERFFLOW_OPTIONS="log-enable="`` to ``False`` at runtime.
+
+.. code:: bash
+
+    PERFFLOW_OPTIONS="log-enable=False" ./test/smoketest.py
