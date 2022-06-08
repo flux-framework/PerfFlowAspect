@@ -23,7 +23,7 @@ programming languages like C/C++ significantly
 facilitate the high level of unity and modularity
 as required by the AOP paradigm.
 
-## Builiding PerfFlowAspect
+## PerfFlowAspect Dependencies
 PerfFlowAspect requires Clang
 and LLVM development packages as well as a
 jansson-devel package for JSON manipulation.
@@ -51,14 +51,12 @@ yum install clang llvm-devel gcc gcc-c++ jansson-devel openssl-devel make make f
 ```
 
 ##### Installing Ubuntu Packages
-
 ```
 apt-get update
 apt install clang llvm-dev libjansson-dev libssl-dev bison flex make cmake make flex bison
 ```
 
-##### Building PerfFlowAspect Plugin
-
+##### Building PerfFlowAspect
 ```console
 $ module load clang/10.0.1-gcc-8.3.1 (on LLNL systems only)
 $ cd PerfFlowAspect/src/c
@@ -71,7 +69,6 @@ build/weaver/weave/libWeavePass.so
 ```
 
 ##### Quick Test
-
 Say your target C++ code is `main.cpp`:
 
 ```c++
