@@ -23,29 +23,27 @@ programming languages like C/C++ significantly
 facilitate the high level of unity and modularity
 as required by the AOP paradigm.
 
-## Builiding PerfFlowAspect WeavePass
-PerfFlowAspect WeavePass requires Clang
+## Builiding PerfFlowAspect
+PerfFlowAspect requires Clang
 and LLVM development packages as well as a
 jansson-devel package for JSON manipulation.
-It also depends on `src/c/parser/libperfflow_parser.so`
-so it additionally requires the dependencies of
+It additionally requires the dependencies of
 our annotation parser code: i.e.,
 `flex` and `bison`.
+Note that LLVM_DIR must be set to the corresponding
+LLVM cmake directory which may differ across
+different Linux distributions.
 
-**redhat**                | **ubuntu**              | **version**       | **note**
-----------                | ----------              | -----------       | --------
-clang                     | clang                   | >= 6.0            | *1*
-llvm-devel                | llvm-dev                | >= 6.0            | *1*
-jansson-devel             | libjansson-dev          | >= 2.6            |
-openssl-devel             | libssl-dev              | >= 1.0.2          |
-cmake                     | cmake                   | >= 3.10           |
-flex                      | flex                    | >= 2.5.37         |
-bison                     | bison                   | >= 3.0.4          |
-make                      | make                    | >= 3.82           |
-
-*Note 1 - If you use Clang >=9.0, there are two source code changes
-you need to make in `src/c/weaver/weave/perfflow_weave.cpp`.
-Please see our in-lined NOTE comments.*
+**redhat**                | **ubuntu**              | **version**
+----------                | ----------              | -----------
+clang                     | clang                   | >= 9.0
+llvm-devel                | llvm-dev                | >= 9.0
+jansson-devel             | libjansson-dev          | >= 2.6
+openssl-devel             | libssl-dev              | >= 1.0.2
+cmake                     | cmake                   | >= 3.10
+flex                      | flex                    | >= 2.5.37
+bison                     | bison                   | >= 3.0.4
+make                      | make                    | >= 3.82
 
 ##### Installing RedHat/CentOS Packages
 ```
@@ -59,53 +57,17 @@ apt-get update
 apt install clang llvm-dev libjansson-dev libssl-dev bison flex make cmake make flex bison
 ```
 
-##### Building PerfFlowAspect Annotation Parser and Runtime
+##### Building PerfFlowAspect Plugin
 
 ```console
-$ cd parser
-$ make
-$ cd ../runtime
-$ make
-```
+$ module load clang/10.0.1-gcc-8.3.1 (on LLNL systems only)
+$ cd PerfFlowAspect/src/c
+$ mkdir build && cd build
+$ cmake -DCMAKE_CXX_COMPILER=clang++ ../
+$ make (note: parallel make (make -j) not supported yet) 
 
-##### Building PerfFlowAspect WeavePass LLVM Plugin
-
-The following generates the WeavePass LLVM plugin.
-Note that LLVM_DIR must be set to the corresponding
-LLVM cmake directory which may differ across
-different Linux distributions.
-
-```console
-$ cd ../weaver
-$ mkdir build
-$ cd build
-$ LLVM_DIR=/usr/lib/llvm-6.0/lib/cmake/llvm cmake ..
--- The C compiler identification is GNU 7.5.0
--- The CXX compiler identification is Clang 6.0.0
--- Check for working C compiler: /usr/bin/cc
--- Check for working C compiler: /usr/bin/cc -- works
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Detecting C compile features
--- Detecting C compile features - done
--- Check for working CXX compiler: /usr/bin/clang++-6.0
--- Check for working CXX compiler: /usr/bin/clang++-6.0 -- works
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Detecting CXX compile features
--- Detecting CXX compile features - done
--- Configuring done
--- Generating done
--- Build files have been written to: /usr/src/src/c/weaver/build
-
-$ make
-Scanning dependencies of target WeavePass
-[ 50%] Building CXX object weave/CMakeFiles/WeavePass.dir/perfflow_weave.cpp.o
-[100%] Linking CXX shared module libWeavePass.so
-[100%] Built target WeavePass
-
-$ ls weave/libWeavePass.so
-weave/libWeavePass.so
+$ ls build/weaver/weave/libWeavePass.so
+build/weaver/weave/libWeavePass.so
 ```
 
 ##### Quick Test
@@ -142,13 +104,5 @@ int main (int argc, char *argv[])
 }
 ```
 
-You can compile and run this test code
-with our WeavePass as the following:
-
-```console
-$ clang++ -Xclang -load -Xclang weave/libWeavePass.so -L../runtime/ main.cpp -o main -lperfflow_runtime
-$ LD_LIBRARY_PATH=../runtime/ ./main
-```
-
-Upon successful run, a PerfFlowAspect output file will be
+Upon successful build and run, a PerfFlowAspect output file will be
 generated in the same way as our Python support.
