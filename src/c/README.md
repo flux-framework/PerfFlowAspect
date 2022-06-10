@@ -62,14 +62,16 @@ $ module load clang/10.0.1-gcc-8.3.1 (on LLNL systems only)
 $ cd PerfFlowAspect/src/c
 $ mkdir build && cd build
 $ cmake -DCMAKE_CXX_COMPILER=clang++ ../
-$ make (note: parallel make (make -j) not supported yet) 
+$ make (note: parallel make (make -j) not supported yet)
 
-$ ls build/weaver/weave/libWeavePass.so
-build/weaver/weave/libWeavePass.so
+$ find . -print | grep lib # successful build produces 3 libraries
+./build/parser/libperfflow_parser.so
+./build/runtime/libperfflow_runtime.so
+./build/weaver/weave/libWeavePass.so
 ```
 
-##### Quick Test
-Say your target C++ code is `main.cpp`:
+##### Example Program
+The following shows a small C++ program that annotates three functions:
 
 ```c++
 #include <string>
@@ -101,5 +103,5 @@ int main (int argc, char *argv[])
 }
 ```
 
-Upon successful build and run, a PerfFlowAspect output file will be
-generated in the same way as our Python support.
+Upon successful build and run, a PerfFlowAspect output file will be generated
+in the same way as our Python support.
