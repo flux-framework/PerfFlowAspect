@@ -6,7 +6,7 @@ jobs:
 
   build-c:
     name: check c bindings
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
       # Checkout PerfFlowAspect repository under $GITHUB_WORKSPACE
@@ -18,32 +18,22 @@ jobs:
           sudo apt install clang llvm-dev libjansson-dev libssl-dev bison flex make cmake
           clang++ --version
 
-      - name: Build Parser
+      - name: Compile check
         run: |
-          cd src/c/parser
-          make VERBOSE=1
-
-      - name: Build Runtime
-        run: |
-          cd src/c/runtime
-          make VERBOSE=1
-
-      - name: Configure Weaver with CMake
-        run: |
-          cd src/c/weaver
-          mkdir build
+          cd src/c
+          mkdir build install
           cd build
-          LLVM_DIR=/usr/lib/llvm-6.0/lib/cmake cmake ..
-
-      - name: Build Weaver
-        run: |
-          cd src/c/weaver/build
+          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm-10/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install"
+          echo -e ${CMAKE_OPTS}
+          cmake ${CMAKE_OPTS} ..
+          # build
           make VERBOSE=1
+          # install
+          make install
 
       - name: Run C Smoke Tests
         run: |
-          cd src/c/test
-          make
+          cd src/c/install/test
           ./t0001-cbinding-basic.t
 
   build-python:

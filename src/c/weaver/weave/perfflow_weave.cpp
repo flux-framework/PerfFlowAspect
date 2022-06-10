@@ -51,9 +51,10 @@ bool WeavingPass::insertAfter (Module &m, Function &f, StringRef &a,
     // voidType is return type, parms are parameters and no variable length args
     FunctionType *weaveFuncTy = FunctionType::get (voidType, params, false);
     // Note: Use FunctionCallee after for Clang 9 or higher
-    // FunctionCallee after = m.getOrInsertFunction("perfflow_weave_after",
-    Constant *after = m.getOrInsertFunction("perfflow_weave_after",
+    FunctionCallee after = m.getOrInsertFunction("perfflow_weave_after",
                                             weaveFuncTy);
+    // Constant *after = m.getOrInsertFunction("perfflow_weave_after",
+    //                                        weaveFuncTy);
 
     // iterate through blocks
     for (BasicBlock &bb : f) {
@@ -96,9 +97,10 @@ bool WeavingPass::insertBefore (Module &m, Function &f, StringRef &a,
     // voidType is return type, params are parameters and no variable length args
     FunctionType *weaveFuncTy = FunctionType::get (voidType, params, false);
     // Note: User FunctionCallee before for Clang >= 9.0  
-    // FunctionCallee before = m.getOrInsertFunction ("perfflow_weave_before",
-    Constant *before = m.getOrInsertFunction ("perfflow_weave_before",
+    FunctionCallee before = m.getOrInsertFunction ("perfflow_weave_before",
                                               weaveFuncTy);
+    //Constant *before = m.getOrInsertFunction ("perfflow_weave_before",
+    //                                          weaveFuncTy);
     auto &entry = f.getEntryBlock ();
     IRBuilder<> builder (&entry);
     Value *v1 = builder.CreateGlobalStringPtr (m.getName (), "str");
