@@ -32,6 +32,24 @@ path to the PerfFlowAspect python directory:
 C Build
 -------
 
+Host Config Files
+^^^^^^^^^^^^^^^^^
+
+To handle build options, third-party library paths, and other
+environment-specific configurations, PerfFlowAspect relies on CMake's
+initial-cache file mechanism.
+
+These initial-cache files are called host-config files in PerfFlowAspect, since
+we typically create a file for each platform or specific system if necessary.
+
+Example configuration files can be found in the ``host-configs/`` directory.
+Assuming you are in a ``build/`` directory, you can call the host-config file
+as follows:
+
+.. code:: bash
+
+   $ cmake -C host-configs/{config_file}.cmake ../
+
 Build Dependencies and Versions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
