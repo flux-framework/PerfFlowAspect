@@ -120,6 +120,14 @@ def set_perfflow_instance_path(path):
     os.environ["PERFFLOW_INSTANCE_PATH"] = path
 
 
+def set_metrics_var(value):
+    os.environ["CPU_MEM_USAGE"] = value
+
+
+def get_metrics_var():
+    return os.getenv("CPU_MEM_USAGE")
+
+
 @perfflowaspect
 class ChromeTracingAdvice:
     """Chrome Tracing Advice Class: define pointcuts for this advice"""
@@ -147,6 +155,14 @@ class ChromeTracingAdvice:
     parse_perfflow_options()
     inst_path = get_perfflow_instance_path()
     set_perfflow_instance_path(inst_path)
+
+    metrics_var = get_metrics_var()
+    if metrics_var is None:
+        set_metrics_var("False")
+    if metrics_var in ["True", "true", "TRUE"]:
+        metrics_var = True
+    elif metrics_var in ["False", "false", "FALSE"]:
+        metrics_var = False
 
     fn = "perfflow"
     for inc in perfflow_options["log-filename-include"].split(","):
