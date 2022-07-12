@@ -18,6 +18,7 @@ import json
 import logging
 import functools
 import hashlib
+import psutil
 from urllib.parse import urlparse
 from .aspect_base import perfflowaspect
 
@@ -114,6 +115,11 @@ def get_perfflow_instance_path():
 def set_perfflow_instance_path(path):
     os.environ["PERFFLOW_INSTANCE_PATH"] = path
 
+def set_metrics_var(value):
+    os.environ["CPU_MEM_USAGE"] = value
+
+def get_metrics_var():
+    return os.getenv("CPU_MEM_USAGE")
 
 @perfflowaspect
 class ChromeTracingAdvice:
@@ -138,6 +144,14 @@ class ChromeTracingAdvice:
     parse_perfflow_options()
     inst_path = get_perfflow_instance_path()
     set_perfflow_instance_path(inst_path)
+
+    metrics_var = get_metrics_var()
+    if metrics_var is None:
+        set_metrics_var("False")
+    if metrics_var in ["True", "true", "TRUE"]:
+        metrics_var = True
+    elif metrics_var in ["False", "false", "FALSE"]:
+        metrics_var = False
 
     fn = "perfflow"
     for inc in perfflow_options["log-filename-include"].split(","):
@@ -274,8 +288,31 @@ class ChromeTracingAdvice:
             event = ChromeTracingAdvice.__create_event_from_func(func)
             event["ph"] = "B"
             ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+
+            if(ChromeTracingAdvice.metrics_var):
+                p = psutil.Process(os.getpid())
+                cpu_usage = p.cpu_percent(interval=0)
+                mem_before = (p.memory_info().rss)
+
             rc = func(*args, **kwargs)
+
+            if(ChromeTracingAdvice.metrics_var):
+                cpu_usage = p.cpu_percent(interval=0)
+                mem_after = (p.memory_info().rss)
+                mem_usage = (mem_after - mem_before)
+                if mem_usage > 0:
+                    mem_usage = mem_usage/1000
+                event["ph"] = "C"
+                event["args"] = {"cpu_usage":  cpu_usage, "memory_usage": mem_usage}
+                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+                
             event["ts"] = time.time() * 1000000
+
+            if(ChromeTracingAdvice.metrics_var):
+                event["args"] = {"cpu_usage":  0, "memory_usage": 0}
+                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+                del event["args"]
+
             event["ph"] = "E"
             ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             return rc
