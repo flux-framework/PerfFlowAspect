@@ -28,11 +28,19 @@ set_source_files_properties(${perfflow_parser_sources} PROPERTIES COMPILE_FLAGS 
 
 set_source_files_properties(${FLEX_lexer_OUTPUTS} PROPERTIES COMPILE_FLAGS "-Wno-deprecated-register")
 
+add_library(perfflow_parser_static STATIC
+            ${perfflow_parser_sources}
+            ${BISON_parser_OUTPUTS}
+            ${FLEX_lexer_OUTPUTS}
+)
+
 add_library(perfflow_parser SHARED
             ${perfflow_parser_sources}
             ${BISON_parser_OUTPUTS}
             ${FLEX_lexer_OUTPUTS}
 )
+
+target_include_directories(perfflow_parser_static PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 target_include_directories(perfflow_parser PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

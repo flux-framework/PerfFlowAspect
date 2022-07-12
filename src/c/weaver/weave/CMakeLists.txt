@@ -13,7 +13,7 @@ set_target_properties(WeavePass PROPERTIES
 )
 
 find_library(JANSSON_LIB jansson)
-target_link_libraries(WeavePass perfflow_parser "${JANSSON_LIB}")
+target_link_libraries(WeavePass perfflow_parser_static "${JANSSON_LIB}")
 
 install(TARGETS WeavePass
         EXPORT WeavePass
