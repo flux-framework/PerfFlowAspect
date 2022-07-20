@@ -17,7 +17,7 @@ target_link_libraries(WeavePass perfflow_parser "${JANSSON_LIB}")
 
 install(TARGETS WeavePass
         EXPORT WeavePass
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION lib
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
