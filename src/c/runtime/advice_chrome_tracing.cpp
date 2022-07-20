@@ -22,6 +22,7 @@
 #include <openssl/sha.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <iostream>
 
 // TODO: only works for Linux
 #define my_gettid() ((pid_t)syscall(SYS_gettid))
@@ -130,9 +131,13 @@ int advice_chrome_tracing_t::flush_if (size_t size)
         if ( (rc = pthread_mutex_lock (&m_mutex)) < 0)
             return rc;
         m_oss.seekp (0, std::ios::end);
+        printf("PFA in flush_if\n");
         std::stringstream::pos_type offset = m_oss.tellp ();
+        std::cout << "PFA offset=" << offset << ", size=" << size << std::endl;
         if (offset >= size) {
+            std::cout << "PFA in if block" << std::endl;
             if (!m_ofs.is_open ()) {
+                printf("PFA opening file\n");
                 m_ofs.open (m_fn, std::ofstream::out);
                 m_ofs << "[" << std::endl;
             }
@@ -140,6 +145,7 @@ int advice_chrome_tracing_t::flush_if (size_t size)
             m_oss.str ("");
             m_oss.clear ();
         }
+        printf("PFA after offset check\n");
      if ( (rc = pthread_mutex_unlock (&m_mutex)) < 0)
          return rc;
     } catch (std::ostream::failure &e) {
@@ -152,6 +158,7 @@ int advice_chrome_tracing_t::flush_if (size_t size)
 
 int advice_chrome_tracing_t::cannonicalize_perfflow_options ()
 {
+    printf("PFA PERFFLOW cannonicalize\n");
     if (m_perfflow_options.find ("name") == m_perfflow_options.end ()) {
         m_perfflow_options["name"] = "generic";
     }
@@ -458,7 +465,9 @@ int advice_chrome_tracing_t::before (const char *module,
     char *json_str;
     json_t *event, *ph;
 
+    std::cout << "PFA in before function" << std::endl;
     if (m_enable_logging) {
+        std::cout << "PFA before() in logging" << std::endl;
         if ( (rc = create_event (&event, module, function)) < 0)
             return rc;
         if ( (rc = encode_event (event, "B", nullptr, nullptr, -1)) < 0) {
@@ -478,7 +487,10 @@ int advice_chrome_tracing_t::before (const char *module,
         free (json_str);
         json_decref (event);
         if ( (rc = flush_if (FLUSH_SIZE)) < 0)
+        {
+            std::cout << "PFA ret=" << rc << std::endl;
             return rc;
+        }
         if (std::string ("NA") != flow) {
         const char *eff_flow = flow;
             if (std::string ("inout") == flow)
