@@ -8,6 +8,8 @@
  * SPDX-License-Identifier: LGPL-3.0
 \************************************************************/
 
+#include <iostream>
+
 #include "advice_dispatcher.hpp"
 #include "advice_chrome_tracing.hpp"
 
@@ -17,6 +19,7 @@ std::shared_ptr<advice_base_t> create_advice (const std::string &kind)
     try {
         if (kind == "ChromeTracing") {
             advice = std::make_shared<advice_chrome_tracing_t> ();
+            std::cout << "PFA create_advice " << std::endl;
         }
     } catch (std::bad_alloc &e) {
         errno = ENOMEM;

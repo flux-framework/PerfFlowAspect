@@ -385,6 +385,7 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
 
 advice_chrome_tracing_t::~advice_chrome_tracing_t ()
 {
+    std::cout << "PFA destructor" << std::endl;
     flush_if (1);
     if (m_ofs.is_open ())
         m_ofs.close ();
@@ -411,6 +412,7 @@ int advice_chrome_tracing_t::with_flow (const char *module,
     json_t *event, *ph;
 
     if (m_enable_logging) {
+        std::cout << "PFA with flow" << std::endl;
         if ( (rc = create_event (&event, module, function)) < 0)
             return rc;
         if (std::string ("in") == flow) {
@@ -557,6 +559,7 @@ int advice_chrome_tracing_t::before_async (const char *module,
     char *json_str;
     json_t *event, *ph, *sc;
 
+    std::cout << "PFA before async" << std::endl;
     if (m_enable_logging) {
         if ( (rc = create_event (&event, module, function)) < 0)
             return rc;
@@ -611,6 +614,7 @@ int advice_chrome_tracing_t::after_async (const char *module,
     char *json_str;
     json_t *event, *ph, *sc;
 
+    std::cout << "PFA after async" << std::endl;
     if (m_enable_logging) {
         if (std::string ("NA") != flow) {
             const char *eff_flow = flow;

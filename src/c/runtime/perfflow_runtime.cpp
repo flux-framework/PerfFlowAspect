@@ -24,6 +24,7 @@ __attribute__((constructor))
 void perfflow_weave_init ()
 {
     try {
+        printf("PFA perfflow_weave_init\n");
         if (!(advice = create_advice (advice_kind))) {
             // USE C IO since it more reliable in libray init function
             fprintf (stderr, "error: unknown (%s)\n", advice_kind.c_str ());
@@ -45,6 +46,7 @@ extern "C" void perfflow_weave_before (int async,
                                        const char *scope,
                                        const char *flow)
 {
+    printf("PFA perfflow_weave_before\n");
     if (advice == nullptr)
         return;
     if (async)
@@ -60,6 +62,7 @@ extern "C" void perfflow_weave_after (int async,
                                       const char *scope,
                                       const char *flow)
 {
+    printf("PFA perfflow_weave_after\n");
     if (advice == nullptr)
         return;
     if (async)

@@ -104,6 +104,7 @@ int parse (const char *in, std::string &pointcut,
         errno = EINVAL;
         return rc;
     }
+    std::cout << "PFA parse input string=" << in << std::endl;
     set_input_string (in);
     rc = yyparse ();
     end_lexical_scan ();

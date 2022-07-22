@@ -80,6 +80,7 @@ bool WeavingPass::insertAfter (Module &m, Function &f, StringRef &a,
 bool WeavingPass::insertBefore (Module &m, Function &f, StringRef &a,
                                 int async, std::string &scope, std::string &flow)
 {
+    errs() << "RRR inside insertBefore\n";
     if (m.empty () || f.empty ())
         return false;
 
@@ -126,8 +127,10 @@ bool WeavingPass::insertBefore (Module &m, Function &f, StringRef &a,
  *                                                                            *
  ******************************************************************************/
 
+// called by LLVM?
 bool WeavingPass::doInitialization (Module &m)
 {
+    errs() << "RRR doInit" << "\n";
     auto annotations = m.getNamedGlobal("llvm.global.annotations");
     if (!annotations)
           return false;
@@ -143,12 +146,18 @@ bool WeavingPass::doInitialization (Module &m)
                           ->getAsCString();
 	  std::string pcut, scope, flow;
           if (perfflow_parser_parse (anno.data (), pcut, scope, flow) == 0) {
+              errs() << "RRR " << pcut << " scope=" << scope << " flow=" << flow << "\n";
               if (pcut == "around" || pcut == "before")
+              {
+                  errs() << "RRR in around 1\n";
                   changed = insertBefore (m, *fn,
                                           anno, 0, scope, flow) || changed;
+              }
               else if (pcut == "around_async" || pcut == "before_async")
+              {
                   changed = insertBefore (m, *fn,
                                           anno, 1, scope, flow) || changed;
+              }
               if (pcut == "around" || pcut == "after") {
                   if (pcut == "around") {
                       if (flow == "in" || flow == "out")
@@ -174,6 +183,7 @@ bool WeavingPass::doInitialization (Module &m)
 
 bool WeavingPass::runOnFunction (Function &F)
 {
+    errs() << "RRR [*] function '" << F.getName() << "'\n";
     return false;
 }
 
