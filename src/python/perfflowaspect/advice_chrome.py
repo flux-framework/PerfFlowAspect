@@ -372,8 +372,8 @@ class ChromeTracingAdvice:
             event["id"] = 8192
             event["ph"] = "b"
             counter = counter + 1
-            counter_mutex.release()
             ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+            counter_mutex.release()
             rc = func(*args, **kwargs)
             event["ts"] = time.time() * 1000000
             event["ph"] = "e"
