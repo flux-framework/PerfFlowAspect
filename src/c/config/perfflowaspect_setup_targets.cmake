@@ -6,7 +6,7 @@ set_property(TARGET perfflowaspect::perfflowaspect
              perfflowaspect)
 
 if(NOT PerfFlowAspect_FIND_QUIETLY)
-    message(STATUS "PERFFLOWASPECT_VERSION        = ${PROJECT_VERSION}")
+    message(STATUS "PERFFLOWASPECT_VERSION        = ${PERFFLOWASPECT_VERSION}")
     message(STATUS "PERFFLOWASPECT_INSTALL_PREFIX = ${PERFFLOWASPECT_INSTALL_PREFIX}")
 
     set(_print_targets "")
