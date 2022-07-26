@@ -13,35 +13,35 @@
 #include <unistd.h>
 
 __attribute__((annotate("@critical_path(pointcut='around')")))
-void bas ()
+void bas()
 {
-    printf ("bas\n");
+    printf("bas\n");
 }
 
 __attribute__((annotate("@critical_path(pointcut='around')")))
-void bar ()
+void bar()
 {
-   printf ("bar\n");
-   usleep (1000);
-   bas ();
+    printf("bar\n");
+    usleep(1000);
+    bas();
 }
 
 __attribute__((annotate("@critical_path()")))
-int foo (const std::string &str)
+int foo(const std::string &str)
 {
-   printf ("foo\n");
-   usleep (1000);
-   bar ();
-   if (str == "hello")
-       return 1;
-   return 0;
+    printf("foo\n");
+    usleep(1000);
+    bar();
+    if (str == "hello")
+        return 1;
+    return 0;
 }
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    printf ("Inside main\n");
+    printf("Inside main\n");
     for (int i = 0; i < 4; i++)
-        foo ("hello");
+        foo("hello");
     return 0;
 }
 
