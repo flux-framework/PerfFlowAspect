@@ -11,32 +11,32 @@
 #include <cstdio>
 #include <string>
 
-void bas ()
+void bas()
 {
-    printf ("bas");
+    printf("bas");
 }
 
 __attribute__((annotate("@critical _path()")))
-void bar ()
+void bar()
 {
-   printf ("bar\n");
-   bas ();
+    printf("bar\n");
+    bas();
 }
 
 __attribute__((annotate("@critical_path()")))
-int foo (const std::string &str)
+int foo(const std::string &str)
 {
-   printf ("Hello\n");
-   bar ();
-   if (str == "hello")
-       return 1;
-   return 0;
+    printf("Hello\n");
+    bar();
+    if (str == "hello")
+        return 1;
+    return 0;
 }
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    printf ("Inside main\n");
-    foo ("hello");
+    printf("Inside main\n");
+    foo("hello");
     return 0;
 }
 

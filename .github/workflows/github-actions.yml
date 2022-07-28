@@ -60,6 +60,32 @@ jobs:
           python setup.py install
           python -m pip list
 
+      - name: Run Python Smoke Tests
+        run: |
+          cd src/python/test
+          ./t0001-pybinding-basic.t
+
+  check-code-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout PerfFlowAspect repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v2
+
+      - name: Style check c/cpp/h files
+        run: |
+          sudo apt-get update
+          sudo apt-get install astyle
+          astyle --version
+          cd ${GITHUB_WORKSPACE}
+          ./scripts/.ci-check-c-code-format.sh
+          err=$?
+          if [ $err -eq 0 ]; then exit 0; else echo -e "Formatting issue found in C/C++ files. Please run ./scripts/check-c-code-format.sh"; exit 1; fi
+
+      - name: Install python dependencies
+        run: |
+          python -m pip install --upgrade pip flake8 rstfmt
+
       - name: Update black and flake8
         if: ${{ matrix.python-version == 3.7 }}
         run: |
@@ -72,7 +98,7 @@ jobs:
           black --diff --check .
           flake8
 
-      - name: Run Python Smoke Tests
+      - name: Format check with rstfmt
         run: |
-          cd src/python/test
-          ./t0001-pybinding-basic.t
+          cd ${GITHUB_WORKSPACE}
+          ./scripts/.ci-check-rst-format.sh

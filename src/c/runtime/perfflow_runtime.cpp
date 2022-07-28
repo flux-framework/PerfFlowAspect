@@ -21,40 +21,31 @@ __attribute__((init_priority(101)))
 const std::string advice_kind = "ChromeTracing";
 
 __attribute__((constructor))
-void perfflow_weave_init ()
+void perfflow_weave_init()
 {
-    try {
-        if (!(advice = create_advice (advice_kind))) {
+    try
+    {
+        if (!(advice = create_advice(advice_kind)))
+        {
             // USE C IO since it more reliable in libray init function
-            fprintf (stderr, "error: unknown (%s)\n", advice_kind.c_str ());
-            fprintf (stderr, "error: perfflow advice not activated\n");
+            fprintf(stderr, "error: unknown (%s)\n", advice_kind.c_str());
+            fprintf(stderr, "error: perfflow advice not activated\n");
         }
-    } catch (std::ofstream::failure &e) {
-        fprintf (stderr, "error: perfflow advice (%s)\n", e.what ());
-    } catch (std::system_error &e) {
-        fprintf (stderr,
-                 "error: perfflow advice (%s)\n",
-                 e.code ().message ().c_str ());
+    }
+    catch (std::ofstream::failure &e)
+    {
+        fprintf(stderr, "error: perfflow advice (%s)\n", e.what());
+    }
+    catch (std::system_error &e)
+    {
+        fprintf(stderr,
+                "error: perfflow advice (%s)\n",
+                e.code().message().c_str());
     }
     return;
 }
 
-extern "C" void perfflow_weave_before (int async,
-                                       const char *module,
-                                       const char *function,
-                                       const char *scope,
-                                       const char *flow)
-{
-    if (advice == nullptr)
-        return;
-    if (async)
-        advice->before_async (module, function, scope, flow);
-    else
-        advice->before (module, function, flow);
-    return;
-}
-
-extern "C" void perfflow_weave_after (int async,
+extern "C" void perfflow_weave_before(int async,
                                       const char *module,
                                       const char *function,
                                       const char *scope,
@@ -63,9 +54,24 @@ extern "C" void perfflow_weave_after (int async,
     if (advice == nullptr)
         return;
     if (async)
-        advice->after_async (module, function, scope, flow);
+        advice->before_async(module, function, scope, flow);
     else
-        advice->after (module, function, flow);
+        advice->before(module, function, flow);
+    return;
+}
+
+extern "C" void perfflow_weave_after(int async,
+                                     const char *module,
+                                     const char *function,
+                                     const char *scope,
+                                     const char *flow)
+{
+    if (advice == nullptr)
+        return;
+    if (async)
+        advice->after_async(module, function, scope, flow);
+    else
+        advice->after(module, function, flow);
     return;
 }
 

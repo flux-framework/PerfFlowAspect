@@ -12,28 +12,30 @@
 #include "parser.tab.h"
 #include "perfflow_parser.hpp"
 
-extern int validate (const char *);
-extern int parse (const char *, std::string &, std::string &, std::string &);
+extern int validate(const char *);
+extern int parse(const char *, std::string &, std::string &, std::string &);
 
-int perfflow_parser_validate (const char *anno)
+int perfflow_parser_validate(const char *anno)
 {
-    if (!anno) {
+    if (!anno)
+    {
         errno = EINVAL;
         return -1;
     }
-    return validate (anno);
+    return validate(anno);
 }
 
-int perfflow_parser_parse (const char *anno,
-                           std::string &pointcut,
-                           std::string &scope,
-                           std::string &flow)
+int perfflow_parser_parse(const char *anno,
+                          std::string &pointcut,
+                          std::string &scope,
+                          std::string &flow)
 {
-    if (!anno) {
+    if (!anno)
+    {
         errno = EINVAL;
         return -1;
     }
-    return parse (anno, pointcut, scope, flow);
+    return parse(anno, pointcut, scope, flow);
 }
 
 /*

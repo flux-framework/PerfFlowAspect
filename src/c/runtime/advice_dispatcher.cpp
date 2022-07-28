@@ -11,14 +11,18 @@
 #include "advice_dispatcher.hpp"
 #include "advice_chrome_tracing.hpp"
 
-std::shared_ptr<advice_base_t> create_advice (const std::string &kind)
+std::shared_ptr<advice_base_t> create_advice(const std::string &kind)
 {
     std::shared_ptr<advice_base_t> advice = nullptr;
-    try {
-        if (kind == "ChromeTracing") {
+    try
+    {
+        if (kind == "ChromeTracing")
+        {
             advice = std::make_shared<advice_chrome_tracing_t> ();
         }
-    } catch (std::bad_alloc &e) {
+    }
+    catch (std::bad_alloc &e)
+    {
         errno = ENOMEM;
         advice = nullptr;
     }
