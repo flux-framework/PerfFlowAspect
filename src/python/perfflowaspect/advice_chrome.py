@@ -293,9 +293,9 @@ class ChromeTracingAdvice:
                 event["scope"] = scope
                 event["id"] = before_counter
                 event["ph"] = "b"
+                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
                 before_counter = before_counter + 1
                 before_counter_mutex.release()
-                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
                 return func(*args, **kwargs)
 
             return trace
@@ -313,9 +313,9 @@ class ChromeTracingAdvice:
                 event["scope"] = scope
                 event["id"] = after_counter
                 event["ph"] = "e"
+                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
                 after_counter = after_counter + 1
                 after_counter_mutex.release()
-                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
                 return func(*args, **kwargs)
 
             return trace
@@ -329,15 +329,17 @@ class ChromeTracingAdvice:
             global counter, counter_mutex
             counter_mutex.acquire()
             event = ChromeTracingAdvice.__create_event_from_func(func)
-            event["id"] = 8192
             event["ph"] = "b"
+            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             counter = counter + 1
             counter_mutex.release()
-            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             rc = func(*args, **kwargs)
+            counter_mutex.acquire()
             event["ts"] = time.time() * 1000000
             event["ph"] = "e"
             ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+            counter = counter + 1
+            counter_mutex.release()
             return rc
 
         return trace
