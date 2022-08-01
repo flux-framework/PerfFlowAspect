@@ -12,7 +12,9 @@ set(perfflow_runtime_sources
     perfflow_runtime.cpp
 )
 
-set(perfflow_runtime_deps -ljansson -lssl -lcrypto
+find_package(OpenSSL REQUIRED)
+
+set(perfflow_runtime_deps -ljansson
 )
 
 add_library(perfflow_runtime SHARED
@@ -20,7 +22,7 @@ add_library(perfflow_runtime SHARED
             ${perfflow_runtime_headers}
 )
 
-target_link_libraries(perfflow_runtime ${perfflow_runtime_deps})
+target_link_libraries(perfflow_runtime ${perfflow_runtime_deps} OpenSSL::SSL OpenSSL::Crypto)
 
 install(TARGETS perfflow_runtime
         EXPORT perfflow_export
