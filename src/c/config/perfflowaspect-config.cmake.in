@@ -4,7 +4,8 @@ if (NOT PERFFLOWASPECT_CONFIG_LOADED)
   set(PERFFLOWASPECT_LIB_DIR        "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@")
 
   # Library targets imported from file
-  include(${PERFFLOWASPECT_INSTALL_PREFIX}/share/perfflowaspect_setup_targets.cmake)
+  # include(${PERFFLOWASPECT_INSTALL_PREFIX}/share/perfflowaspect_setup_targets.cmake)
+  include(${PERFFLOWASPECT_INSTALL_PREFIX}/share/perfflowaspect_targets.cmake)
 
   set(PERFFLOWASPECT_CONFIG_LOADED TRUE)
 endif()

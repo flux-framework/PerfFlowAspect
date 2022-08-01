@@ -57,6 +57,27 @@ add_subdirectory(runtime)
 add_subdirectory(weaver)
 add_subdirectory(test)
 
+add_library(perfflowaspect INTERFACE)
+target_link_libraries(perfflowaspect INTERFACE perfflow_runtime perfflow_parser WeavePassPlugin)
+install(TARGETS perfflowaspect
+        EXPORT perfflow_export
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION lib
+)
+
 add_subdirectory(config)
+
+message(STATUS "Config Dir: ${PERFFLOWASPECT_INSTALL_CONFIG_DIR}")
+
+if (NOT DEFINED PERFFLOWASPECT_INSTALL_CONFIG_DIR)
+    set(PERFFLOWASPECT_INSTALL_CONFIG_DIR "share")
+endif()
+
+install(EXPORT perfflow_export
+    FILE perfflowaspect_targets.cmake
+    NAMESPACE perfflowaspect::
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/${PERFFLOWASPECT_INSTALL_CONFIG_DIR}
+)
 
 message(STATUS "PerfFlowAspect version: \"${PROJECT_VERSION}\"")

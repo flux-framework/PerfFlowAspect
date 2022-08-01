@@ -23,7 +23,7 @@ add_library(perfflow_runtime SHARED
 target_link_libraries(perfflow_runtime ${perfflow_runtime_deps})
 
 install(TARGETS perfflow_runtime
-        EXPORT perfflow_runtime
+        EXPORT perfflow_export
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
