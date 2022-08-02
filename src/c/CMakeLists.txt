@@ -61,9 +61,9 @@ add_library(perfflowaspect INTERFACE)
 target_link_libraries(perfflowaspect INTERFACE perfflow_runtime perfflow_parser WeavePassPlugin)
 install(TARGETS perfflowaspect
         EXPORT perfflow_export
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION lib
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} 
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} 
+        RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR} 
 )
 
 add_subdirectory(config)

@@ -22,9 +22,9 @@ target_compile_options(WeavePassPlugin INTERFACE
 
 install(TARGETS WeavePassPlugin
         EXPORT perfflow_export
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION lib
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 install(TARGETS WeavePass
