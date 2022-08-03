@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/usr/bin/env python
 
 import time
 import multiprocessing
@@ -19,14 +19,14 @@ def foo(message):
 
 
 @perfflowaspect.aspect.critical_path()
-def process_function(name):
+def prcs_fn(name):
     foo("Hello from Process ID: " + str(name))
 
 
 def main():
     procs = []
     for i in range(4):
-        p = multiprocessing.Process(target=process_function, args=(i,))
+        p = multiprocessing.Process(target=prcs_fn, args=(i,))
         p.start()
         procs.append(p)
 

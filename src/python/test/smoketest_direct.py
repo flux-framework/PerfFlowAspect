@@ -7,13 +7,14 @@ from perfflowaspect import aspect
 
 def foo():
     aspect.sync_event("before", "foo", filename)
-    time.sleep(2)
+    time.sleep(1)
     print("hello")
     aspect.sync_event("after", "foo", filename)
 
 
 def main():
     aspect.sync_event("before", "main", filename)
+    time.sleep(1)
     foo()
     aspect.sync_event("after", "main", filename)
 

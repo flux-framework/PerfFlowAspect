@@ -22,11 +22,7 @@ from urllib.parse import urlparse
 from .aspect_base import perfflowaspect
 
 # TODO: move those into ChromeTracingAdvice
-before_counter_mutex = threading.Lock()
-after_counter_mutex = threading.Lock()
 counter_mutex = threading.Lock()
-before_counter = 0
-after_counter = 0
 counter = 0
 perfflow_options = {}
 
@@ -180,7 +176,9 @@ class ChromeTracingAdvice:
             "name": name,
             "cat": cat,
             "pid": os.getpid(),
-            "tid": threading.get_ident(),
+            # For TID generation, using get_ident() causes visualization to
+            # fail in Perfetto. get_native_id() is only available in Python 3.8+. 
+            "tid": threading.get_native_id(),
             "ts": time.time() * 1000000,
         }
 
@@ -200,6 +198,9 @@ class ChromeTracingAdvice:
         event["ph"] = ph
         if id:
             event["id"] = id
+        else:
+            event["id"] = 123 # Async events need an ID entry, this sets default.
+
         if scope:
             event["scope"] = scope
         return event
@@ -245,12 +246,32 @@ class ChromeTracingAdvice:
         ChromeTracingAdvice.logger.debug(s)
 
     @staticmethod
+    def __update_log(func,event_type):
+        global counter, counter_mutex
+        counter_mutex.acquire()
+        event = ChromeTracingAdvice.__create_event_from_func(func)
+        event["ph"] = event_type
+        ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+        counter = counter + 1
+        counter_mutex.release()
+        
+    @staticmethod
+    def __update_async_log(scope,func,event_type):
+        global counter, counter_mutex
+        counter_mutex.acquire()
+        event = ChromeTracingAdvice.__create_event_from_func(func)
+        event["scope"] = scope
+        event["id"] = event["tid"]
+        event["ph"] = event_type
+        ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+        counter = counter + 1
+        counter_mutex.release()
+
+    @staticmethod
     def before(func):
         @functools.wraps(func)
         def trace(*args, **kwargs):
-            event = ChromeTracingAdvice.__create_event_from_func(func)
-            event["ph"] = "B"
-            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+            ChromeTracingAdvice.__update_log(func,"B")
             return func(*args, **kwargs)
 
         return trace
@@ -260,9 +281,7 @@ class ChromeTracingAdvice:
         @functools.wraps(func)
         def trace(*args, **kwargs):
             rc = func(*args, **kwargs)
-            event = ChromeTracingAdvice.__create_event_from_func(func)
-            event["ph"] = "E"
-            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+            ChromeTracingAdvice.__update_log(func,"E")
             return rc
 
         return trace
@@ -271,13 +290,9 @@ class ChromeTracingAdvice:
     def around(func):
         @functools.wraps(func)
         def trace(*args, **kwargs):
-            event = ChromeTracingAdvice.__create_event_from_func(func)
-            event["ph"] = "B"
-            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+            ChromeTracingAdvice.__update_log(func,"B")
             rc = func(*args, **kwargs)
-            event["ts"] = time.time() * 1000000
-            event["ph"] = "E"
-            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+            ChromeTracingAdvice.__update_log(func,"E")
             return rc
 
         return trace
@@ -287,16 +302,9 @@ class ChromeTracingAdvice:
         def before_async_(func):
             @functools.wraps(func)
             def trace(*args, **kwargs):
-                global before_counter, before_counter_mutex
-                before_counter_mutex.acquire()
-                event = ChromeTracingAdvice.__create_event_from_func(func)
-                event["scope"] = scope
-                event["id"] = before_counter
-                event["ph"] = "b"
-                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
-                before_counter = before_counter + 1
-                before_counter_mutex.release()
-                return func(*args, **kwargs)
+                ChromeTracingAdvice.__update_async_log(scope,func,"b")
+                rc = func(*args, **kwargs)
+                return rc
 
             return trace
 
@@ -307,16 +315,9 @@ class ChromeTracingAdvice:
         def after_async_(func):
             @functools.wraps(func)
             def trace(*args, **kwargs):
-                global after_counter, after_counter_mutex
-                after_counter_mutex.acquire()
-                event = ChromeTracingAdvice.__create_event_from_func(func)
-                event["scope"] = scope
-                event["id"] = after_counter
-                event["ph"] = "e"
-                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
-                after_counter = after_counter + 1
-                after_counter_mutex.release()
-                return func(*args, **kwargs)
+                rc = func(*args, **kwargs)
+                ChromeTracingAdvice.__update_async_log(scope,func,"e")
+                return rc
 
             return trace
 
@@ -326,20 +327,10 @@ class ChromeTracingAdvice:
     def around_async(func):
         @functools.wraps(func)
         def trace(*args, **kwargs):
-            global counter, counter_mutex
-            counter_mutex.acquire()
-            event = ChromeTracingAdvice.__create_event_from_func(func)
-            event["ph"] = "b"
-            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
-            counter = counter + 1
-            counter_mutex.release()
+            scope = None
+            ChromeTracingAdvice.__update_async_log(scope,func,"b")
             rc = func(*args, **kwargs)
-            counter_mutex.acquire()
-            event["ts"] = time.time() * 1000000
-            event["ph"] = "e"
-            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
-            counter = counter + 1
-            counter_mutex.release()
+            ChromeTracingAdvice.__update_async_log(scope,func,"e")
             return rc
 
         return trace

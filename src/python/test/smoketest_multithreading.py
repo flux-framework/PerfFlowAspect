@@ -6,27 +6,27 @@ import perfflowaspect
 import perfflowaspect.aspect
 
 
-@perfflowaspect.aspect.critical_path(pointcut="around_async")
+@perfflowaspect.aspect.critical_path()
 def bar(message):
     time.sleep(1)
     print(message)
 
 
-@perfflowaspect.aspect.critical_path(pointcut="around_async")
+@perfflowaspect.aspect.critical_path()
 def foo(message):
     time.sleep(1)
     bar(message)
 
 
-@perfflowaspect.aspect.critical_path(pointcut="around_async")
-def thread_fn(name):
+@perfflowaspect.aspect.critical_path()
+def thd_fn(name):
     foo("Hello from Thread ID: " + str(name))
 
 
 def main():
     threads = []
-    for i in range(2):
-        t = threading.Thread(target=thread_fn, args=(i,))
+    for i in range(5):
+        t = threading.Thread(target=thd_fn, args=(i,))
         t.start()
         threads.append(t)
 

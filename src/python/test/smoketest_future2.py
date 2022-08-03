@@ -19,7 +19,7 @@ def async_begin_in_foo():
 
 @perfflowaspect.aspect.critical_path(pointcut="after_async", scope="foo")
 def bar(message):
-    sleep(1)
+    time.sleep(1)
     return message
 
 
