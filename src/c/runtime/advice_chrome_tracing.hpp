@@ -52,7 +52,7 @@ private:
     std::ostringstream m_oss;
     std::ofstream m_ofs;
     std::string m_fn = "";
-    int m_enable_logging = 0;
+    int m_enable_logging = 1; /* Default should be true */
     int m_before_counter = 0;
     int m_after_counter = 0;
     pthread_mutex_t m_before_counter_mutex;

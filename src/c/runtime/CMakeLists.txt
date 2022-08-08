@@ -12,7 +12,7 @@ set(perfflow_runtime_sources
     perfflow_runtime.cpp
 )
 
-set(perfflow_runtime_deps -ljansson
+set(perfflow_runtime_deps -ljansson -lssl -lcrypto
 )
 
 add_library(perfflow_runtime SHARED
