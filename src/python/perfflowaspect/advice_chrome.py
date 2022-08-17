@@ -294,13 +294,19 @@ class ChromeTracingAdvice:
 
             if ChromeTracingAdvice.metrics_var:
                 p = psutil.Process(os.getpid())
-                cpu_usage = p.cpu_percent(interval=0)
+                cpu_start = p.cpu_times()
+                cpu_start = cpu_start[0]
                 mem_before = p.memory_info().rss
+                time_start = time.time()
 
             rc = func(*args, **kwargs)
 
             if ChromeTracingAdvice.metrics_var:
-                cpu_usage = p.cpu_percent(interval=0)
+                time_end = time.time() - time_start
+                cpu_end = p.cpu_times()
+                cpu_end = cpu_end[0]
+                cpu_end = cpu_end - cpu_start
+                cpu_usage = (cpu_end / time_end) * 100
                 mem_after = p.memory_info().rss
                 mem_usage = mem_after - mem_before
                 if mem_usage > 0:
