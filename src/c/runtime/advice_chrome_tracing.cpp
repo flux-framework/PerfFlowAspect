@@ -174,6 +174,20 @@ int advice_chrome_tracing_t::encode_event(json_t *o, const char *ph,
             goto json_memerror;
         }
     }
+    if (std::string("C") == ph)
+    {
+        json_t *cpu_usage_o, *mem_usage_o;
+        if (!(cpu_usage_o = json_real(cpu_usage)))
+            goto json_memerror;
+        if (json_object_set_new(args_o, "cpu_usage", cpu_usage_o) < 0)
+            goto json_memerror;
+        if (!(mem_usage_o = json_integer(static_cast<json_int_t>(mem_usage))))
+            goto json_memerror;
+        if (json_object_set_new(args_o, "memory_usage", mem_usage_o) < 0)
+            goto json_memerror;
+        if (json_object_set_new(o, "args", args_o) < 0)
+            goto json_memerror;
+    }
     return 0;
 
 json_memerror:
@@ -397,6 +411,20 @@ int advice_chrome_tracing_t::set_perfflow_instance_path(
     return setenv("PERFFLOW_INSTANCE_PATH", path.c_str(), 1);
 }
 
+int advice_chrome_tracing_t::set_metrics_var(const std::string value)
+{
+    return setenv("CPU_MEM_USAGE", value.c_str(), 1);
+}
+
+const std::string advice_chrome_tracing_t::get_metrics_var()
+{
+    if (NULL == getenv("CPU_MEM_USAGE"))
+    {
+        return "False";
+    }
+    return getenv("CPU_MEM_USAGE");
+}
+
 
 /******************************************************************************
  *                                                                            *
@@ -431,6 +459,23 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     if (set_perfflow_instance_path(inst_path))
         throw std::system_error(errno, std::system_category(),
                                 "set_perfflow_instance_path");
+
+    metric_var = get_metrics_var();
+    if (metric_var == "True" || metric_var == "true" || metric_var == "TRUE")
+    {
+        metric_var = "True";
+    }
+    else if (metric_var == "False" || metric_var == "false" ||
+             metric_var == "FALSE")
+    {
+        metric_var = "False";
+    }
+    else
+    {
+        metric_var = "False";
+        if (set_metrics_var("False"))
+            throw std::system_error(errno, std::system_category(), "set_metrics_var");
+    }
 
     std::string include = m_perfflow_options["log-filename-include"];
     std::vector<std::string> include_list;
