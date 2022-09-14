@@ -39,7 +39,9 @@ int advice_chrome_tracing_t::get_timestamp(double &tstamp)
     int rc;
     struct timeval ts;
     if ((rc = gettimeofday(&ts, NULL)) < 0)
+    {
         return rc;
+    }
     tstamp = (double)ts.tv_sec * 1000000.f + (double)ts.tv_usec;
     return 0;
 }
@@ -56,7 +58,9 @@ int advice_chrome_tracing_t::create_event(json_t **o,
     std::string demangle;
 
     if ((rc = get_timestamp(ts)) < 0)
+    {
         return rc;
+    }
 
     pid = getpid();
     tid = my_gettid();
@@ -64,7 +68,9 @@ int advice_chrome_tracing_t::create_event(json_t **o,
     demangle = (cxa) ? cxa : function;
     std::size_t pos = demangle.find_first_of('(');
     if (pos != std::string::npos)
+    {
         demangle = demangle.substr(0, pos);
+    }
 
     if (!(json = json_pack("{s:s s:s s:I s:I s:f}",
                            "name", demangle.c_str(),
@@ -94,32 +100,48 @@ int advice_chrome_tracing_t::encode_event(json_t *o, const char *ph,
 
     json_t *ph_o;
     if (!(ph_o = json_string(ph)))
+    {
         goto json_memerror;
+    }
     if (json_object_set_new(o, "ph", ph_o) < 0)
+    {
         goto json_memerror;
+    }
     if (scope)
     {
         json_t *sc;
         if (!(sc = json_string(scope)))
+        {
             goto json_memerror;
+        }
         if (json_object_set_new(o, "scope", sc) < 0)
+        {
             goto json_memerror;
+        }
     }
     if (flow_enclose)
     {
         json_t *enclose;
         if (!(enclose = json_string("e")))
+        {
             goto json_memerror;
+        }
         if (json_object_set_new(o, "bp", enclose) < 0)
+        {
             goto json_memerror;
+        }
     }
     if (id >= 0)
     {
         json_t *id_o;
         if (!(id_o = json_integer(static_cast<json_int_t>(id))))
+        {
             goto json_memerror;
+        }
         if (json_object_set_new(o, "id", id_o) < 0)
+        {
             goto json_memerror;
+        }
     }
     return 0;
 
@@ -134,7 +156,9 @@ int advice_chrome_tracing_t::flush_if(size_t size)
     try
     {
         if ((rc = pthread_mutex_lock(&m_mutex)) < 0)
+        {
             return rc;
+        }
         m_oss.seekp(0, std::ios::end);
         std::stringstream::pos_type offset = m_oss.tellp();
         if (offset >= size)
@@ -149,12 +173,16 @@ int advice_chrome_tracing_t::flush_if(size_t size)
             m_oss.clear();
         }
         if ((rc = pthread_mutex_unlock(&m_mutex)) < 0)
+        {
             return rc;
+        }
     }
     catch (std::ostream::failure &e)
     {
         if (errno == 0)
+        {
             errno = EIO;
+        }
         return -1;
     }
     return 0;
@@ -193,7 +221,9 @@ int advice_chrome_tracing_t::parse_perfflow_options()
         std::string entry;
         ss << options;
         while (getline(ss, entry, ':'))
+        {
             options_list.push_back(entry);
+        }
     }
     for (auto &opt : options_list)
     {
@@ -217,10 +247,14 @@ const std::string advice_chrome_tracing_t::get_foreign_wm()
 {
     char *foreign_job_id = getenv("SLURM_JOB_ID");
     if (foreign_job_id)
+    {
         return "slurm";
+    }
     foreign_job_id = getenv("LSB_JOBID");
     if (foreign_job_id)
+    {
         return "lsf";
+    }
     return "";
 }
 
@@ -233,14 +267,18 @@ const std::string advice_chrome_tracing_t::get_uniq_id_from_foreign_wm()
         char *job_id = getenv("SLURM_JOB_ID");
         char *step_id = getenv("SLURM_STEP_ID");
         if (job_id && step_id)
+        {
             uniq_id = std::string(job_id) + "." + std::string(step_id);
+        }
     }
     else if (foreign_wm == "lsf")
     {
         char *job_id = getenv("LSB_JOBID");
         char *step_id = getenv("LS_JOBPID");
         if (job_id && step_id)
+        {
             uniq_id = std::string(job_id) + "." + std::string(step_id);
+        }
     }
     return uniq_id;
 }
@@ -283,7 +321,9 @@ const std::string advice_chrome_tracing_t::get_perfflow_instance_path()
                     std::string uri_path = uri_copy.substr(found + 3);
                     found = uri_path.find_last_of("/");
                     if (found != std::string::npos)
+                    {
                         uniq_id = uri_path.substr(0, found);
+                    }
                 }
             }
             unsigned char sha1[SHA_DIGEST_LENGTH];
@@ -305,9 +345,13 @@ const std::string advice_chrome_tracing_t::get_perfflow_instance_path()
 
     instance_path_c_str = getenv("PERFFLOW_INSTANCE_PATH");
     if (!instance_path_c_str)
+    {
         instance_path = instance_id;
+    }
     else
+    {
         instance_path = std::string(instance_path_c_str) + "." + instance_id;
+    }
 
     return instance_path;
 }
@@ -360,7 +404,9 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
 
     ss << include;
     while (getline(ss, entry, ','))
+    {
         include_list.push_back(entry);
+    }
 
     char hn[128];
     if (gethostname(hn, 128) < 0)
@@ -372,13 +418,21 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     for (auto &inc : include_list)
     {
         if (inc == "name")
+        {
             m_fn += "." + m_perfflow_options["name"];
+        }
         else if (inc == "instance-path")
+        {
             m_fn += ".{" + inst_path + "}";
+        }
         else if (inc == "hostname")
+        {
             m_fn += "." + std::string(hn);
+        }
         else if (inc == "pid")
+        {
             m_fn += "." + std::to_string(getpid());
+        }
     }
 
     m_fn += ".pfw";
@@ -417,17 +471,23 @@ advice_chrome_tracing_t::~advice_chrome_tracing_t ()
 {
     flush_if(1);
     if (m_ofs.is_open())
+    {
         m_ofs.close();
+    }
 }
 
 int advice_chrome_tracing_t::write_to_sstream(const char *str)
 {
     int rc;
     if ((rc = pthread_mutex_lock(&m_mutex)) < 0)
+    {
         return rc;
+    }
     m_oss << str << "," << std::endl;
     if ((rc = pthread_mutex_unlock(&m_mutex)) < 0)
+    {
         return rc;
+    }
     return rc;
 }
 
@@ -443,7 +503,9 @@ int advice_chrome_tracing_t::with_flow(const char *module,
     if (m_enable_logging)
     {
         if ((rc = create_event(&event, module, function)) < 0)
+        {
             return rc;
+        }
         if (std::string("in") == flow)
         {
             if ((rc = encode_event(event, "f", nullptr, "e", -1)) < 0)
@@ -511,7 +573,9 @@ int advice_chrome_tracing_t::before(const char *module,
     if (m_enable_logging)
     {
         if ((rc = create_event(&event, module, function)) < 0)
+        {
             return rc;
+        }
         if ((rc = encode_event(event, "B", nullptr, nullptr, -1)) < 0)
         {
             json_decref(event);
@@ -532,14 +596,20 @@ int advice_chrome_tracing_t::before(const char *module,
         free(json_str);
         json_decref(event);
         if ((rc = flush_if(FLUSH_SIZE)) < 0)
+        {
             return rc;
+        }
         if (std::string("NA") != flow)
         {
             const char *eff_flow = flow;
             if (std::string("inout") == flow)
+            {
                 eff_flow = "in";
+            }
             else if (std::string("outin") == flow)
+            {
                 eff_flow = "out";
+            }
             rc = with_flow("flow", "flow", eff_flow, 100);
         }
         return rc;
@@ -564,14 +634,22 @@ int advice_chrome_tracing_t::after(const char *module,
         {
             const char *eff_flow = flow;
             if (std::string("inout") == flow)
+            {
                 eff_flow = "out";
+            }
             else if (std::string("outin") == flow)
+            {
                 eff_flow = "in";
+            }
             if ((rc = with_flow("flow", "flow", eff_flow, 100)) < 0)
+            {
                 return rc;
+            }
         }
         if ((rc = create_event(&event, module, function)) < 0)
+        {
             return rc;
+        }
         if ((rc = encode_event(event, "E", nullptr, nullptr, -1)) < 0)
         {
             json_decref(event);
@@ -610,7 +688,9 @@ int advice_chrome_tracing_t::before_async(const char *module,
     if (m_enable_logging)
     {
         if ((rc = create_event(&event, module, function)) < 0)
+        {
             return rc;
+        }
         if ((rc = pthread_mutex_lock(&m_before_counter_mutex)) < 0)
         {
             json_decref(event);
@@ -642,14 +722,20 @@ int advice_chrome_tracing_t::before_async(const char *module,
         free(json_str);
         json_decref(event);
         if ((rc = flush_if(FLUSH_SIZE)) < 0)
+        {
             return rc;
+        }
         if (std::string("NA") != flow)
         {
             const char *eff_flow = flow;
             if (std::string("inout") == flow)
+            {
                 eff_flow = "in";
+            }
             else if (std::string("outin") == flow)
+            {
                 eff_flow = "out";
+            }
             rc = with_flow("flow", "flow", flow, 100);
         }
         return rc;
@@ -675,14 +761,22 @@ int advice_chrome_tracing_t::after_async(const char *module,
         {
             const char *eff_flow = flow;
             if (std::string("inout") == flow)
+            {
                 eff_flow = "out";
+            }
             else if (std::string("outin") == flow)
+            {
                 eff_flow = "in";
+            }
             if ((rc = with_flow("flow", "flow", eff_flow, 100)) < 0)
+            {
                 return rc;
+            }
         }
         if ((rc = create_event(&event, module, function)) < 0)
+        {
             return rc;
+        }
         if ((rc = pthread_mutex_lock(&m_after_counter_mutex)) < 0)
         {
             json_decref(event);

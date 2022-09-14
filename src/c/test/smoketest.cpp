@@ -33,7 +33,9 @@ int foo(const std::string &str)
     usleep(1000);
     bar();
     if (str == "hello")
+    {
         return 1;
+    }
     return 0;
 }
 
@@ -41,7 +43,9 @@ int main(int argc, char *argv[])
 {
     printf("Inside main\n");
     for (int i = 0; i < 4; i++)
+    {
         foo("hello");
+    }
     return 0;
 }
 
