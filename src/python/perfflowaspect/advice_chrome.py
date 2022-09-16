@@ -332,8 +332,7 @@ class ChromeTracingAdvice:
                 cpu_end = cpu_end[0]
                 cpu_end = cpu_end - cpu_start
                 cpu_usage = (cpu_end / time_end) * 100
-                mem_after = p.memory_info().rss
-                mem_usage = mem_after - mem_before
+                mem_usage = p.memory_info().rss
                 if mem_usage > 0:
                     mem_usage = mem_usage / 1000
                 event["ph"] = "C"
