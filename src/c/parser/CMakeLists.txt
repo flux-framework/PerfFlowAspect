@@ -37,7 +37,7 @@ add_library(perfflow_parser SHARED
 target_include_directories(perfflow_parser PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 install(TARGETS perfflow_parser
-        EXPORT perfflow_parser
+        EXPORT perfflow_export
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
