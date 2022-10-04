@@ -35,7 +35,9 @@ bool WeavingPass::insertAfter(Module &m, Function &f, StringRef &a,
                               int async, std::string &scope, std::string &flow)
 {
     if (m.empty() || f.empty())
+    {
         return false;
+    }
 
     auto &context = m.getContext();
     Type *voidType = Type::getVoidTy(context);
@@ -83,7 +85,9 @@ bool WeavingPass::insertBefore(Module &m, Function &f, StringRef &a,
                                int async, std::string &scope, std::string &flow)
 {
     if (m.empty() || f.empty())
+    {
         return false;
+    }
 
     auto &context = m.getContext();
     Type *voidType = Type::getVoidTy(context);
@@ -132,7 +136,9 @@ bool WeavingPass::doInitialization(Module &m)
 {
     auto annotations = m.getNamedGlobal("llvm.global.annotations");
     if (!annotations)
+    {
         return false;
+    }
 
     bool changed = false;
     auto a = cast<ConstantArray> (annotations->getOperand(0));
@@ -159,7 +165,9 @@ bool WeavingPass::doInitialization(Module &m)
                     if (pcut == "around")
                     {
                         if (flow == "in" || flow == "out")
+                        {
                             flow = "NA";
+                        }
                     }
                     changed = insertAfter(m, *fn,
                                           anno, 0, scope, flow) || changed;
@@ -169,7 +177,9 @@ bool WeavingPass::doInitialization(Module &m)
                     if (pcut == "around")
                     {
                         if (flow == "in" || flow == "out")
+                        {
                             flow = "NA";
+                        }
                     }
                     changed = insertAfter(m, *fn,
                                           anno, 1, scope, flow) || changed;
