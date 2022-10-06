@@ -162,4 +162,58 @@ test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest2' '
     fi
 '
 
+test_expect_success 'c binding: smoketest3 runs ok in default' '
+    ../smoketest3
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest3' '
+    PERFFLOW_OPTIONS="log-enable=False" ../smoketest3 &&
+    ! test -f perfflow.$(hostname).[0-9]*.pfw
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then
+        rm perfflow.$(hostname).[0-9]*.pfw
+    fi
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest3' '
+    PERFFLOW_OPTIONS="log-enable=True" ../smoketest3 &&
+    test -f perfflow.$(hostname).[0-9]*.pfw &&
+    rm perfflow.$(hostname).[0-9]*.pfw
+'
+
+test_expect_success 'c binding: smoketest_MT runs ok in default' '
+    ../smoketest_MT
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_MT' '
+    PERFFLOW_OPTIONS="log-enable=False" ../smoketest_MT &&
+    ! test -f perfflow.$(hostname).[0-9]*.pfw
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then
+        rm perfflow.$(hostname).[0-9]*.pfw
+    fi
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_MT' '
+    PERFFLOW_OPTIONS="log-enable=True" ../smoketest_MT &&
+    test -f perfflow.$(hostname).[0-9]*.pfw &&
+    rm perfflow.$(hostname).[0-9]*.pfw
+'
+
+test_expect_success 'c binding: smoketest_MPI runs ok in default' '
+    mpirun -n 4 smoketest_MPI
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_MPI' '
+    PERFFLOW_OPTIONS="log-enable=False" ../smoketest_MPI &&
+    ! test -f perfflow.$(hostname).[0-9]*.pfw
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then
+        rm perfflow.$(hostname).[0-9]*.pfw
+    fi
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_MPI' '
+    PERFFLOW_OPTIONS="log-enable=True" ../smoketest_MPI &&
+    test -f perfflow.$(hostname).[0-9]*.pfw &&
+    rm perfflow.$(hostname).[0-9]*.pfw
+'
+
 test_done
