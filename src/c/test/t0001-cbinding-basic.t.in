@@ -199,7 +199,7 @@ test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_MT' '
 '
 
 test_expect_success 'c binding: smoketest_MPI runs ok in default' '
-    mpirun -n 4 smoketest_MPI
+    mpirun -n 4 ../smoketest_MPI
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_MPI' '
