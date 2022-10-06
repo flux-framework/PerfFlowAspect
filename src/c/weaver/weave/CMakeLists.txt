@@ -15,8 +15,20 @@ set_target_properties(WeavePass PROPERTIES
 find_library(JANSSON_LIB jansson)
 target_link_libraries(WeavePass perfflow_parser "${JANSSON_LIB}")
 
+add_library(WeavePassPlugin INTERFACE)
+target_compile_options(WeavePassPlugin INTERFACE
+    "SHELL:$<BUILD_INTERFACE:-Xclang -load -Xclang $<TARGET_FILE:WeavePass>>$<INSTALL_INTERFACE:-Xclang -load -Xclang $<TARGET_FILE:perfflowaspect::WeavePass>>"
+)
+
+install(TARGETS WeavePassPlugin
+        EXPORT perfflow_export
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
 install(TARGETS WeavePass
-        EXPORT WeavePass
+        EXPORT perfflow_export
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}

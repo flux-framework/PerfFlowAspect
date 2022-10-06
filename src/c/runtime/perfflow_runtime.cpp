@@ -52,11 +52,17 @@ extern "C" void perfflow_weave_before(int async,
                                       const char *flow)
 {
     if (advice == nullptr)
+    {
         return;
+    }
     if (async)
+    {
         advice->before_async(module, function, scope, flow);
+    }
     else
+    {
         advice->before(module, function, flow);
+    }
     return;
 }
 
@@ -67,11 +73,17 @@ extern "C" void perfflow_weave_after(int async,
                                      const char *flow)
 {
     if (advice == nullptr)
+    {
         return;
+    }
     if (async)
+    {
         advice->after_async(module, function, scope, flow);
+    }
     else
+    {
         advice->after(module, function, flow);
+    }
     return;
 }
 

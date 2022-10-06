@@ -29,7 +29,9 @@ int foo(const std::string &str)
     printf("Hello\n");
     bar();
     if (str == "hello")
+    {
         return 1;
+    }
     return 0;
 }
 
