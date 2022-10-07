@@ -24,7 +24,9 @@ int foo(const string &str)
         }
     }
     if (str == "hello")
+    {
         return 1;
+    }
     return 0;
 }
 

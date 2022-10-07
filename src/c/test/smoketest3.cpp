@@ -46,7 +46,9 @@ int foo(const std::string &str)
         }
     }
     if (str == "hello")
+    {
         return 1;
+    }
     return 0;
 }
 
