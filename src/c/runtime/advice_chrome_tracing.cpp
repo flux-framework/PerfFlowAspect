@@ -174,20 +174,6 @@ int advice_chrome_tracing_t::encode_event(json_t *o, const char *ph,
             goto json_memerror;
         }
     }
-    if (std::string("C") == ph)
-    {
-        json_t *cpu_usage_o, *mem_usage_o;
-        if (!(cpu_usage_o = json_real(cpu_usage)))
-            goto json_memerror;
-        if (json_object_set_new(args_o, "cpu_usage", cpu_usage_o) < 0)
-            goto json_memerror;
-        if (!(mem_usage_o = json_integer(static_cast<json_int_t>(mem_usage))))
-            goto json_memerror;
-        if (json_object_set_new(args_o, "memory_usage", mem_usage_o) < 0)
-            goto json_memerror;
-        if (json_object_set_new(o, "args", args_o) < 0)
-            goto json_memerror;
-    }
     return 0;
 
 json_memerror:
