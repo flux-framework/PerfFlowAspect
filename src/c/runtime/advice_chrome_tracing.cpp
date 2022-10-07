@@ -154,15 +154,25 @@ int advice_chrome_tracing_t::encode_event(json_t *o, const char *ph,
     {
         json_t *cpu_usage_o, *mem_usage_o;
         if (!(cpu_usage_o = json_real(cpu_usage)))
+        {
             goto json_memerror;
+        }
         if (json_object_set_new(args_o, "cpu_usage", cpu_usage_o) < 0)
+        {
             goto json_memerror;
+        }
         if (!(mem_usage_o = json_integer(static_cast<json_int_t>(mem_usage))))
+        {
             goto json_memerror;
+        }
         if (json_object_set_new(args_o, "memory_usage", mem_usage_o) < 0)
+        {
             goto json_memerror;
+        }
         if (json_object_set_new(o, "args", args_o) < 0)
+        {
             goto json_memerror;
+        }
     }
     return 0;
 
@@ -227,6 +237,10 @@ int advice_chrome_tracing_t::cannonicalize_perfflow_options()
     if (m_perfflow_options.find("log-enable") == m_perfflow_options.end())
     {
         m_perfflow_options["log-enable"] = "True";
+    }
+    if (m_perfflow_options.find("cpu_mem_usage") == m_perfflow_options.end())
+    {
+        m_perfflow_options["cpu_mem_usage"] = "False";
     }
     return 0;
 }
@@ -383,20 +397,6 @@ int advice_chrome_tracing_t::set_perfflow_instance_path(
     return setenv("PERFFLOW_INSTANCE_PATH", path.c_str(), 1);
 }
 
-int advice_chrome_tracing_t::set_metrics_var(const std::string value)
-{
-    return setenv("CPU_MEM_USAGE", value.c_str(), 1);
-}
-
-const std::string advice_chrome_tracing_t::get_metrics_var()
-{
-    if (NULL == getenv("CPU_MEM_USAGE"))
-    {
-        return "False";
-    }
-    return getenv("CPU_MEM_USAGE");
-}
-
 
 /******************************************************************************
  *                                                                            *
@@ -431,23 +431,6 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     if (set_perfflow_instance_path(inst_path))
         throw std::system_error(errno, std::system_category(),
                                 "set_perfflow_instance_path");
-
-    metric_var = get_metrics_var();
-    if (metric_var == "True" || metric_var == "true" || metric_var == "TRUE")
-    {
-        metric_var = "True";
-    }
-    else if (metric_var == "False" || metric_var == "false" ||
-             metric_var == "FALSE")
-    {
-        metric_var = "False";
-    }
-    else
-    {
-        metric_var = "False";
-        if (set_metrics_var("False"))
-            throw std::system_error(errno, std::system_category(), "set_metrics_var");
-    }
 
     std::string include = m_perfflow_options["log-filename-include"];
     std::vector<std::string> include_list;
@@ -512,6 +495,23 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
         throw std::system_error(errno,
                                 std::system_category(),
                                 "invalid log-enable value");
+    }
+
+    std::string usage_enable = m_perfflow_options["cpu_mem_usage"];
+    if (usage_enable == "False")
+    {
+        m_usage_enable = 0;
+    }
+    else if (usage_enable == "True" || usage_enable == "true" ||
+             usage_enable == "TRUE")
+    {
+        m_usage_enable = 1;
+    }
+    else
+    {
+        throw std::system_error(errno,
+                                std::system_category(),
+                                "invalid usage-enable value");
     }
 
     m_before_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -662,7 +662,9 @@ int advice_chrome_tracing_t::before(const char *module,
     if (m_enable_logging)
     {
         if ((rc = create_event(&event, module, function, my_ts)) < 0)
+        {
             return rc;
+        }
         if ((rc = encode_event(event, "B", nullptr, nullptr, -1, -1, -1)) < 0)
         {
             json_decref(event);
@@ -680,7 +682,7 @@ int advice_chrome_tracing_t::before(const char *module,
             return rc;
         }
 
-        if (std::string("around") == pcut && std::string("True") == metric_var)
+        if (std::string("around") == pcut && m_usage_enable == 1)
         {
             jtemp = json_object_get(event, "name");
             std::string my_name = json_string_value(jtemp);
@@ -773,7 +775,9 @@ int advice_chrome_tracing_t::after(const char *module,
             }
         }
         if ((rc = create_event(&event, module, function, my_ts)) < 0)
+        {
             return rc;
+        }
         if ((rc = encode_event(event, "E", nullptr, nullptr, -1, -1, -1)) < 0)
         {
             json_decref(event);
@@ -791,7 +795,7 @@ int advice_chrome_tracing_t::after(const char *module,
             return rc;
         }
 
-        if (std::string("around") == pcut && std::string("True") == metric_var)
+        if (std::string("around") == pcut && m_usage_enable == 1)
         {
             jtemp = json_object_get(event, "name");
             std::string my_name = json_string_value(jtemp);
@@ -818,7 +822,9 @@ int advice_chrome_tracing_t::after(const char *module,
 
                 int status = remove(fname.c_str());
                 if (status != 0)
+                {
                     std::perror("Error deleting file\n");
+                }
             }
 
             cpu_usage = cpu_usage - cpu_start;
@@ -830,7 +836,9 @@ int advice_chrome_tracing_t::after(const char *module,
             cpu_percentage = (cpu_usage / wall_time) * 100;
 
             if ((rc = create_event(&event, module, function, prev_ts)) < 0)
+            {
                 return rc;
+            }
             if ((rc = encode_event(event, "C", nullptr, nullptr, -1, cpu_percentage,
                                    mem_usage)) < 0)
             {
@@ -850,7 +858,9 @@ int advice_chrome_tracing_t::after(const char *module,
             }
 
             if ((rc = create_event(&event, module, function, my_ts)) < 0)
+            {
                 return rc;
+            }
             if ((rc = encode_event(event, "C", nullptr, nullptr, -1, 0.0, 0.0)) < 0)
             {
                 json_decref(event);

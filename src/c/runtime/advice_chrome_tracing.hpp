@@ -50,8 +50,6 @@ private:
     const std::string get_uniq_id_from_foreign_wm ();
     const std::string get_perfflow_instance_path ();
     int set_perfflow_instance_path (const std::string &path);
-    int set_metrics_var(const std::string value);
-    const std::string get_metrics_var();
 
     const int FLUSH_SIZE = 16777216;
     std::ostringstream m_oss;
@@ -60,11 +58,11 @@ private:
     int m_enable_logging = 0;
     int m_before_counter = 0;
     int m_after_counter = 0;
+    int m_usage_enable = 0;
     pthread_mutex_t m_before_counter_mutex;
     pthread_mutex_t m_after_counter_mutex;
     pthread_mutex_t m_mutex;
     std::map<std::string, std::string> m_perfflow_options;
-    std::string metric_var;
 };
 
 /*
