@@ -163,7 +163,8 @@ test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest2' '
 '
 
 test_expect_success 'c binding: smoketest3 runs ok in default' '
-    ../smoketest3
+    ../smoketest3 &&
+    rm perfflow.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest3' '
@@ -181,7 +182,8 @@ test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest3' '
 '
 
 test_expect_success 'c binding: smoketest_MT runs ok in default' '
-    ../smoketest_MT
+    ../smoketest_MT &&
+    rm perfflow.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_MT' '
