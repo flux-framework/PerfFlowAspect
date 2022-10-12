@@ -49,7 +49,8 @@ extern "C" void perfflow_weave_before(int async,
                                       const char *module,
                                       const char *function,
                                       const char *scope,
-                                      const char *flow)
+                                      const char *flow,
+                                      const char *pcut)
 {
     if (advice == nullptr)
     {
@@ -61,7 +62,7 @@ extern "C" void perfflow_weave_before(int async,
     }
     else
     {
-        advice->before(module, function, flow);
+        advice->before(module, function, flow, pcut);
     }
     return;
 }
@@ -70,7 +71,8 @@ extern "C" void perfflow_weave_after(int async,
                                      const char *module,
                                      const char *function,
                                      const char *scope,
-                                     const char *flow)
+                                     const char *flow,
+                                     const char *pcut)
 {
     if (advice == nullptr)
     {
@@ -82,7 +84,7 @@ extern "C" void perfflow_weave_after(int async,
     }
     else
     {
-        advice->after(module, function, flow);
+        advice->after(module, function, flow, pcut);
     }
     return;
 }

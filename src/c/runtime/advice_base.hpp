@@ -16,10 +16,12 @@ struct advice_base_t
     virtual ~advice_base_t () {}
     virtual int before (const char *module,
                         const char *function,
-                        const char *flow) = 0;
+                        const char *flow,
+                        const char *pcut) = 0;
     virtual int after (const char *module,
                        const char *function,
-                       const char *flow) = 0;
+                       const char *flow,
+                       const char *pcut) = 0;
     virtual int before_async (const char *module,
                               const char *function,
                               const char *scope,

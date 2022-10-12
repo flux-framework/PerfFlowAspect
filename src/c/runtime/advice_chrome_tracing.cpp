@@ -22,6 +22,7 @@
 #include <openssl/sha.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/resource.h>
 
 // TODO: only works for Linux
 #define my_gettid() ((pid_t)syscall(SYS_gettid))
@@ -48,18 +49,21 @@ int advice_chrome_tracing_t::get_timestamp(double &tstamp)
 
 int advice_chrome_tracing_t::create_event(json_t **o,
         const char *module,
-        const char *function)
+        const char *function,
+        double &ts)
 {
     int rc, status;
     char *cxa;
-    double ts;
     json_t *json;
     pid_t pid, tid;
     std::string demangle;
 
-    if ((rc = get_timestamp(ts)) < 0)
+    if (ts == 0)
     {
-        return rc;
+        if ((rc = get_timestamp(ts)) < 0)
+        {
+            return rc;
+        }
     }
 
     pid = getpid();
@@ -90,8 +94,11 @@ int advice_chrome_tracing_t::create_event(json_t **o,
 
 int advice_chrome_tracing_t::encode_event(json_t *o, const char *ph,
         const char *scope,
-        const char *flow_enclose, int64_t id)
+        const char *flow_enclose, int64_t id,
+        double cpu_usage, long mem_usage)
 {
+    char *temp;
+    json_t *args_o = json_object();
     if (!o || !ph)
     {
         errno = EINVAL;
@@ -139,6 +146,30 @@ int advice_chrome_tracing_t::encode_event(json_t *o, const char *ph,
             goto json_memerror;
         }
         if (json_object_set_new(o, "id", id_o) < 0)
+        {
+            goto json_memerror;
+        }
+    }
+    if (std::string("C") == ph)
+    {
+        json_t *cpu_usage_o, *mem_usage_o;
+        if (!(cpu_usage_o = json_real(cpu_usage)))
+        {
+            goto json_memerror;
+        }
+        if (json_object_set_new(args_o, "cpu_usage", cpu_usage_o) < 0)
+        {
+            goto json_memerror;
+        }
+        if (!(mem_usage_o = json_integer(static_cast<json_int_t>(mem_usage))))
+        {
+            goto json_memerror;
+        }
+        if (json_object_set_new(args_o, "memory_usage", mem_usage_o) < 0)
+        {
+            goto json_memerror;
+        }
+        if (json_object_set_new(o, "args", args_o) < 0)
         {
             goto json_memerror;
         }
@@ -206,6 +237,10 @@ int advice_chrome_tracing_t::cannonicalize_perfflow_options()
     if (m_perfflow_options.find("log-enable") == m_perfflow_options.end())
     {
         m_perfflow_options["log-enable"] = "True";
+    }
+    if (m_perfflow_options.find("cpu_mem_usage") == m_perfflow_options.end())
+    {
+        m_perfflow_options["cpu_mem_usage"] = "False";
     }
     return 0;
 }
@@ -462,6 +497,24 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
                                 "invalid log-enable value");
     }
 
+    std::string usage_enable = m_perfflow_options["cpu_mem_usage"];
+    if (usage_enable == "False" || usage_enable == "false" ||
+        usage_enable == "FALSE")
+    {
+        m_usage_enable = 0;
+    }
+    else if (usage_enable == "True" || usage_enable == "true" ||
+             usage_enable == "TRUE")
+    {
+        m_usage_enable = 1;
+    }
+    else
+    {
+        throw std::system_error(errno,
+                                std::system_category(),
+                                "invalid usage-enable value");
+    }
+
     m_before_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
     m_after_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
     m_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -491,6 +544,38 @@ int advice_chrome_tracing_t::write_to_sstream(const char *str)
     return rc;
 }
 
+double advice_chrome_tracing_t::get_wall_time()
+{
+    struct timeval start;
+    double time_d;
+    if (gettimeofday(&start, NULL))
+    {
+        return 0;
+    }
+    time_d = (double)start.tv_sec + (double)start.tv_usec * .000001;
+    return time_d;
+}
+
+double advice_chrome_tracing_t::get_cpu_time()
+{
+    struct rusage usage;
+    struct timeval time_u;
+    double time_d;
+    getrusage(RUSAGE_SELF, &usage);
+    time_u = usage.ru_utime;
+    time_d = (double) time_u.tv_sec + (double) time_u.tv_usec / 1000000;
+    return time_d;
+}
+
+long advice_chrome_tracing_t::get_memory_usage()
+{
+    struct rusage usage;
+    long max_ram_usage;
+    getrusage(RUSAGE_SELF, &usage);
+    max_ram_usage = usage.ru_maxrss;
+    return max_ram_usage;
+}
+
 int advice_chrome_tracing_t::with_flow(const char *module,
                                        const char *function,
                                        const char *flow,
@@ -499,16 +584,17 @@ int advice_chrome_tracing_t::with_flow(const char *module,
     int rc;
     char *json_str;
     json_t *event, *ph;
+    double my_ts;
 
     if (m_enable_logging)
     {
-        if ((rc = create_event(&event, module, function)) < 0)
+        if ((rc = create_event(&event, module, function, my_ts)) < 0)
         {
             return rc;
         }
         if (std::string("in") == flow)
         {
-            if ((rc = encode_event(event, "f", nullptr, "e", -1)) < 0)
+            if ((rc = encode_event(event, "f", nullptr, "e", -1, -1, -1)) < 0)
             {
                 json_decref(event);
                 return rc;
@@ -516,7 +602,7 @@ int advice_chrome_tracing_t::with_flow(const char *module,
         }
         else if (std::string("out") == flow)
         {
-            if ((rc = encode_event(event, "s", nullptr, "e", -1)) < 0)
+            if ((rc = encode_event(event, "s", nullptr, "e", -1, -1, -1)) < 0)
             {
                 json_decref(event);
                 return rc;
@@ -564,19 +650,23 @@ int advice_chrome_tracing_t::with_flow(const char *module,
 
 int advice_chrome_tracing_t::before(const char *module,
                                     const char *function,
-                                    const char *flow)
+                                    const char *flow,
+                                    const char *pcut)
 {
     int rc;
     char *json_str;
-    json_t *event, *ph;
+    json_t *event, *ph, *jtemp;
+    double my_ts = 0, cpu_start, wall_start;
+    std::string fname;
+    long mem_start;
 
     if (m_enable_logging)
     {
-        if ((rc = create_event(&event, module, function)) < 0)
+        if ((rc = create_event(&event, module, function, my_ts)) < 0)
         {
             return rc;
         }
-        if ((rc = encode_event(event, "B", nullptr, nullptr, -1)) < 0)
+        if ((rc = encode_event(event, "B", nullptr, nullptr, -1, -1, -1)) < 0)
         {
             json_decref(event);
             return rc;
@@ -591,6 +681,32 @@ int advice_chrome_tracing_t::before(const char *module,
         {
             json_decref(event);
             return rc;
+        }
+
+        if (std::string("around") == pcut && m_usage_enable == 1)
+        {
+            jtemp = json_object_get(event, "name");
+            std::string my_name = json_string_value(jtemp);
+            jtemp = json_object_get(event, "pid");
+            int my_pid = (int) json_integer_value(jtemp);
+            jtemp = json_object_get(event, "tid");
+            int my_tid = (int) json_integer_value(jtemp);
+
+            fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
+                        my_tid) + ".txt";
+            std::ofstream myfile(fname.c_str());
+            cpu_start = get_cpu_time();
+            wall_start = get_wall_time();
+            mem_start = get_memory_usage();
+
+            if (myfile.is_open())
+            {
+                myfile << std::to_string(cpu_start) << "\n";
+                myfile << std::to_string(wall_start) << "\n";
+                myfile << std::to_string(my_ts) << "\n";
+                myfile << std::to_string(mem_start) << "\n";
+                myfile.close();
+            };
         }
 
         free(json_str);
@@ -622,11 +738,24 @@ int advice_chrome_tracing_t::before(const char *module,
 
 int advice_chrome_tracing_t::after(const char *module,
                                    const char *function,
-                                   const char *flow)
+                                   const char *flow,
+                                   const char *pcut)
 {
+    double cpu_usage, wall_time;
+    long mem_usage;
+    if (std::string("around") == pcut)
+    {
+        cpu_usage = get_cpu_time();
+        wall_time = get_wall_time();
+        mem_usage =  get_memory_usage();
+    }
+
     int rc;
     char *json_str;
-    json_t *event, *ph;
+    json_t *event, *ph, *jtemp;
+    double my_ts = 0, prev_ts, cpu_start, wall_start, cpu_percentage;
+    std::string line, fname;
+    long mem_start;
 
     if (m_enable_logging)
     {
@@ -646,11 +775,11 @@ int advice_chrome_tracing_t::after(const char *module,
                 return rc;
             }
         }
-        if ((rc = create_event(&event, module, function)) < 0)
+        if ((rc = create_event(&event, module, function, my_ts)) < 0)
         {
             return rc;
         }
-        if ((rc = encode_event(event, "E", nullptr, nullptr, -1)) < 0)
+        if ((rc = encode_event(event, "E", nullptr, nullptr, -1, -1, -1)) < 0)
         {
             json_decref(event);
             return rc;
@@ -666,6 +795,91 @@ int advice_chrome_tracing_t::after(const char *module,
             json_decref(event);
             return rc;
         }
+
+        if (std::string("around") == pcut && m_usage_enable == 1)
+        {
+            jtemp = json_object_get(event, "name");
+            std::string my_name = json_string_value(jtemp);
+            jtemp = json_object_get(event, "pid");
+            int my_pid = (int) json_integer_value(jtemp);
+            jtemp = json_object_get(event, "tid");
+            int my_tid = (int) json_integer_value(jtemp);
+
+            fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
+                        my_tid) + ".txt";
+            std::ifstream myfile(fname.c_str());
+            if (myfile.is_open())
+            {
+                std::vector<std::string> lines;
+                while (getline(myfile, line))
+                {
+                    lines.push_back(line);
+                }
+                cpu_start = std::stod(lines[0]);
+                wall_start = std:: stod(lines[1]);
+                prev_ts = std::stod(lines[2]);
+                mem_start = std::stol(lines[3]);
+                myfile.close();
+
+                int status = remove(fname.c_str());
+                if (status != 0)
+                {
+                    std::perror("Error deleting file\n");
+                }
+            }
+
+            cpu_usage = cpu_usage - cpu_start;
+            if (cpu_usage < 0.0001)
+            {
+                cpu_usage = 0;
+            }
+            wall_time = wall_time - wall_start;
+            cpu_percentage = (cpu_usage / wall_time) * 100;
+
+            if ((rc = create_event(&event, module, function, prev_ts)) < 0)
+            {
+                return rc;
+            }
+            if ((rc = encode_event(event, "C", nullptr, nullptr, -1, cpu_percentage,
+                                   mem_usage)) < 0)
+            {
+                json_decref(event);
+                return rc;
+            }
+            if (!(json_str = json_dumps(event, JSON_INDENT(0))))
+            {
+                json_decref(event);
+                errno = ENOMEM;
+                return -1;
+            }
+            if ((rc = write_to_sstream(json_str)) < 0)
+            {
+                json_decref(event);
+                return rc;
+            }
+
+            if ((rc = create_event(&event, module, function, my_ts)) < 0)
+            {
+                return rc;
+            }
+            if ((rc = encode_event(event, "C", nullptr, nullptr, -1, 0.0, 0.0)) < 0)
+            {
+                json_decref(event);
+                return rc;
+            }
+            if (!(json_str = json_dumps(event, JSON_INDENT(0))))
+            {
+                json_decref(event);
+                errno = ENOMEM;
+                return -1;
+            }
+            if ((rc = write_to_sstream(json_str)) < 0)
+            {
+                json_decref(event);
+                return rc;
+            }
+        }
+
         free(json_str);
         json_decref(event);
         return flush_if(FLUSH_SIZE);
@@ -684,10 +898,11 @@ int advice_chrome_tracing_t::before_async(const char *module,
     int rc;
     char *json_str;
     json_t *event, *ph, *sc;
+    double my_ts;
 
     if (m_enable_logging)
     {
-        if ((rc = create_event(&event, module, function)) < 0)
+        if ((rc = create_event(&event, module, function, my_ts)) < 0)
         {
             return rc;
         }
@@ -697,7 +912,7 @@ int advice_chrome_tracing_t::before_async(const char *module,
             return rc;
         }
         if ((rc = encode_event(event, "b", scope, nullptr,
-                               m_before_counter)) < 0)
+                               m_before_counter, -1, -1)) < 0)
         {
             json_decref(event);
             return rc;
@@ -754,6 +969,7 @@ int advice_chrome_tracing_t::after_async(const char *module,
     int rc;
     char *json_str;
     json_t *event, *ph, *sc;
+    double my_ts;
 
     if (m_enable_logging)
     {
@@ -773,7 +989,7 @@ int advice_chrome_tracing_t::after_async(const char *module,
                 return rc;
             }
         }
-        if ((rc = create_event(&event, module, function)) < 0)
+        if ((rc = create_event(&event, module, function, my_ts)) < 0)
         {
             return rc;
         }
@@ -783,7 +999,7 @@ int advice_chrome_tracing_t::after_async(const char *module,
             return rc;
         }
         if ((rc = encode_event(event, "e", scope,
-                               nullptr, m_after_counter)) < 0)
+                               nullptr, m_after_counter, -1, -1)) < 0)
         {
             json_decref(event);
             return rc;
