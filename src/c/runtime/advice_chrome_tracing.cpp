@@ -499,7 +499,7 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
 
     std::string usage_enable = m_perfflow_options["cpu_mem_usage"];
     if (usage_enable == "False" || usage_enable == "false" ||
-             usage_enable == "FALSE"))
+             usage_enable == "FALSE")
     {
         m_usage_enable = 0;
     }
