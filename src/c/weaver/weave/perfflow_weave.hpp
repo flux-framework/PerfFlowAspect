@@ -31,9 +31,9 @@ public:
 
 private:
     bool insertAfter (Module &m, Function &f, StringRef &a,
-                      int async, std::string &scope, std::string &flow);
+                      int async, std::string &scope, std::string &flow, std::string pcut);
     bool insertBefore (Module &m, Function &f, StringRef &a,
-                       int async, std::string &scope, std::string &flow);
+                       int async, std::string &scope, std::string &flow, std::string pcut);
 };
 
 }
