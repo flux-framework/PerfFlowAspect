@@ -33,6 +33,7 @@ astyle --errors-to-stdout \
        --max-code-length=80 \
        --break-after-logical \
        --indent-switches \
+       --add-brackets \
        ${FILES}
 
 #

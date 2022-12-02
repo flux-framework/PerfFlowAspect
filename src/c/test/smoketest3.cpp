@@ -22,7 +22,6 @@ __attribute__((annotate("@critical_path(pointcut='around')")))
 void bar()
 {
     printf("bar\n");
-    usleep(1000);
     bas();
 }
 
@@ -32,6 +31,20 @@ int foo(const std::string &str)
     printf("foo\n");
     usleep(1000);
     bar();
+    int temp = 0;
+    int temp1[1000000] = {25};
+    int temp2[10000] = {22};
+    int temp3[10000] = {0};
+
+    for (int i = 0; i < 10000; i++)
+    {
+        temp = temp + 1;
+        temp3[i] = temp1[i] * temp2[i];
+        for (int j = i + 1; j < 10000; j++)
+        {
+            temp3[j] = temp3[j] / 3;
+        }
+    }
     if (str == "hello")
     {
         return 1;
@@ -42,10 +55,7 @@ int foo(const std::string &str)
 int main(int argc, char *argv[])
 {
     printf("Inside main\n");
-    for (int i = 0; i < 4; i++)
-    {
-        foo("hello");
-    }
+    foo("hello");
     return 0;
 }
 

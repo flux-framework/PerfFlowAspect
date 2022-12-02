@@ -32,10 +32,12 @@ using namespace llvm;
  ******************************************************************************/
 
 bool WeavingPass::insertAfter(Module &m, Function &f, StringRef &a,
-                              int async, std::string &scope, std::string &flow)
+                              int async, std::string &scope, std::string &flow, std::string pcut)
 {
     if (m.empty() || f.empty())
+    {
         return false;
+    }
 
     auto &context = m.getContext();
     Type *voidType = Type::getVoidTy(context);
@@ -43,6 +45,7 @@ bool WeavingPass::insertAfter(Module &m, Function &f, StringRef &a,
     Type *int8PtrType = Type::getInt8PtrTy(context);
     std::vector<llvm::Type *> params;
     params.push_back(int32Type);
+    params.push_back(int8PtrType);
     params.push_back(int8PtrType);
     params.push_back(int8PtrType);
     params.push_back(int8PtrType);
@@ -67,12 +70,14 @@ bool WeavingPass::insertAfter(Module &m, Function &f, StringRef &a,
             Value *v2 = builder.CreateGlobalStringPtr(f.getName(), "str");
             Value *v3 = builder.CreateGlobalStringPtr(StringRef(scope), "str");
             Value *v4 = builder.CreateGlobalStringPtr(StringRef(flow), "str");
+            Value *v5 = builder.CreateGlobalStringPtr(StringRef(pcut), "str");
             std::vector<Value *> args;
             args.push_back(ConstantInt::get(Type::getInt32Ty(context), async));
             args.push_back(v1);
             args.push_back(v2);
             args.push_back(v3);
             args.push_back(v4);
+            args.push_back(v5);
             builder.CreateCall(after, args);
         }
     }
@@ -80,10 +85,12 @@ bool WeavingPass::insertAfter(Module &m, Function &f, StringRef &a,
 }
 
 bool WeavingPass::insertBefore(Module &m, Function &f, StringRef &a,
-                               int async, std::string &scope, std::string &flow)
+                               int async, std::string &scope, std::string &flow, std::string pcut)
 {
     if (m.empty() || f.empty())
+    {
         return false;
+    }
 
     auto &context = m.getContext();
     Type *voidType = Type::getVoidTy(context);
@@ -91,6 +98,7 @@ bool WeavingPass::insertBefore(Module &m, Function &f, StringRef &a,
     Type *int8PtrType = Type::getInt8PtrTy(context);
     std::vector<llvm::Type *> params;
     params.push_back(int32Type);
+    params.push_back(int8PtrType);
     params.push_back(int8PtrType);
     params.push_back(int8PtrType);
     params.push_back(int8PtrType);
@@ -109,6 +117,7 @@ bool WeavingPass::insertBefore(Module &m, Function &f, StringRef &a,
     Value *v2 = builder.CreateGlobalStringPtr(f.getName(), "str");
     Value *v3 = builder.CreateGlobalStringPtr(StringRef(scope), "str");
     Value *v4 = builder.CreateGlobalStringPtr(StringRef(flow), "str");
+    Value *v5 = builder.CreateGlobalStringPtr(StringRef(pcut), "str");
     builder.SetInsertPoint(&entry, entry.begin());
     std::vector<Value *> args;
     args.push_back(ConstantInt::get(Type::getInt32Ty(context), async));
@@ -116,6 +125,7 @@ bool WeavingPass::insertBefore(Module &m, Function &f, StringRef &a,
     args.push_back(v2);
     args.push_back(v3);
     args.push_back(v4);
+    args.push_back(v5);
     builder.CreateCall(before, args);
 
     return true;
@@ -132,7 +142,9 @@ bool WeavingPass::doInitialization(Module &m)
 {
     auto annotations = m.getNamedGlobal("llvm.global.annotations");
     if (!annotations)
+    {
         return false;
+    }
 
     bool changed = false;
     auto a = cast<ConstantArray> (annotations->getOperand(0));
@@ -150,29 +162,35 @@ bool WeavingPass::doInitialization(Module &m)
             {
                 if (pcut == "around" || pcut == "before")
                     changed = insertBefore(m, *fn,
-                                           anno, 0, scope, flow) || changed;
+                                           anno, 0, scope, flow, pcut) || changed;
                 else if (pcut == "around_async" || pcut == "before_async")
+                {
                     changed = insertBefore(m, *fn,
-                                           anno, 1, scope, flow) || changed;
+                                           anno, 1, scope, flow, pcut) || changed;
+                }
                 if (pcut == "around" || pcut == "after")
                 {
                     if (pcut == "around")
                     {
                         if (flow == "in" || flow == "out")
+                        {
                             flow = "NA";
+                        }
                     }
                     changed = insertAfter(m, *fn,
-                                          anno, 0, scope, flow) || changed;
+                                          anno, 0, scope, flow, pcut) || changed;
                 }
                 else if (pcut == "around_async" || pcut == "after_async")
                 {
                     if (pcut == "around")
                     {
                         if (flow == "in" || flow == "out")
+                        {
                             flow = "NA";
+                        }
                     }
                     changed = insertAfter(m, *fn,
-                                          anno, 1, scope, flow) || changed;
+                                          anno, 1, scope, flow, pcut) || changed;
                 }
             }
             else
