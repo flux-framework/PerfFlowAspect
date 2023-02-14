@@ -1,6 +1,6 @@
 #include <iostream>
 #include <math.h>
-#include "test.cuh"
+#include "aliza.cuh"
 
 __attribute__((annotate("@critical_path(pointcut='around')")))
 __global__ void add(int n, float *x, float *y) {
