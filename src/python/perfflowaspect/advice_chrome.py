@@ -41,8 +41,8 @@ def cannonicalize_perfflow_options():
         perfflow_options["log-dir"] = "./"
     if perfflow_options.get("log-enable") is None:
         perfflow_options["log-enable"] = "True"
-    if perfflow_options.get("cpu_mem_usage") is None:
-        perfflow_options["cpu_mem_usage"] = "False"
+    if perfflow_options.get("cpu-mem-usage") is None:
+        perfflow_options["cpu-mem-usage"] = "False"
 
 
 def parse_perfflow_options():
@@ -136,6 +136,8 @@ class ChromeTracingAdvice:
     #     PERFFLOW_OPTIONS="log-dir=DIR"
     # To disable logging (default: log-enable=True)
     #     PERFFLOW_OPTIONS="log-enable=False"
+    # To collect CPU and memory usage metrics (default: cpu-mem-usage=False)
+    #     PERFFLOW_OPTIONS="cpu-mem-usage=True"
     # You can combine the options in colon (:) delimited format
 
     parse_perfflow_options()
@@ -172,14 +174,13 @@ class ChromeTracingAdvice:
     else:
         raise ValueError("perfflow invalid option: log-enable=[True|False]")
 
-    enable_usage = False
-    usage_enable = perfflow_options["cpu_mem_usage"]
-    if usage_enable in ["True", "true", "TRUE"]:
-        enable_usage = True
-    elif usage_enable in ["False", "false", "FALSE"]:
-        enable_usage = False
+    cpu_mem_usage = perfflow_options["cpu-mem-usage"]
+    if cpu_mem_usage in ["True", "true", "TRUE"]:
+        enable_cpu_mem_usage = True
+    elif cpu_mem_usage in ["False", "false", "FALSE"]:
+        enable_cpu_mem_usage = False
     else:
-        raise ValueError("perfflow invalid option: cpu_mem_usage=[True|False]")
+        raise ValueError("perfflow invalid option: cpu-mem-usage=[True|False]")
 
     logger = None
 
@@ -287,7 +288,7 @@ class ChromeTracingAdvice:
             event["ph"] = "B"
             ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
 
-            if ChromeTracingAdvice.enable_usage:
+            if ChromeTracingAdvice.enable_cpu_mem_usage:
                 p = psutil.Process(os.getpid())
                 cpu_start = p.cpu_times()
                 cpu_start = cpu_start[0]
@@ -296,7 +297,7 @@ class ChromeTracingAdvice:
 
             rc = func(*args, **kwargs)
 
-            if ChromeTracingAdvice.enable_usage:
+            if ChromeTracingAdvice.enable_cpu_mem_usage:
                 time_end = time.time() - time_start
                 cpu_end = p.cpu_times()
                 cpu_end = cpu_end[0]
@@ -311,7 +312,7 @@ class ChromeTracingAdvice:
 
             event["ts"] = time.time() * 1000000
 
-            if ChromeTracingAdvice.enable_usage:
+            if ChromeTracingAdvice.enable_cpu_mem_usage:
                 event["args"] = {"cpu_usage": 0, "memory_usage": 0}
                 ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
                 del event["args"]
