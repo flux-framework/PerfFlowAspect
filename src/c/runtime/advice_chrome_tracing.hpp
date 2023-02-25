@@ -58,7 +58,7 @@ private:
     int m_enable_logging = 1; /* Default should be true */
     int m_before_counter = 0;
     int m_after_counter = 0;
-    int m_usage_enable = 0;
+    int m_cpu_mem_usage_enable = 0;
     pthread_mutex_t m_before_counter_mutex;
     pthread_mutex_t m_after_counter_mutex;
     pthread_mutex_t m_mutex;

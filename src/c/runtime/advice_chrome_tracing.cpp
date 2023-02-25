@@ -238,9 +238,9 @@ int advice_chrome_tracing_t::cannonicalize_perfflow_options()
     {
         m_perfflow_options["log-enable"] = "True";
     }
-    if (m_perfflow_options.find("cpu_mem_usage") == m_perfflow_options.end())
+    if (m_perfflow_options.find("cpu-mem-usage") == m_perfflow_options.end())
     {
-        m_perfflow_options["cpu_mem_usage"] = "False";
+        m_perfflow_options["cpu-mem-usage"] = "False";
     }
     return 0;
 }
@@ -421,6 +421,8 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     //     PERFFLOW_OPTIONS="log-dir=DIR"
     // To disable logging (default: log-enable=True)
     //     PERFFLOW_OPTIONS="log-enable=False"
+    // To collect CPU and memory usage metrics (default: cpu-mem-usage=False)
+    //     PERFFLOW_OPTIONS="cpu-mem-usage=True"
     // You can combine the options in colon (:) delimited format
 
     if (parse_perfflow_options() < 0)
@@ -497,16 +499,16 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
                                 "invalid log-enable value");
     }
 
-    std::string usage_enable = m_perfflow_options["cpu_mem_usage"];
+    std::string usage_enable = m_perfflow_options["cpu-mem-usage"];
     if (usage_enable == "False" || usage_enable == "false" ||
         usage_enable == "FALSE")
     {
-        m_usage_enable = 0;
+        m_cpu_mem_usage_enable = 0;
     }
     else if (usage_enable == "True" || usage_enable == "true" ||
              usage_enable == "TRUE")
     {
-        m_usage_enable = 1;
+        m_cpu_mem_usage_enable = 1;
     }
     else
     {
@@ -683,7 +685,7 @@ int advice_chrome_tracing_t::before(const char *module,
             return rc;
         }
 
-        if (std::string("around") == pcut && m_usage_enable == 1)
+        if (std::string("around") == pcut && m_cpu_mem_usage_enable == 1)
         {
             jtemp = json_object_get(event, "name");
             std::string my_name = json_string_value(jtemp);
@@ -796,7 +798,7 @@ int advice_chrome_tracing_t::after(const char *module,
             return rc;
         }
 
-        if (std::string("around") == pcut && m_usage_enable == 1)
+        if (std::string("around") == pcut && m_cpu_mem_usage_enable == 1)
         {
             jtemp = json_object_get(event, "name");
             std::string my_name = json_string_value(jtemp);
