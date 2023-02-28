@@ -15,8 +15,10 @@ jobs:
       - name: Setup Build Env
         run: |
           sudo apt-get update
-          sudo apt install clang llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich
+          sudo apt-get purge mpich
+          sudo apt install clang llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich nvidia-cuda-toolkit
           clang++ --version
+          nvcc --version
 
       - name: Compile check
         run: |
