@@ -529,7 +529,8 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     {
         m_compact_event_enable = 1;
     }
-    else if (compact_event_enable == "Verbose" || compact_event_enable == "verbose" ||
+    else if (compact_event_enable == "Verbose" ||
+             compact_event_enable == "verbose" ||
              compact_event_enable == "VERBOSE")
     {
         m_compact_event_enable = 0;
