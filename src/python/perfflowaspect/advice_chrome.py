@@ -43,6 +43,8 @@ def cannonicalize_perfflow_options():
         perfflow_options["log-enable"] = "True"
     if perfflow_options.get("cpu-mem-usage") is None:
         perfflow_options["cpu-mem-usage"] = "False"
+    if perfflow_options.get("log-event") is None:
+        perfflow_options["log-event"] = "Verbose"
 
 
 def parse_perfflow_options():
@@ -138,6 +140,8 @@ class ChromeTracingAdvice:
     #     PERFFLOW_OPTIONS="log-enable=False"
     # To collect CPU and memory usage metrics (default: cpu-mem-usage=False)
     #     PERFFLOW_OPTIONS="cpu-mem-usage=True"
+    # To collect B (begin) and E (end) events as single X (complete) duration event (default: log-event=Verbose)
+    #     PERFFLOW_OPTIONS="log-event=Compact"
     # You can combine the options in colon (:) delimited format
 
     parse_perfflow_options()
@@ -181,6 +185,14 @@ class ChromeTracingAdvice:
         enable_cpu_mem_usage = False
     else:
         raise ValueError("perfflow invalid option: cpu-mem-usage=[True|False]")
+
+    log_event = perfflow_options["log-event"]
+    if log_event in ["Compact", "compact", "COMPACT"]:
+        enable_compact_log_event = True
+    elif log_event in ["Verbose", "verbose", "VERBOSE"]:
+        enable_compact_log_event = False
+    else:
+        raise ValueError("perfflow invalid option: log-event=[Compact|Verbose]")
 
     logger = None
 
