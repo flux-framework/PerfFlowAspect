@@ -384,12 +384,14 @@ class ChromeTracingAdvice:
             global counter, counter_mutex
             counter_mutex.acquire()
             event = ChromeTracingAdvice.__create_event_from_func(func)
-            event["ph"] = "X"
             event["id"] = 8192
+            event["ph"] = "b"
             counter = counter + 1
+            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             counter_mutex.release()
             rc = func(*args, **kwargs)
-            event["dur"] = time.time() * 1000000 - event["ts"]
+            event["ts"] = time.time() * 1000000
+            event["ph"] = "e"
             ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             return rc
 
