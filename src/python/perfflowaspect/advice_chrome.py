@@ -297,6 +297,9 @@ class ChromeTracingAdvice:
         @functools.wraps(func)
         def trace(*args, **kwargs):
             event = ChromeTracingAdvice.__create_event_from_func(func)
+            if not ChromeTracingAdvice.enable_compact_log_event:
+                event["ph"] = "B"
+                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
 
             if ChromeTracingAdvice.enable_cpu_mem_usage:
                 p = psutil.Process(os.getpid())
@@ -329,9 +332,12 @@ class ChromeTracingAdvice:
                 ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
                 del event["args"]
 
-            event["ph"] = "X"
-            event["ts"] = dur_start
-            event["dur"] = dur_end - event["ts"]
+            if ChromeTracingAdvice.enable_compact_log_event:
+                event["ph"] = "X"
+                event["ts"] = dur_start
+                event["dur"] = dur_end - event["ts"]
+            else:
+                event["ph"] = "E"
             ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
             return rc
 
