@@ -63,7 +63,7 @@ jobs:
       - name: Run Python Smoke Tests
         run: |
           cd src/python/test
-          ./t0001-pybinding-basic.t
+          ./t0001-pybinding-basic.t --verbose --debug
 
   check-code-format:
     runs-on: ubuntu-latest
