@@ -200,4 +200,12 @@ test_expect_success 'PERFFLOW_OPTIONS: use compact format smoketest' '
     fi
 '
 
+test_expect_success 'PERFFLOW_OPTIONS: use verbose (default) format smoketest' '
+    PERFFLOW_OPTIONS="log-event=verbose" ../smoketest.py &&
+    sanity_check ./perfflow.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then
+        rm perfflow.$(hostname).[0-9]*.pfw
+    fi
+'
+
 test_done
