@@ -16,7 +16,7 @@ fixup_ctf_file(){
 sanity_check(){
     fixup_ctf_file $1 sanity &&
     jq . sanity &&
-    test $(jq "length" sanity) -eq 13 &&
+    test $(jq "length" sanity) -eq 25 &&
     jq ".[].name" sanity | sort | uniq > uniq_names &&
     test_cmp expected uniq_names &&
     rm -f sanity uniq_names
