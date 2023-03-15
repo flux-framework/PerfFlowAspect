@@ -30,7 +30,7 @@ jobs:
           cd src/c
           mkdir build install
           cd build
-          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install -DMPI_CXX=/usr/bin/mpicxx"
+          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_PREFIX_PATH=/usr/bin/mpicc:/usr/bin/mpicxx"
           echo -e ${CMAKE_OPTS}
           cmake ${CMAKE_OPTS} ..
           # build
