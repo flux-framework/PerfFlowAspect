@@ -20,13 +20,17 @@ jobs:
           sudo apt-get install mpich
           clang++ --version
           nvcc --version
+          ls /usr/lib/llvm
+          ls /usr/lib/llvm/cmake
+          which mpicc
+          which mpicxx
 
       - name: Compile check
         run: |
           cd src/c
           mkdir build install
           cd build
-          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm-10/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install"
+          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install -DMPI_CXX=/usr/bin/mpicxx"
           echo -e ${CMAKE_OPTS}
           cmake ${CMAKE_OPTS} ..
           # build
