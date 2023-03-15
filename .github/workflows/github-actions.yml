@@ -20,8 +20,8 @@ jobs:
           sudo apt-get install mpich
           clang++ --version
           nvcc --version
-          ls /usr/lib/llvm
-          ls /usr/lib/llvm/cmake
+          ls /usr/lib/llvm*
+          ls /usr/lib/llvm*/cmake
           which mpicc
           which mpicxx
 
