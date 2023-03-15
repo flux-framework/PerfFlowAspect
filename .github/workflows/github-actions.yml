@@ -6,7 +6,7 @@ jobs:
 
   build-c:
     name: check c bindings
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       # Checkout PerfFlowAspect repository under $GITHUB_WORKSPACE
@@ -15,8 +15,9 @@ jobs:
       - name: Setup Build Env
         run: |
           sudo apt-get update
-          sudo apt-get purge mpich
           sudo apt install clang llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich nvidia-cuda-toolkit
+          sudo apt-get purge mpich
+          sudo apt-get install mpich
           clang++ --version
           nvcc --version
 
