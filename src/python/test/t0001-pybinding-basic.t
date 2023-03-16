@@ -22,6 +22,15 @@ sanity_check(){
     rm -f sanity uniq_names
 }
 
+sanity_check_compact(){
+    fixup_ctf_file $1 sanity &&
+    jq . sanity &&
+    test $(jq "length" sanity) -eq 13 &&
+    jq ".[].name" sanity | sort | uniq > uniq_names &&
+    test_cmp expected uniq_names &&
+    rm -f sanity uniq_names
+}
+
 test_expect_success 'c binding: producing expected output' '
     cat > expected <<-EOF
 	"bar"
@@ -178,6 +187,22 @@ test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_direct' '
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_future_direct' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest_future_direct.py &&
     ! test -f perfflow.$(hostname).[0-9]*.pfw
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then
+        rm perfflow.$(hostname).[0-9]*.pfw
+    fi
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: use compact format smoketest' '
+    PERFFLOW_OPTIONS="log-event=compact" ../smoketest.py &&
+    sanity_check_compact ./perfflow.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then
+        rm perfflow.$(hostname).[0-9]*.pfw
+    fi
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: use verbose (default) format smoketest' '
+    PERFFLOW_OPTIONS="log-event=verbose" ../smoketest.py &&
+    sanity_check ./perfflow.$(hostname).[0-9]*.pfw &&
     if test -f perfflow.$(hostname).[0-9]*.pfw; then
         rm perfflow.$(hostname).[0-9]*.pfw
     fi
