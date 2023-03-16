@@ -15,7 +15,7 @@ jobs:
       - name: Setup Build Env
         run: |
           sudo apt-get update
-          sudo apt install clang llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich nvidia-cuda-toolkit
+          sudo apt install clang-8 llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich nvidia-cuda-toolkit
           clang++ --version
           nvcc --version
 
@@ -24,7 +24,7 @@ jobs:
           cd src/c
           mkdir build install
           cd build
-          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm-10/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install"
+          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++-8 -DLLVM_DIR=/usr/lib/llvm-8/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install"
           echo -e ${CMAKE_OPTS}
           cmake ${CMAKE_OPTS} ..
           # build
