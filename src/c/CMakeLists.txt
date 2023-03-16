@@ -12,7 +12,7 @@ endif()
 # Fail if using Clang < 9.0
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # require at least Clang 9.0
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
         message(FATAL_ERROR "Clang++ version must be at least 9.0!")
     endif()
 else()
