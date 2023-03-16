@@ -24,7 +24,7 @@ jobs:
           cd src/c
           mkdir build install
           cd build
-          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_CXX_FLAGS=-fno-rtti"
+          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install -DLLVM_DIR=/usr/lib/llvm-10"
           echo -e ${CMAKE_OPTS}
           cmake ${CMAKE_OPTS} ..
           # build
