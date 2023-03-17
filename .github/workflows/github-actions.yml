@@ -30,6 +30,7 @@ jobs:
 
       - name: Compile check
         run: |
+          export PATH=/usr/local/cuda-12.1/bin:$PATH
           which nvcc
           cd src/c
           mkdir build install
