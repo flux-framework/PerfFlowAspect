@@ -50,7 +50,7 @@ jobs:
       - name: Run C Smoke Tests
         run: |
           cd src/c/install/test
-          ./t0001-cbinding-basic.t
+          ./t0001-cbinding-basic.t --debug --verbose
 
   build-python:
     name: check python bindings
