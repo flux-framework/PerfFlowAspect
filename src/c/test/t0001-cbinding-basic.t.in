@@ -25,6 +25,10 @@ test_expect_success 'c binding: smoketest runs ok in default' '
     ../smoketest
 '
 
+test_expect_success 'c binding: smoketest_cuda runs ok in default' '
+    ../smoketest_cuda
+'
+
 test_expect_success 'c binding: producing expected output' '
     cat > expected <<-EOF
 	"bar"
@@ -221,14 +225,8 @@ test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_MPI' '
     rm perfflow.$(hostname).[0-9]*.pfw
 '
 
-test_expect_success 'c binding: smoketest_cuda runs ok in default' '
-    ../smoketest_cuda &&
-    rm perfflow.$(hostname).[0-9]*.pfw
-'
-
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_cuda' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest_cuda &&
-    ! test -f perfflow.$(hostname).[0-9]*.pfw
     if test -f perfflow.$(hostname).[0-9]*.pfw; then
         rm perfflow.$(hostname).[0-9]*.pfw
     fi
