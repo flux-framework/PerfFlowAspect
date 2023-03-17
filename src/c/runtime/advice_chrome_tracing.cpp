@@ -242,6 +242,10 @@ int advice_chrome_tracing_t::cannonicalize_perfflow_options()
     {
         m_perfflow_options["cpu-mem-usage"] = "False";
     }
+    if (m_perfflow_options.find("log-event") == m_perfflow_options.end())
+    {
+        m_perfflow_options["log-event"] = "Verbose";
+    }
     return 0;
 }
 
@@ -423,6 +427,8 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     //     PERFFLOW_OPTIONS="log-enable=False"
     // To collect CPU and memory usage metrics (default: cpu-mem-usage=False)
     //     PERFFLOW_OPTIONS="cpu-mem-usage=True"
+    // To collect B (begin) and E (end) events as single X (complete) duration event (default: log-event=Verbose)
+    //     PERFFLOW_OPTIONS="log-event=Compact"
     // You can combine the options in colon (:) delimited format
 
     if (parse_perfflow_options() < 0)
@@ -514,7 +520,26 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     {
         throw std::system_error(errno,
                                 std::system_category(),
-                                "invalid usage-enable value");
+                                "invalid cpu-mem-usage value");
+    }
+
+    std::string compact_event_enable = m_perfflow_options["log-event"];
+    if (compact_event_enable == "Compact" || compact_event_enable == "compact" ||
+        compact_event_enable == "COMPACT")
+    {
+        m_compact_event_enable = 1;
+    }
+    else if (compact_event_enable == "Verbose" ||
+             compact_event_enable == "verbose" ||
+             compact_event_enable == "VERBOSE")
+    {
+        m_compact_event_enable = 0;
+    }
+    else
+    {
+        throw std::system_error(errno,
+                                std::system_category(),
+                                "invalid log-event value");
     }
 
     m_before_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
