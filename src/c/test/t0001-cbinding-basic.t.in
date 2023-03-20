@@ -223,7 +223,7 @@ test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_MPI' '
 
 # Run cuda tests if NVIDIA GPU is present
 lspci=$(lspci | grep -i nvidia 2>/dev/null)
-if [[ -n "${lspci}" ]]; then
+if [ -n "${lspci}" ]; then
     test_expect_success 'c binding: smoketest_cuda runs ok in default' '
         ../smoketest_cuda
     '
