@@ -221,4 +221,27 @@ test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_MPI' '
     rm perfflow.$(hostname).[0-9]*.pfw
 '
 
+# Run cuda tests if NVIDIA GPU is present
+lspci=$(lspci | grep -i nvidia 2>/dev/null)
+if [ -n "${lspci}" ]; then
+    test_expect_success 'c binding: smoketest_cuda runs ok in default' '
+        ../smoketest_cuda
+    '
+
+    test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_cuda' '
+        PERFFLOW_OPTIONS="log-enable=False" ../smoketest_cuda &&
+        if test -f perfflow.$(hostname).[0-9]*.pfw; then
+            rm perfflow.$(hostname).[0-9]*.pfw
+        fi
+    '
+
+    test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_cuda' '
+        PERFFLOW_OPTIONS="log-enable=True" ../smoketest_cuda &&
+        test -f perfflow.$(hostname).[0-9]*.pfw &&
+        rm perfflow.$(hostname).[0-9]*.pfw
+    '
+else
+    say "Skipping CUDA smoketests...NVIDIA GPU not found."
+fi
+
 test_done
