@@ -241,7 +241,7 @@ if [ -n "${lspci}" ]; then
         rm perfflow.$(hostname).[0-9]*.pfw
     '
 else
-    say "Skipping CUDA smoketests..."
+    say "Skipping CUDA smoketests...NVIDIA GPU not found."
 fi
 
 test_done
