@@ -31,11 +31,6 @@ jobs:
       - name: Compile check
         run: |
           export PATH=/usr/local/cuda-12.1/bin:$PATH
-          which nvcc
-          which cc
-          which clang++
-          nvcc --version
-          clang++ --version
           cd src/c
           mkdir build install
           cd build
