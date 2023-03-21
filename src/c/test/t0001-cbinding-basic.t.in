@@ -18,7 +18,7 @@ sanity_check(){
     test $(jq "length" sanity) -eq 25 &&
     jq ".[].name" sanity | sort | uniq > uniq_names &&
     test_cmp expected uniq_names &&
-    rm -f sanity uniq_names
+    rm -f sanity uniq_names $1
 }
 
 test_expect_success 'c binding: smoketest runs ok in default' '
@@ -129,76 +129,91 @@ PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
 
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest &&
-    ! test -f perfflow.$(hostname).[0-9]*.pfw
+    ! test -f perfflow.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then rm perfflow.$(hostname).[0-9]*.pfw; fi
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest' '
     PERFFLOW_OPTIONS="log-enable=True" ../smoketest &&
-    test -f perfflow.$(hostname).[0-9]*.pfw
+    test -f perfflow.$(hostname).[0-9]*.pfw &&
+    rm perfflow.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest2' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest2 &&
-    ! test -f perfflow.$(hostname).[0-9]*.pfw
+    ! test -f perfflow.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then rm perfflow.$(hostname).[0-9]*.pfw; fi
 '
 
 test_expect_success 'c binding: smoketest3 runs ok in default' '
-    ../smoketest3
+    ../smoketest3 &&
+    rm perfflow.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest3' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest3 &&
-    ! test -f perfflow.$(hostname).[0-9]*.pfw
+    ! test -f perfflow.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then rm perfflow.$(hostname).[0-9]*.pfw; fi
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest3' '
     PERFFLOW_OPTIONS="log-enable=True" ../smoketest3 &&
-    test -f perfflow.$(hostname).[0-9]*.pfw
+    test -f perfflow.$(hostname).[0-9]*.pfw &&
+    rm perfflow.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'c binding: smoketest_MT runs ok in default' '
-    ../smoketest_MT
+    ../smoketest_MT &&
+    rm perfflow.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_MT' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest_MT &&
-    ! test -f perfflow.$(hostname).[0-9]*.pfw
+    ! test -f perfflow.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then rm perfflow.$(hostname).[0-9]*.pfw; fi
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_MT' '
     PERFFLOW_OPTIONS="log-enable=True" ../smoketest_MT &&
-    test -f perfflow.$(hostname).[0-9]*.pfw
+    test -f perfflow.$(hostname).[0-9]*.pfw &&
+    rm perfflow.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'c binding: smoketest_MPI runs ok in default' '
-    mpirun -n 2 ../smoketest_MPI
+    mpirun -n 2 ../smoketest_MPI &&
+    rm perfflow.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_MPI' '
     PERFFLOW_OPTIONS="log-enable=False"  mpirun -n 2 ../smoketest_MPI &&
-    test `ls -1 perfflow.$(hostname).[0-9]*.pfw 2>/dev/null | wc -l` -eq 0
+    test `ls -1 perfflow.$(hostname).[0-9]*.pfw 2>/dev/null | wc -l` -eq 0 &&
+    if test `ls -1 perfflow.$(hostname).[0-9]*.pfw 2>/dev/null | wc -l` -gt 0; then rm -f perfflow.$(hostname).[0-9]*.pfw; fi
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_MPI' '
     PERFFLOW_OPTIONS="log-enable=True"  mpirun -n 2 ../smoketest_MPI &&
-    test `ls -1 perfflow.$(hostname).[0-9]*.pfw 2>/dev/null | wc -l` -eq 2
+    test `ls -1 perfflow.$(hostname).[0-9]*.pfw 2>/dev/null | wc -l` -eq 2 &&
+    rm perfflow.$(hostname).[0-9]*.pfw
 '
 
 # Run cuda tests if NVIDIA GPU is present
 lspci=$(lspci | grep -i nvidia 2>/dev/null)
 if [ -n "${lspci}" ]; then
     test_expect_success 'c binding: smoketest_cuda runs ok in default' '
-        ../smoketest_cuda
+        ../smoketest_cuda &&
+        rm perfflow.$(hostname).[0-9]*.pfw
     '
 
     test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_cuda' '
         PERFFLOW_OPTIONS="log-enable=False" ../smoketest_cuda &&
-        ! test -f perfflow.$(hostname).[0-9]*.pfw
+        ! test -f perfflow.$(hostname).[0-9]*.pfw &&
+        if test -f perfflow.$(hostname).[0-9]*.pfw; then rm perfflow.$(hostname).[0-9]*.pfw; fi
     '
 
     test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_cuda' '
         PERFFLOW_OPTIONS="log-enable=True" ../smoketest_cuda &&
-        test -f perfflow.$(hostname).[0-9]*.pfw
+        test -f perfflow.$(hostname).[0-9]*.pfw &&
+        rm perfflow.$(hostname).[0-9]*.pfw
     '
 else
     say "Skipping CUDA smoketests...NVIDIA GPU not found."
