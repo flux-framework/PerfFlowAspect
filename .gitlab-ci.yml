@@ -5,7 +5,7 @@ variables:
 stages:
   - build
 
-build-lassen:
+build_lassen_clang_10_0_1:
  tags:
    - batch
    - lassen
@@ -25,4 +25,4 @@ build-lassen:
    - make VERBOSE=1
    - make install
    - cd ../install-gitlab-lassen/test
-   - ./t0001-cbinding-basic.t --verbose
+   - ./t0001-cbinding-basic.t
