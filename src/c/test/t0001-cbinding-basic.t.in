@@ -107,8 +107,8 @@ PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
     rm perfflow.{${sha1}}.pfw
 '
 
-test_expect_success 'PERFFLOW_OPTIONS: LSB_JOBID along will not work' '
-    LSB_JOB_ID=123456 \
+test_expect_success 'PERFFLOW_OPTIONS: LSB_JOBID + LS_JOBPID must be given' '
+    LSB_JOBID=123456 \
 PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
     sha1=$(echo -n "1" | sha1sum | awk "{print \$1}" | cut -c1-8) &&
     test -f perfflow.{${sha1}}.pfw &&
