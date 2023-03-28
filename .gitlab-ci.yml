@@ -25,4 +25,5 @@ build_lassen_clang_10_0_1:
    - make VERBOSE=1
    - make install
    - cd ../install-gitlab-lassen/test
+   - unset LSB_JOBID LS_JOBPID # unset variables defined on a compute node
    - ./t0001-cbinding-basic.t
