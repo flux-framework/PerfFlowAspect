@@ -113,7 +113,7 @@ PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest.py &&
     rm perfflow.{${sha1}}.pfw
 '
 
-test_expect_success 'PERFFLOW_OPTIONS: LSB_JOBID alone will not work' '
+test_expect_success 'PERFFLOW_OPTIONS: LSB_JOBID + LS_JOBPID must be given' '
     LSB_JOB_ID=123456 \
 PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest.py &&
     sha1=$(echo -n "1" | sha1sum | awk "{print \$1}" | cut -c1-8) &&

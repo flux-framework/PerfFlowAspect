@@ -1,0 +1,29 @@
+variables:
+  CUSTOM_CI_BUILDS_DIR: "/usr/workspace/cloudgap/gitlab-runner"
+  BUILD_ROOT: ${CI_PROJECT_DIR}
+
+stages:
+  - build
+
+build_lassen_clang_10_0_1:
+ tags:
+   - batch
+   - lassen
+ stage: build
+ script:
+   - module load clang/10.0.1-gcc-8.3.1
+   - export PATH=/usr/tce/packages/gcc/gcc-8.3.1/bin:$PATH
+   - export HOSTNAME=`hostname`
+   - echo -e "Hostname:" ${HOSTNAME}
+   - cd src/c
+   - mkdir build-gitlab-lassen
+   - cd build-gitlab-lassen
+   - export HOST_CONFIG=`ls ../host-configs/lassen-4.14.0-ppc64le-clang@10.0.1-gcc@8.3.1.cmake`
+   - echo -e "HOST_CONFIG:" ${HOST_CONFIG}
+   - echo -e "PWD:" ${PWD}
+   - cmake -C ${HOST_CONFIG} -DCMAKE_INSTALL_PREFIX=../install-gitlab-lassen ..
+   - make VERBOSE=1
+   - make install
+   - cd ../install-gitlab-lassen/test
+   - unset LSB_JOBID LS_JOBPID # unset variables defined on a compute node
+   - ./t0001-cbinding-basic.t
