@@ -21,6 +21,15 @@ sanity_check(){
     rm -f sanity uniq_names
 }
 
+sanity_check_compact(){
+    fixup_ctf_file $1 sanity &&
+    jq . sanity &&
+    test $(jq "length" sanity) -eq 13 &&
+    jq ".[].name" sanity | sort | uniq > uniq_names &&
+    test_cmp expected uniq_names &&
+    rm -f sanity uniq_names
+}
+
 test_expect_success 'c binding: smoketest runs ok in default' '
     ../smoketest
 '
@@ -207,6 +216,22 @@ test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_MPI' '
     PERFFLOW_OPTIONS="log-enable=True"  mpirun -n 2 ../smoketest_MPI &&
     test `ls -1 perfflow.$(hostname).[0-9]*.pfw 2>/dev/null | wc -l` -eq 2 &&
     rm perfflow.$(hostname).[0-9]*.pfw
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: use compact format smoketest' '
+    PERFFLOW_OPTIONS="log-event=compact" ../smoketest &&
+    sanity_check_compact ./perfflow.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then
+        rm perfflow.$(hostname).[0-9]*.pfw
+    fi
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: use verbose (default) format smoketest' '
+    PERFFLOW_OPTIONS="log-event=verbose" ../smoketest &&
+    sanity_check ./perfflow.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.$(hostname).[0-9]*.pfw; then
+        rm perfflow.$(hostname).[0-9]*.pfw
+    fi
 '
 
 # Run cuda tests if NVIDIA GPU is present

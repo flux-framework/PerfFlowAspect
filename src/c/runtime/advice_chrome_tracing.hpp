@@ -35,7 +35,7 @@ private:
     int create_event (json_t **o, const char *module, const char *function, double &my_ts);
     int get_timestamp (double &tstamp);
     int encode_event (json_t *o, const char *ph,
-                      const char *scope, const char *enclose, int64_t id, double cpu_usage, long mem_usage);
+                      const char *scope, const char *enclose, int64_t id, double cpu_usage, long mem_usage, double duration);
     int with_flow (const char *module, const char *function,
                    const char *flow, int64_t id);
     int flush_if (size_t size);
@@ -59,6 +59,7 @@ private:
     int m_before_counter = 0;
     int m_after_counter = 0;
     int m_cpu_mem_usage_enable = 0;
+    int m_compact_event_enable = 0;
     pthread_mutex_t m_before_counter_mutex;
     pthread_mutex_t m_after_counter_mutex;
     pthread_mutex_t m_mutex;

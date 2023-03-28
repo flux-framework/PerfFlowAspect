@@ -20,7 +20,6 @@
 #include <sys/time.h>
 #include <sys/syscall.h>
 #include <openssl/sha.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/resource.h>
 
@@ -95,7 +94,8 @@ int advice_chrome_tracing_t::create_event(json_t **o,
 int advice_chrome_tracing_t::encode_event(json_t *o, const char *ph,
         const char *scope,
         const char *flow_enclose, int64_t id,
-        double cpu_usage, long mem_usage)
+        double cpu_usage, long mem_usage,
+        double duration)
 {
     char *temp;
     json_t *args_o = json_object();
@@ -174,6 +174,18 @@ int advice_chrome_tracing_t::encode_event(json_t *o, const char *ph,
             goto json_memerror;
         }
     }
+    if (std::string("X") == ph)
+    {
+        json_t *duration_o;
+        if (!(duration_o = json_real(duration)))
+        {
+            goto json_memerror;
+        }
+        if (json_object_set_new(o, "dur", duration_o) < 0)
+        {
+            goto json_memerror;
+        }
+    }
     return 0;
 
 json_memerror:
@@ -241,6 +253,10 @@ int advice_chrome_tracing_t::cannonicalize_perfflow_options()
     if (m_perfflow_options.find("cpu-mem-usage") == m_perfflow_options.end())
     {
         m_perfflow_options["cpu-mem-usage"] = "False";
+    }
+    if (m_perfflow_options.find("log-event") == m_perfflow_options.end())
+    {
+        m_perfflow_options["log-event"] = "Verbose";
     }
     return 0;
 }
@@ -423,6 +439,8 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     //     PERFFLOW_OPTIONS="log-enable=False"
     // To collect CPU and memory usage metrics (default: cpu-mem-usage=False)
     //     PERFFLOW_OPTIONS="cpu-mem-usage=True"
+    // To collect B (begin) and E (end) events as single X (complete) duration event (default: log-event=Verbose)
+    //     PERFFLOW_OPTIONS="log-event=Compact"
     // You can combine the options in colon (:) delimited format
 
     if (parse_perfflow_options() < 0)
@@ -514,7 +532,26 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     {
         throw std::system_error(errno,
                                 std::system_category(),
-                                "invalid usage-enable value");
+                                "invalid cpu-mem-usage value");
+    }
+
+    std::string compact_event_enable = m_perfflow_options["log-event"];
+    if (compact_event_enable == "Compact" || compact_event_enable == "compact" ||
+        compact_event_enable == "COMPACT")
+    {
+        m_compact_event_enable = 1;
+    }
+    else if (compact_event_enable == "Verbose" ||
+             compact_event_enable == "verbose" ||
+             compact_event_enable == "VERBOSE")
+    {
+        m_compact_event_enable = 0;
+    }
+    else
+    {
+        throw std::system_error(errno,
+                                std::system_category(),
+                                "invalid log-event value");
     }
 
     m_before_counter_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -596,7 +633,7 @@ int advice_chrome_tracing_t::with_flow(const char *module,
         }
         if (std::string("in") == flow)
         {
-            if ((rc = encode_event(event, "f", nullptr, "e", -1, -1, -1)) < 0)
+            if ((rc = encode_event(event, "f", nullptr, "e", -1, -1, -1, -1)) < 0)
             {
                 json_decref(event);
                 return rc;
@@ -604,7 +641,7 @@ int advice_chrome_tracing_t::with_flow(const char *module,
         }
         else if (std::string("out") == flow)
         {
-            if ((rc = encode_event(event, "s", nullptr, "e", -1, -1, -1)) < 0)
+            if ((rc = encode_event(event, "s", nullptr, "e", -1, -1, -1, -1)) < 0)
             {
                 json_decref(event);
                 return rc;
@@ -668,24 +705,29 @@ int advice_chrome_tracing_t::before(const char *module,
         {
             return rc;
         }
-        if ((rc = encode_event(event, "B", nullptr, nullptr, -1, -1, -1)) < 0)
+        if (m_compact_event_enable == 0)
         {
-            json_decref(event);
-            return rc;
-        }
-        if (!(json_str = json_dumps(event, JSON_INDENT(0))))
-        {
-            json_decref(event);
-            errno = ENOMEM;
-            return -1;
-        }
-        if ((rc = write_to_sstream(json_str)) < 0)
-        {
-            json_decref(event);
-            return rc;
+            if ((rc = encode_event(event, "B", nullptr, nullptr, -1, -1, -1, -1)) < 0)
+            {
+                json_decref(event);
+                return rc;
+            }
+            if (!(json_str = json_dumps(event, JSON_INDENT(0))))
+            {
+                json_decref(event);
+                errno = ENOMEM;
+                return -1;
+            }
+            if ((rc = write_to_sstream(json_str)) < 0)
+            {
+                json_decref(event);
+                return rc;
+            }
+            free(json_str);
         }
 
-        if (std::string("around") == pcut && m_cpu_mem_usage_enable == 1)
+        if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
+                                              m_compact_event_enable == 1))
         {
             jtemp = json_object_get(event, "name");
             std::string my_name = json_string_value(jtemp);
@@ -697,21 +739,26 @@ int advice_chrome_tracing_t::before(const char *module,
             fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
                         my_tid) + ".txt";
             std::ofstream myfile(fname.c_str());
-            cpu_start = get_cpu_time();
-            wall_start = get_wall_time();
-            mem_start = get_memory_usage();
+            if (m_cpu_mem_usage_enable == 1)
+            {
+                cpu_start = get_cpu_time();
+                wall_start = get_wall_time();
+                mem_start = get_memory_usage();
+            }
 
             if (myfile.is_open())
             {
-                myfile << std::to_string(cpu_start) << "\n";
-                myfile << std::to_string(wall_start) << "\n";
+                if (m_cpu_mem_usage_enable == 1)
+                {
+                    myfile << std::to_string(cpu_start) << "\n";
+                    myfile << std::to_string(wall_start) << "\n";
+                    myfile << std::to_string(mem_start) << "\n";
+                }
                 myfile << std::to_string(my_ts) << "\n";
-                myfile << std::to_string(mem_start) << "\n";
                 myfile.close();
             };
         }
 
-        free(json_str);
         json_decref(event);
         if ((rc = flush_if(FLUSH_SIZE)) < 0)
         {
@@ -743,7 +790,7 @@ int advice_chrome_tracing_t::after(const char *module,
                                    const char *flow,
                                    const char *pcut)
 {
-    double cpu_usage, wall_time;
+    double cpu_usage, wall_time, duration;
     long mem_usage;
     if (std::string("around") == pcut)
     {
@@ -781,24 +828,28 @@ int advice_chrome_tracing_t::after(const char *module,
         {
             return rc;
         }
-        if ((rc = encode_event(event, "E", nullptr, nullptr, -1, -1, -1)) < 0)
+        if (m_compact_event_enable == 0)
         {
-            json_decref(event);
-            return rc;
-        }
-        if (!(json_str = json_dumps(event, JSON_INDENT(0))))
-        {
-            json_decref(event);
-            errno = ENOMEM;
-            return -1;
-        }
-        if ((rc = write_to_sstream(json_str)) < 0)
-        {
-            json_decref(event);
-            return rc;
+            if ((rc = encode_event(event, "E", nullptr, nullptr, -1, -1, -1, -1)) < 0)
+            {
+                json_decref(event);
+                return rc;
+            }
+            if (!(json_str = json_dumps(event, JSON_INDENT(0))))
+            {
+                json_decref(event);
+                errno = ENOMEM;
+                return -1;
+            }
+            if ((rc = write_to_sstream(json_str)) < 0)
+            {
+                json_decref(event);
+                return rc;
+            }
         }
 
-        if (std::string("around") == pcut && m_cpu_mem_usage_enable == 1)
+        if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
+                                              m_compact_event_enable == 1))
         {
             jtemp = json_object_get(event, "name");
             std::string my_name = json_string_value(jtemp);
@@ -817,10 +868,17 @@ int advice_chrome_tracing_t::after(const char *module,
                 {
                     lines.push_back(line);
                 }
-                cpu_start = std::stod(lines[0]);
-                wall_start = std:: stod(lines[1]);
-                prev_ts = std::stod(lines[2]);
-                mem_start = std::stol(lines[3]);
+                if (m_cpu_mem_usage_enable == 1)
+                {
+                    cpu_start = std::stod(lines[0]);
+                    wall_start = std:: stod(lines[1]);
+                    mem_start = std::stol(lines[2]);
+                    prev_ts = std::stod(lines[3]);
+                }
+                else if (m_compact_event_enable == 1)
+                {
+                    prev_ts = std::stod(lines[0]);
+                }
                 myfile.close();
 
                 int status = remove(fname.c_str());
@@ -838,47 +896,75 @@ int advice_chrome_tracing_t::after(const char *module,
             wall_time = wall_time - wall_start;
             cpu_percentage = (cpu_usage / wall_time) * 100;
 
-            if ((rc = create_event(&event, module, function, prev_ts)) < 0)
+            if (std::string("around") == pcut && m_cpu_mem_usage_enable == 1)
             {
-                return rc;
-            }
-            if ((rc = encode_event(event, "C", nullptr, nullptr, -1, cpu_percentage,
-                                   mem_usage)) < 0)
-            {
-                json_decref(event);
-                return rc;
-            }
-            if (!(json_str = json_dumps(event, JSON_INDENT(0))))
-            {
-                json_decref(event);
-                errno = ENOMEM;
-                return -1;
-            }
-            if ((rc = write_to_sstream(json_str)) < 0)
-            {
-                json_decref(event);
-                return rc;
+                if ((rc = create_event(&event, module, function, prev_ts)) < 0)
+                {
+                    return rc;
+                }
+                if ((rc = encode_event(event, "C", nullptr, nullptr, -1, cpu_percentage,
+                                       mem_usage, -1)) < 0)
+                {
+                    json_decref(event);
+                    return rc;
+                }
+                if (!(json_str = json_dumps(event, JSON_INDENT(0))))
+                {
+                    json_decref(event);
+                    errno = ENOMEM;
+                    return -1;
+                }
+                if ((rc = write_to_sstream(json_str)) < 0)
+                {
+                    json_decref(event);
+                    return rc;
+                }
+
+                if ((rc = create_event(&event, module, function, my_ts)) < 0)
+                {
+                    return rc;
+                }
+                if ((rc = encode_event(event, "C", nullptr, nullptr, -1, 0.0, 0.0, -1)) < 0)
+                {
+                    json_decref(event);
+                    return rc;
+                }
+                if (!(json_str = json_dumps(event, JSON_INDENT(0))))
+                {
+                    json_decref(event);
+                    errno = ENOMEM;
+                    return -1;
+                }
+                if ((rc = write_to_sstream(json_str)) < 0)
+                {
+                    json_decref(event);
+                    return rc;
+                }
             }
 
-            if ((rc = create_event(&event, module, function, my_ts)) < 0)
+            if (std::string("around") == pcut && m_compact_event_enable == 1)
             {
-                return rc;
-            }
-            if ((rc = encode_event(event, "C", nullptr, nullptr, -1, 0.0, 0.0)) < 0)
-            {
-                json_decref(event);
-                return rc;
-            }
-            if (!(json_str = json_dumps(event, JSON_INDENT(0))))
-            {
-                json_decref(event);
-                errno = ENOMEM;
-                return -1;
-            }
-            if ((rc = write_to_sstream(json_str)) < 0)
-            {
-                json_decref(event);
-                return rc;
+                duration = my_ts - prev_ts;
+                if ((rc = create_event(&event, module, function, prev_ts)) < 0)
+                {
+                    return rc;
+                }
+                if ((rc = encode_event(event, "X", nullptr, nullptr, -1, -1, -1, duration)) < 0)
+                {
+                    json_decref(event);
+                    return rc;
+                }
+                if (!(json_str = json_dumps(event, JSON_INDENT(0))))
+                {
+                    json_decref(event);
+                    errno = ENOMEM;
+                    return -1;
+                }
+                if ((rc = write_to_sstream(json_str)) < 0)
+                {
+                    json_decref(event);
+                    return rc;
+                }
             }
         }
 
@@ -914,7 +1000,7 @@ int advice_chrome_tracing_t::before_async(const char *module,
             return rc;
         }
         if ((rc = encode_event(event, "b", scope, nullptr,
-                               m_before_counter, -1, -1)) < 0)
+                               m_before_counter, -1, -1, -1)) < 0)
         {
             json_decref(event);
             return rc;
@@ -1001,7 +1087,7 @@ int advice_chrome_tracing_t::after_async(const char *module,
             return rc;
         }
         if ((rc = encode_event(event, "e", scope,
-                               nullptr, m_after_counter, -1, -1)) < 0)
+                               nullptr, m_after_counter, -1, -1, -1)) < 0)
         {
             json_decref(event);
             return rc;
