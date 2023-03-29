@@ -35,8 +35,11 @@ build_lassen_python_3_8_2:
  stage: build
  script:
    - export HOSTNAME=`hostname`
-   - alias python="/usr/workspace/cloudgap/blueos_3_ppc64le_ib_p9/venv-3.8.2/bin/python"
    - echo -e "Hostname:" ${HOSTNAME}
+   - alias python="/usr/workspace/cloudgap/blueos_3_ppc64le_ib_p9/venv-3.8.2/bin/python"
+   - which python
+   - python --version
+   - export PYTHONPATH=./src/python
    - cd src/python/test
    - unset LSB_JOBID LS_JOBPID # unset variables defined on a compute node
    - ./t0001-pybinding-basic.t
