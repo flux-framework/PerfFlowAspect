@@ -27,3 +27,16 @@ build_lassen_clang_10_0_1:
    - cd ../install-gitlab-lassen/test
    - unset LSB_JOBID LS_JOBPID # unset variables defined on a compute node
    - ./t0001-cbinding-basic.t
+
+build_lassen_python_3_8_2:
+ tags:
+   - batch
+   - lassen
+ stage: build
+ script:
+   - export HOSTNAME=`hostname`
+   - export PATH=/usr/workspace/cloudgap/blueos_3_ppc64le_ib_p9/venv-3.8.2/bin:$PATH
+   - echo -e "Hostname:" ${HOSTNAME}
+   - cd src/python
+   - unset LSB_JOBID LS_JOBPID # unset variables defined on a compute node
+   - ./t0001-cbinding-basic.t
