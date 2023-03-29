@@ -39,4 +39,4 @@ build_lassen_python_3_8_2:
    - echo -e "Hostname:" ${HOSTNAME}
    - cd src/python/test
    - unset LSB_JOBID LS_JOBPID # unset variables defined on a compute node
-   - ./t0001-cbinding-basic.t
+   - ./t0001-pybinding-basic.t
