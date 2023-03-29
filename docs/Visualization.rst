@@ -34,8 +34,8 @@ annotations. The same trace file will be reduced to half the lines with
    {"name": "bar", "cat": "/PerfFlowAspect/src/c/test/smoketest.cpp", "pid": 2688, "tid": 2688, "ts": 1679127137179879.0, "ph": "X", "dur": 2885.0},
    {"name": "foo", "cat": "/PerfFlowAspect/src/c/test/smoketest.cpp", "pid": 2688, "tid": 2688, "ts": 1679127137177783.0, "ph": "X", "dur": 5532.0},
 
-The visualization of both types of logging in trace files will be the same in Perfetto UI. An 
-example visualization is shown below:
+The visualization of both types of logging in trace files will be the same in
+Perfetto UI. An example visualization is shown below:
 
 .. figure:: images/fig1.png
    :scale: 80%
