@@ -37,6 +37,6 @@ build_lassen_python_3_8_2:
    - export HOSTNAME=`hostname`
    - export PATH=/usr/workspace/cloudgap/blueos_3_ppc64le_ib_p9/venv-3.8.2/bin:$PATH
    - echo -e "Hostname:" ${HOSTNAME}
-   - cd src/python
+   - cd src/python/test
    - unset LSB_JOBID LS_JOBPID # unset variables defined on a compute node
    - ./t0001-cbinding-basic.t
