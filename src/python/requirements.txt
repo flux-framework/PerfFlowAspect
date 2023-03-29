@@ -1,1 +1,3 @@
 psutil
+numba==0.55.1
+numpy<=1.21.4
