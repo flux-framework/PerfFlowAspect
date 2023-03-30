@@ -81,6 +81,7 @@ uniformity as to how performance is measured and controlled.
 
    BuildingPerfFlowAspect
    Annotations
+   Visualization
    UpcomingFeatures
 
 .. toctree::
