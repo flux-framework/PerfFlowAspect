@@ -23,7 +23,7 @@ def func(a):
 
 # function optimized to run on gpu
 @perfflowaspect.aspect.critical_path(pointcut="around")
-@jit(target_backend='cuda')
+@jit(target='cuda')
 def func2(a):
     for i in range(10000000):
         a[i] += 1
