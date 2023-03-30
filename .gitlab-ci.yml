@@ -36,9 +36,11 @@ build_lassen_python_3_8_2:
  script:
    - export HOSTNAME=`hostname`
    - echo -e "Hostname:" ${HOSTNAME}
-   - source /usr/workspace/cloudgap/blueos_3_ppc64le_ib_p9/venv-3.8.2/bin/activate
+   - source /usr/workspace/cloudgap/anaconda3/bin/activate
    - which python
    - python --version
+   - pip list | grep numba
+   - pip list | grep numpy
    - cd src/python/test
    - unset LSB_JOBID LS_JOBPID # unset variables defined on a compute node
    - ./t0001-pybinding-basic.t
