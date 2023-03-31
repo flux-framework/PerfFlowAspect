@@ -95,15 +95,15 @@ at runtime. The trace file, in that case, will have the following structure with
 .. code:: JSON
 
    [
-   {"name": "bas", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351167907.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 10944}},
-   {"name": "bas", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351168628.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 0}},
-   {"name": "bas", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351167907.0, "ph": "X", "dur": 721.0},
-   {"name": "bar", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351167127.0, "ph": "C", "args": {"cpu_usage": 11.980575694383594, "memory_usage": 10944}},
-   {"name": "bar", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351170287.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 0}},
-   {"name": "bar", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351167127.0, "ph": "X", "dur": 3160.0},
-   {"name": "foo", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351165193.0, "ph": "C", "args": {"cpu_usage": 98.625834450525915, "memory_usage": 14976}},
-   {"name": "foo", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351505085.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 0}},
-   {"name": "foo", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351165193.0, "ph": "X", "dur": 339892.0},
+   {"name": "bas", "cat": "/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351167907.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 10944}},
+   {"name": "bas", "cat": "/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351168628.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 0}},
+   {"name": "bas", "cat": "/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351167907.0, "ph": "X", "dur": 721.0},
+   {"name": "bar", "cat": "/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351167127.0, "ph": "C", "args": {"cpu_usage": 11.980575694383594, "memory_usage": 10944}},
+   {"name": "bar", "cat": "/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351170287.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 0}},
+   {"name": "bar", "cat": "/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351167127.0, "ph": "X", "dur": 3160.0},
+   {"name": "foo", "cat": "/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351165193.0, "ph": "C", "args": {"cpu_usage": 98.625834450525915, "memory_usage": 14976}},
+   {"name": "foo", "cat": "/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351505085.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 0}},
+   {"name": "foo", "cat": "/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351165193.0, "ph": "X", "dur": 339892.0},
 
 Following is the visualization for the python program above with CPU and memory
 usage loggin enabled:
