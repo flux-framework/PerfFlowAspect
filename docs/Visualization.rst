@@ -10,8 +10,10 @@
 ##############################################
 
 There are two types of logging allowed in PerfFlowAspect trace files which are
-``verbose`` and ``compact``. ``Verbose`` logging uses B (begin) and E (end)
-events in the trace file as shown below:
+``verbose`` and ``compact``. Either can be anabled by setting
+``PERFFLOW_OPTIONS="log-event="`` to ``compact`` or ``verbose`` respectively.
+``Verbose`` logging uses B (begin) and E (end) events in the trace file as shown
+below:
 
 .. code:: JSON
 
@@ -25,7 +27,7 @@ events in the trace file as shown below:
 
 The above trace file is generated for three functions with ``around`` pointcut
 annotations. The same trace file will be reduced to half the lines with
-``compact`` logging, as can be seen below:
+``compact`` logging which uses X (complete) events, as can be seen below:
 
 .. code:: JSON
 
@@ -38,7 +40,6 @@ The visualization of both types of logging in trace files will be the same in
 Perfetto UI. An example visualization is shown below:
 
 .. figure:: images/vis1.png
-   :scale: 80%
    :align: center
 
    Fig. 1: Visualization of a single process, single thread program in Perfetto UI
@@ -85,3 +86,29 @@ The visualization in Fig. 1 is of the following python program:
 
    if __name__ == "__main__":
       main()
+
+Now, PerfFlowAspect also allows the user to log CPU and memory usage of
+annotated functions by setting ``PERFFLOW_OPTIONS="cpu-mem-usage="`` to ``True``
+at runtime. The trace file, in that case, will have the following structure with
+``compact`` logging enabled:
+
+.. code:: JSON
+
+   [
+   {"name": "bas", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351167907.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 10944}},
+   {"name": "bas", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351168628.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 0}},
+   {"name": "bas", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351167907.0, "ph": "X", "dur": 721.0},
+   {"name": "bar", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351167127.0, "ph": "C", "args": {"cpu_usage": 11.980575694383594, "memory_usage": 10944}},
+   {"name": "bar", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351170287.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 0}},
+   {"name": "bar", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351167127.0, "ph": "X", "dur": 3160.0},
+   {"name": "foo", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351165193.0, "ph": "C", "args": {"cpu_usage": 98.625834450525915, "memory_usage": 14976}},
+   {"name": "foo", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351505085.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 0}},
+   {"name": "foo", "cat": "/g/g92/lisan1/PFA/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351165193.0, "ph": "X", "dur": 339892.0},
+
+Following is the visualization for the python program above with CPU and memory
+usage loggin enabled:
+
+.. figure:: images/vis2.png
+   :align: center
+
+   Fig. 2: Visualization of a single process, single thread program with CPU and memory usage
