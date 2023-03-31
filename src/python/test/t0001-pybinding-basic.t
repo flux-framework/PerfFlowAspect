@@ -208,4 +208,27 @@ test_expect_success 'PERFFLOW_OPTIONS: use verbose (default) format smoketest' '
     fi
 '
 
+# Run cuda tests if NVIDIA GPU is present
+lspci=$(lspci | grep -i nvidia 2>/dev/null)
+if [ -n "${lspci}" ]; then
+    test_expect_success 'py binding: smoketest_cuda runs ok in default' '
+        ../smoketest_cuda.py &&
+        rm perfflow.$(hostname).[0-9]*.pfw
+    '
+
+    test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_cuda' '
+        PERFFLOW_OPTIONS="log-enable=False" ../smoketest_cuda.py &&
+        ! test -f perfflow.$(hostname).[0-9]*.pfw &&
+        if test -f perfflow.$(hostname).[0-9]*.pfw; then rm perfflow.$(hostname).[0-9]*.pfw; fi
+    '
+
+    test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_cuda' '
+        PERFFLOW_OPTIONS="log-enable=True" ../smoketest_cuda.py &&
+        test -f perfflow.$(hostname).[0-9]*.pfw &&
+        rm perfflow.$(hostname).[0-9]*.pfw
+    '
+else
+    say "Skipping CUDA smoketests...NVIDIA GPU not found."
+fi
+
 test_done
