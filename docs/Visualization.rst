@@ -46,7 +46,7 @@ Perfetto UI. An example visualization is shown below:
 The visualization in Fig. 1 is of the following python program:
 
 .. code:: python
-   
+
    #!/usr/bin/env python
 
    import time
