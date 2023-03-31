@@ -37,8 +37,51 @@ annotations. The same trace file will be reduced to half the lines with
 The visualization of both types of logging in trace files will be the same in
 Perfetto UI. An example visualization is shown below:
 
-.. figure:: images/fig1.png
+.. figure:: images/vis1.png
    :scale: 80%
    :align: center
 
-Here is a caption.
+   Fig. 1: Visualization of a single process, single thread program in Perfetto UI
+
+The visualization in Fig. 1 is of the following python program:
+
+.. code:: python
+   
+   #!/usr/bin/env python
+
+   import time
+   import perfflowaspect
+   import perfflowaspect.aspect
+
+
+   @perfflowaspect.aspect.critical_path(pointcut="around")
+   def bas():
+      print("bas")
+
+
+   @perfflowaspect.aspect.critical_path(pointcut="around")
+   def bar():
+      print("bar")
+      time.sleep(0.001)
+      bas()
+
+
+   @perfflowaspect.aspect.critical_path()
+   def foo(msg):
+      print("foo")
+      time.sleep(0.001)
+      bar()
+      if msg == "hello":
+         return 1
+      return 0
+
+
+   def main():
+      print("Inside main")
+      for i in range(4):
+         foo("hello")
+      return 0
+
+
+   if __name__ == "__main__":
+      main()
