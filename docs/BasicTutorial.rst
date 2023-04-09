@@ -91,6 +91,33 @@ To disable all PerfFlowAspect annotations, set the
 
    PERFFLOW_OPTIONS="log-enable=False" ./test/smoketest.py
 
+****************************
+ PerfFlowAspect CLI Options
+****************************
+
+PerfFlowAspect options can be set with the ``PERFFLOW_OPTIONS`` environment
+variable. Separate multiple variables with a colon as follows:
+
+.. code:: bash
+
+   PERFFLOW_OPTIONS="<var1>=<val1>:<var2>=<val2>" <executable>
+
++----------------------+--------------------------------------------------------------+---------------+---------------------------------+
+| Variable             | Description                                                  | Default Value | Supported Values                |
++======================+==============================================================+===============+=================================+
+| name                 | Name of this workflow component                              | generic       |                                 |
++----------------------+--------------------------------------------------------------+---------------+---------------------------------+
+| log-filename-include | Customize name of log file                                   | hostname,pid  | name,instance-path,hostname,pid |
++----------------------+--------------------------------------------------------------+---------------+---------------------------------+
+| log-dir              | Directory where log file is created                          | ./            |                                 |
++----------------------+--------------------------------------------------------------+---------------+---------------------------------+
+| log-enable           | Toggle annotations on/off                                    | True          | True, False                     |
++----------------------+--------------------------------------------------------------+---------------+---------------------------------+
+| cpu-mem-usage        | Collect CPU and memory usage metrics                         | False         | True, False                     |
++----------------------+--------------------------------------------------------------+---------------+---------------------------------+
+| log-event            | Collect B and E events (verbose) or single X event (compact) | Verbose       | Verbose, Compact                |
++----------------------+--------------------------------------------------------------+---------------+---------------------------------+
+
 **********************************************
  Visualization of PerfFlowAspect Output Files
 **********************************************
