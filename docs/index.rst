@@ -71,7 +71,7 @@ uniformity as to how performance is measured and controlled.
    :maxdepth: 2
    :caption: Basics
 
-   QuickStart
+   BasicTutorial
    Releases
    Licenses
 
@@ -81,7 +81,6 @@ uniformity as to how performance is measured and controlled.
 
    BuildingPerfFlowAspect
    Annotations
-   Visualization
    UpcomingFeatures
 
 .. toctree::
