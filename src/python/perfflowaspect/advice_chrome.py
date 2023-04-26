@@ -342,7 +342,8 @@ class ChromeTracingAdvice:
                 mem_usage = p.memory_info().rss
                 if mem_usage > 0:
                     mem_usage = mem_usage / 1000
-                ChromeTracingAdvice.__update_log(func, "C",{"cpu_usage": cpu_usage, "memory_usage": mem_usage})
+                ev_args = {"cpu_usage": cpu_usage, "memory_usage": mem_usage}
+                ChromeTracingAdvice.__update_log(func, "C",event_args=ev_args)
              #   event["ph"] = "C"
               #  event["args"] = {"cpu_usage": cpu_usage, "memory_usage": mem_usage}
               #  ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
@@ -357,9 +358,11 @@ class ChromeTracingAdvice:
                 del event["args"]
 
             if ChromeTracingAdvice.enable_compact_log_event:
-                event["ph"] = "X"
-                event["ts"] = dur_start
-                event["dur"] = dur_end - event["ts"]
+                dur = dur_end - dur_start
+                ChromeTracingAdvice.__update_log(func, "X", event_ts=dur_start, event_dur=dur)
+            #    event["ph"] = "X"
+            #    event["ts"] = dur_start
+            #    event["dur"] = dur_end - event["ts"]
             else:
                ChromeTracingAdvice.__update_log(func, "E")
             return rc
