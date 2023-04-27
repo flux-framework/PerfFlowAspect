@@ -39,7 +39,18 @@ annotating decorator. Users can use the
 ``@perfflowaspect.aspect.critical_path()`` decorator to annotate their functions
 that are likely to be on the critical path of the workflow's end-to-end
 performance. These annotated functions then serve as the join points that can be
-weaved with PerfFlowAspect to be acted upon.
+weaved with PerfFlowAspect to be acted upon. The decorator accepts the following pointcut values at the join points:
+
+-  ``before``: The advice is invoked only before the join point.
+
+-  ``after``: The advice is invoked only after the join point.
+
+-  ``around``: The advice is invoked both before and after the join point.
+
+The async versions of these pointcut values are also supported in PerfFlowAspect which are: ``before_async``, 
+``after_async`` and ``around_async``.
+
+Note: The default pointcut value is ``around``.
 
 The following shows a simple snippet that annotates two functions.
 
