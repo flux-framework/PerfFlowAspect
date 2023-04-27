@@ -322,8 +322,11 @@ class ChromeTracingAdvice:
     def around(func):
         @functools.wraps(func)
         def trace(*args, **kwargs):
+
+            ts_start = time.time() * 1000000 # Obtain start timestamp for tracing consistency.
+
             if not ChromeTracingAdvice.enable_compact_log_event:
-                ChromeTracingAdvice.__update_log(func, "B")
+                ChromeTracingAdvice.__update_log(func, "B", event_ts=ts_start)
 
             if ChromeTracingAdvice.enable_cpu_mem_usage:
                 p = psutil.Process(os.getpid())
@@ -332,6 +335,8 @@ class ChromeTracingAdvice:
                 time_start = time.time()
 
             rc = func(*args, **kwargs)
+
+            ts_end = time.time() * 1000000 # Obtain end timestamp to calculate durations.
 
             if ChromeTracingAdvice.enable_cpu_mem_usage:
                 time_end = time.time() - time_start
@@ -342,29 +347,20 @@ class ChromeTracingAdvice:
                 mem_usage = p.memory_info().rss
                 if mem_usage > 0:
                     mem_usage = mem_usage / 1000
+                # Update trace with CPU and memory usage information.        
                 ev_args = {"cpu_usage": cpu_usage, "memory_usage": mem_usage}
-                ChromeTracingAdvice.__update_log(func, "C",event_args=ev_args)
-             #   event["ph"] = "C"
-              #  event["args"] = {"cpu_usage": cpu_usage, "memory_usage": mem_usage}
-              #  ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
-
-            dur_start = event["ts"]
-            dur_end = time.time() * 1000000
-            event["ts"] = dur_end
-
+                ChromeTracingAdvice.__update_log(func, "C", event_ts=ts_start, event_args=ev_args)
+            
             if ChromeTracingAdvice.enable_cpu_mem_usage:
-                event["args"] = {"cpu_usage": 0, "memory_usage": 0}
-                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
-                del event["args"]
-
+                # We need to write the zero values to the trace for correct Perfetto Visualization.
+                ev_args = {"cpu_usage": 0, "memory_usage": 0}
+                ChromeTracingAdvice.__update_log(func, "C",event_ts=ts_end, event_args=ev_args)
+            
             if ChromeTracingAdvice.enable_compact_log_event:
-                dur = dur_end - dur_start
-                ChromeTracingAdvice.__update_log(func, "X", event_ts=dur_start, event_dur=dur)
-            #    event["ph"] = "X"
-            #    event["ts"] = dur_start
-            #    event["dur"] = dur_end - event["ts"]
+                dur = ts_end - ts_start
+                ChromeTracingAdvice.__update_log(func, "X", event_ts=ts_start, event_dur=dur)
             else:
-               ChromeTracingAdvice.__update_log(func, "E")
+               ChromeTracingAdvice.__update_log(func, "E", event_ts=ts_end)
             return rc
 
         return trace
