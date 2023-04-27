@@ -201,7 +201,7 @@ class ChromeTracingAdvice:
             "name": name,
             "cat": cat,
             "pid": os.getpid(),
-            "tid": threading.get_native_if(), # Needs Python 3.8
+            "tid": threading.get_native_id(), # Needs Python 3.8
             "ts": time.time() * 1000000,
         }
 
@@ -265,7 +265,7 @@ class ChromeTracingAdvice:
             ChromeTracingAdvice.logger.debug("[")
         ChromeTracingAdvice.logger.debug(s)
 
- @staticmethod
+    @staticmethod
     def __update_log(func,event_type,event_args=None,event_ts=None,event_dur=None):
         global counter, counter_mutex
         counter_mutex.acquire()
@@ -394,7 +394,7 @@ class ChromeTracingAdvice:
     def around_async(func):
         @functools.wraps(func)
         def trace(*args, **kwargs):
-              scope = None
+            scope = None
             ChromeTracingAdvice.__update_async_log(scope,func,"b")
             rc = func(*args, **kwargs)
             ChromeTracingAdvice.__update_async_log(scope,func,"e")
