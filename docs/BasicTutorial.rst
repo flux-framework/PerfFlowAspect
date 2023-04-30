@@ -46,7 +46,7 @@ pointcut values at the join points:
 -  ``after``: The advice is invoked only after the join point.
 -  ``around``: The advice is invoked both before and after the join point.
 
-The async versions of these pointcut values are also supported in PerfFlowAspect
+The asynchronous versions of these pointcut values are also supported in PerfFlowAspect,
 which are: ``before_async``, ``after_async`` and ``around_async``.
 
 Note: The default pointcut value is ``around``.
@@ -96,9 +96,9 @@ To disable all PerfFlowAspect annotations, set the
 
 There are two types of logging allowed in PerfFlowAspect trace files which are
 ``verbose`` and ``compact``. Either can be anabled by setting
-``PERFFLOW_OPTIONS="log-event="`` to ``compact`` or ``verbose`` respectively.
-``Verbose`` logging uses B (begin) and E (end) events in the trace file as shown
-below:
+``PERFFLOW_OPTIONS="log-event="`` to ``compact`` or ``verbose``, respectively. The
+logging is ``verbose`` by default. ``Verbose`` logging uses B (begin) and E (end) events
+in the trace file as shown below:
 
 .. code:: JSON
 
@@ -111,8 +111,8 @@ below:
    {"name": "foo", "cat": "/PerfFlowAspect/src/c/test/smoketest.cpp", "pid": 3134, "tid": 3134, "ts": 1679127184457676.0, "ph": "E"},
 
 The above trace file is generated for three functions with ``around`` pointcut
-annotations. The same trace file will be reduced to half the lines with
-``compact`` logging which uses X (complete) events, as can be seen below:
+annotations. The same trace file will be reduced to half the lines with ``compact``
+logging which uses a single X (complete) events, as can be seen below:
 
 .. code:: JSON
 
@@ -172,10 +172,9 @@ The visualization in Fig. 1 is of the following python program:
    if __name__ == "__main__":
       main()
 
-Now, PerfFlowAspect also allows the user to log CPU and memory usage of
-annotated functions by setting ``PERFFLOW_OPTIONS="cpu-mem-usage="`` to ``True``
-at runtime. The trace file, in that case, will have the following structure with
-``compact`` logging enabled:
+PerfFlowAspect also allows the user to log CPU and memory usage of annotated functions by
+setting ``PERFFLOW_OPTIONS="cpu-mem-usage="`` to ``True`` at runtime. The trace file, in
+that case, will have the following structure with ``compact`` logging enabled:
 
 .. code:: JSON
 
@@ -190,8 +189,8 @@ at runtime. The trace file, in that case, will have the following structure with
    {"name": "foo", "cat": "/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351505085.0, "ph": "C", "args": {"cpu_usage": 0.0, "memory_usage": 0}},
    {"name": "foo", "cat": "/PerfFlowAspect/src/c/test/smoketest3.cpp", "pid": 44479, "tid": 44479, "ts": 1679184351165193.0, "ph": "X", "dur": 339892.0},
 
-Following is the visualization for the python program above with CPU and memory
-usage loggin enabled:
+Following is the visualization for the python program above with CPU and memory usage
+logging enabled:
 
 .. figure:: images/vis2.png
    :align: center
