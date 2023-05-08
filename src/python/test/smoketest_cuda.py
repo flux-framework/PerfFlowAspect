@@ -4,15 +4,13 @@ import perfflowaspect
 import perfflowaspect.aspect
 
 import numba
-import numpy
-
-from numba import jit
 import numpy as np
+
 # to measure exec time
 from timeit import default_timer as timer
 
 print("Numba version:", numba.__version__)
-print("Numpy version:", numpy.__version__)
+print("Numpy version:", np.__version__)
 
 
 # normal function to run on cpu
@@ -23,7 +21,7 @@ def func(a):
 
 # function optimized to run on gpu
 @perfflowaspect.aspect.critical_path(pointcut="around")
-@jit(target_backend='cuda')
+@numba.jit(target_backend="cuda")
 def func2(a):
     for i in range(10000000):
         a[i] += 1
