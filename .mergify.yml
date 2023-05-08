@@ -4,8 +4,6 @@ queue_rules:
       # conditions for a PR to get merged (i.e., out of the queue)
       - base=main
       - status-success="check c bindings"
-      - status-success="check python bindings (ubuntu-latest, 3.6)"
-      - status-success="check python bindings (ubuntu-latest, 3.7)"
       - status-success="check python bindings (ubuntu-latest, 3.8)"
       - status-success="check-code-format"
 
@@ -15,8 +13,6 @@ pull_request_rules:
       # conditions for a PR to get queued
       - base=main
       - status-success="check c bindings"
-      - status-success="check python bindings (ubuntu-latest, 3.6)"
-      - status-success="check python bindings (ubuntu-latest, 3.7)"
       - status-success="check python bindings (ubuntu-latest, 3.8)"
       - status-success="check-code-format"
       - label=status-merge-when-passing
