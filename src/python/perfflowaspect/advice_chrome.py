@@ -305,7 +305,6 @@ class ChromeTracingAdvice:
                 p = psutil.Process(os.getpid())
                 cpu_start = p.cpu_times()
                 cpu_start = cpu_start[0]
-                mem_before = p.memory_info().rss
                 time_start = time.time()
 
             rc = func(*args, **kwargs)
