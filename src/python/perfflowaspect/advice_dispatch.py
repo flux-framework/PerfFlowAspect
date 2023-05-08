@@ -12,7 +12,6 @@ from .advice_chrome import ChromeTracingAdvice
 
 
 class AdviceDispatcher:
-
     # Note that you need to extend advice_dict When you add
     # a new type of advice in order to integrate it into
     # this dispacher class.
