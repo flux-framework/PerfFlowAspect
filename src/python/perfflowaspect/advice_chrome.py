@@ -201,7 +201,7 @@ class ChromeTracingAdvice:
             "name": name,
             "cat": cat,
             "pid": os.getpid(),
-            "tid": threading.get_native_id(), # Needs Python 3.8
+            "tid": threading.get_native_id(),  # Needs Python 3.8
             "ts": time.time() * 1000000,
         }
 
@@ -266,7 +266,7 @@ class ChromeTracingAdvice:
         ChromeTracingAdvice.logger.debug(s)
 
     @staticmethod
-    def __update_log(func,event_type,event_args=None,event_ts=None,event_dur=None):
+    def __update_log(func, event_type, event_args=None, event_ts=None, event_dur=None):
         global counter, counter_mutex
         counter_mutex.acquire()
         event = ChromeTracingAdvice.__create_event_from_func(func)
@@ -280,9 +280,11 @@ class ChromeTracingAdvice:
         ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
         counter = counter + 1
         counter_mutex.release()
-        
+
     @staticmethod
-    def __update_async_log(scope,func,event_type,event_args=None,event_ts=None,event_dur=None):
+    def __update_async_log(
+        scope, func, event_type, event_args=None, event_ts=None, event_dur=None
+    ):
         global counter, counter_mutex
         counter_mutex.acquire()
         event = ChromeTracingAdvice.__create_event_from_func(func)
@@ -322,8 +324,8 @@ class ChromeTracingAdvice:
     def around(func):
         @functools.wraps(func)
         def trace(*args, **kwargs):
-
-            ts_start = time.time() * 1000000 # Obtain start timestamp for tracing consistency.
+            # Obtain start timestamp for tracing consistency.
+            ts_start = time.time() * 1000000
 
             if not ChromeTracingAdvice.enable_compact_log_event:
                 ChromeTracingAdvice.__update_log(func, "B", event_ts=ts_start)
@@ -336,7 +338,8 @@ class ChromeTracingAdvice:
 
             rc = func(*args, **kwargs)
 
-            ts_end = time.time() * 1000000 # Obtain end timestamp to calculate durations.
+            # Obtain end timestamp to calculate durations.
+            ts_end = time.time() * 1000000
 
             if ChromeTracingAdvice.enable_cpu_mem_usage:
                 time_end = time.time() - time_start
@@ -347,20 +350,35 @@ class ChromeTracingAdvice:
                 mem_usage = p.memory_info().rss
                 if mem_usage > 0:
                     mem_usage = mem_usage / 1000
-                # Update trace with CPU and memory usage information.        
+                # Update trace with CPU and memory usage information.
                 ev_args = {"cpu_usage": cpu_usage, "memory_usage": mem_usage}
-                ChromeTracingAdvice.__update_log(func, "C", event_ts=ts_start, event_args=ev_args)
-            
+                ChromeTracingAdvice.__update_log(
+                    func,
+                    "C",
+                    event_ts=ts_start,
+                    event_args=ev_args,
+                )
+
             if ChromeTracingAdvice.enable_cpu_mem_usage:
                 # We need to write the zero values to the trace for correct Perfetto Visualization.
                 ev_args = {"cpu_usage": 0, "memory_usage": 0}
-                ChromeTracingAdvice.__update_log(func, "C",event_ts=ts_end, event_args=ev_args)
-            
+                ChromeTracingAdvice.__update_log(
+                    func,
+                    "C",
+                    event_ts=ts_end,
+                    event_args=ev_args,
+                )
+
             if ChromeTracingAdvice.enable_compact_log_event:
                 dur = ts_end - ts_start
-                ChromeTracingAdvice.__update_log(func, "X", event_ts=ts_start, event_dur=dur)
+                ChromeTracingAdvice.__update_log(
+                    func,
+                    "X",
+                    event_ts=ts_start,
+                    event_dur=dur,
+                )
             else:
-               ChromeTracingAdvice.__update_log(func, "E", event_ts=ts_end)
+                ChromeTracingAdvice.__update_log(func, "E", event_ts=ts_end)
             return rc
 
         return trace
@@ -370,7 +388,7 @@ class ChromeTracingAdvice:
         def before_async_(func):
             @functools.wraps(func)
             def trace(*args, **kwargs):
-                ChromeTracingAdvice.__update_async_log(scope,func,"b")
+                ChromeTracingAdvice.__update_async_log(scope, func, "b")
                 return func(*args, **kwargs)
 
             return trace
@@ -383,7 +401,7 @@ class ChromeTracingAdvice:
             @functools.wraps(func)
             def trace(*args, **kwargs):
                 rc = func(*args, **kwargs)
-                ChromeTracingAdvice.__update_async_log(scope,func,"e")
+                ChromeTracingAdvice.__update_async_log(scope, func, "e")
                 return rc
 
             return trace
@@ -395,9 +413,9 @@ class ChromeTracingAdvice:
         @functools.wraps(func)
         def trace(*args, **kwargs):
             scope = None
-            ChromeTracingAdvice.__update_async_log(scope,func,"b")
+            ChromeTracingAdvice.__update_async_log(scope, func, "b")
             rc = func(*args, **kwargs)
-            ChromeTracingAdvice.__update_async_log(scope,func,"e")
+            ChromeTracingAdvice.__update_async_log(scope, func, "e")
             return rc
 
         return trace
