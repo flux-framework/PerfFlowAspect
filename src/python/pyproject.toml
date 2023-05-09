@@ -8,7 +8,7 @@
 
 [tool.poetry]
 name = "perfflowaspect"
-version = "0.0.1"
+version = "0.1.0"
 description = "A tool to analyze cross-cutting performance concerns of composite scientific workflows."
 authors = [
     "Dong H. Ahn <ahn1@llnl.gov>",

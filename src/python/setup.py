@@ -29,7 +29,7 @@ setup(
     name="perfflowaspect",
     description="tool to analyze cross-cutting performance concerns of "
     "composite scientific workflows.",
-    version="0.0.1",
+    version="0.1.0",
     author="Dong H. Ahn, Stephen Herbein, James Corbett, Francesco Di Natale",
     author_email="ahn1@llnl.gov, herbein1@llnl.gov, corbett8@llnl.gov, dinatale3@llnl.gov",
     packages=["perfflowaspect"],
