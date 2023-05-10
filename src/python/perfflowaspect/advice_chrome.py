@@ -226,7 +226,7 @@ class ChromeTracingAdvice:
         if id:
             event["id"] = id
         else:
-            event["id"] = "123" #Async events need an ID, this sets the default.
+            event["id"] = 123  # Async events need an ID, this sets the default.
         if scope:
             event["scope"] = scope
         return event
