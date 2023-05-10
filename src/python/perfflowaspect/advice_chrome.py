@@ -23,11 +23,7 @@ from urllib.parse import urlparse
 from .aspect_base import perfflowaspect
 
 # TODO: move those into ChromeTracingAdvice
-before_counter_mutex = threading.Lock()
-after_counter_mutex = threading.Lock()
 counter_mutex = threading.Lock()
-before_counter = 0
-after_counter = 0
 counter = 0
 perfflow_options = {}
 
@@ -205,7 +201,7 @@ class ChromeTracingAdvice:
             "name": name,
             "cat": cat,
             "pid": os.getpid(),
-            "tid": threading.get_ident(),
+            "tid": threading.get_native_id(),  # Needs Python 3.8
             "ts": time.time() * 1000000,
         }
 
@@ -272,12 +268,46 @@ class ChromeTracingAdvice:
         ChromeTracingAdvice.logger.debug(s)
 
     @staticmethod
+    def __update_log(func, event_type, event_args=None, event_ts=None, event_dur=None):
+        global counter, counter_mutex
+        counter_mutex.acquire()
+        event = ChromeTracingAdvice.__create_event_from_func(func)
+        event["ph"] = event_type
+        if event_args is not None:
+            event["args"] = event_args
+        if event_ts is not None:
+            event["ts"] = event_ts
+        if event_dur is not None:
+            event["dur"] = event_dur
+        ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+        counter = counter + 1
+        counter_mutex.release()
+
+    @staticmethod
+    def __update_async_log(
+        scope, func, event_type, event_args=None, event_ts=None, event_dur=None
+    ):
+        global counter, counter_mutex
+        counter_mutex.acquire()
+        event = ChromeTracingAdvice.__create_event_from_func(func)
+        event["scope"] = scope
+        event["id"] = event["tid"]
+        event["ph"] = event_type
+        if event_args is not None:
+            event["args"] = event_args
+        if event_ts is not None:
+            event["ts"] = event_ts
+        if event_dur is not None:
+            event["dur"] = event_dur
+        ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+        counter = counter + 1
+        counter_mutex.release()
+
+    @staticmethod
     def before(func):
         @functools.wraps(func)
         def trace(*args, **kwargs):
-            event = ChromeTracingAdvice.__create_event_from_func(func)
-            event["ph"] = "B"
-            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+            ChromeTracingAdvice.__update_log(func, "B")
             return func(*args, **kwargs)
 
         return trace
@@ -287,9 +317,7 @@ class ChromeTracingAdvice:
         @functools.wraps(func)
         def trace(*args, **kwargs):
             rc = func(*args, **kwargs)
-            event = ChromeTracingAdvice.__create_event_from_func(func)
-            event["ph"] = "E"
-            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+            ChromeTracingAdvice.__update_log(func, "E")
             return rc
 
         return trace
@@ -298,10 +326,11 @@ class ChromeTracingAdvice:
     def around(func):
         @functools.wraps(func)
         def trace(*args, **kwargs):
-            event = ChromeTracingAdvice.__create_event_from_func(func)
+            # Obtain start timestamp for tracing consistency.
+            ts_start = time.time() * 1000000
+
             if not ChromeTracingAdvice.enable_compact_log_event:
-                event["ph"] = "B"
-                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+                ChromeTracingAdvice.__update_log(func, "B", event_ts=ts_start)
 
             if ChromeTracingAdvice.enable_cpu_mem_usage:
                 p = psutil.Process(os.getpid())
@@ -310,6 +339,9 @@ class ChromeTracingAdvice:
                 time_start = time.time()
 
             rc = func(*args, **kwargs)
+
+            # Obtain end timestamp to calculate durations.
+            ts_end = time.time() * 1000000
 
             if ChromeTracingAdvice.enable_cpu_mem_usage:
                 time_end = time.time() - time_start
@@ -320,26 +352,35 @@ class ChromeTracingAdvice:
                 mem_usage = p.memory_info().rss
                 if mem_usage > 0:
                     mem_usage = mem_usage / 1000
-                event["ph"] = "C"
-                event["args"] = {"cpu_usage": cpu_usage, "memory_usage": mem_usage}
-                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
-
-            dur_start = event["ts"]
-            dur_end = time.time() * 1000000
-            event["ts"] = dur_end
+                # Update trace with CPU and memory usage information.
+                ev_args = {"cpu_usage": cpu_usage, "memory_usage": mem_usage}
+                ChromeTracingAdvice.__update_log(
+                    func,
+                    "C",
+                    event_ts=ts_start,
+                    event_args=ev_args,
+                )
 
             if ChromeTracingAdvice.enable_cpu_mem_usage:
-                event["args"] = {"cpu_usage": 0, "memory_usage": 0}
-                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
-                del event["args"]
+                # We need to write the zero values to the trace for correct Perfetto Visualization.
+                ev_args = {"cpu_usage": 0, "memory_usage": 0}
+                ChromeTracingAdvice.__update_log(
+                    func,
+                    "C",
+                    event_ts=ts_end,
+                    event_args=ev_args,
+                )
 
             if ChromeTracingAdvice.enable_compact_log_event:
-                event["ph"] = "X"
-                event["ts"] = dur_start
-                event["dur"] = dur_end - event["ts"]
+                dur = ts_end - ts_start
+                ChromeTracingAdvice.__update_log(
+                    func,
+                    "X",
+                    event_ts=ts_start,
+                    event_dur=dur,
+                )
             else:
-                event["ph"] = "E"
-            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+                ChromeTracingAdvice.__update_log(func, "E", event_ts=ts_end)
             return rc
 
         return trace
@@ -349,15 +390,7 @@ class ChromeTracingAdvice:
         def before_async_(func):
             @functools.wraps(func)
             def trace(*args, **kwargs):
-                global before_counter, before_counter_mutex
-                before_counter_mutex.acquire()
-                event = ChromeTracingAdvice.__create_event_from_func(func)
-                event["scope"] = scope
-                event["id"] = before_counter
-                event["ph"] = "b"
-                before_counter = before_counter + 1
-                before_counter_mutex.release()
-                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+                ChromeTracingAdvice.__update_async_log(scope, func, "b")
                 return func(*args, **kwargs)
 
             return trace
@@ -369,16 +402,9 @@ class ChromeTracingAdvice:
         def after_async_(func):
             @functools.wraps(func)
             def trace(*args, **kwargs):
-                global after_counter, after_counter_mutex
-                after_counter_mutex.acquire()
-                event = ChromeTracingAdvice.__create_event_from_func(func)
-                event["scope"] = scope
-                event["id"] = after_counter
-                event["ph"] = "e"
-                after_counter = after_counter + 1
-                after_counter_mutex.release()
-                ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
-                return func(*args, **kwargs)
+                rc = func(*args, **kwargs)
+                ChromeTracingAdvice.__update_async_log(scope, func, "e")
+                return rc
 
             return trace
 
@@ -388,18 +414,10 @@ class ChromeTracingAdvice:
     def around_async(func):
         @functools.wraps(func)
         def trace(*args, **kwargs):
-            global counter, counter_mutex
-            counter_mutex.acquire()
-            event = ChromeTracingAdvice.__create_event_from_func(func)
-            event["id"] = 8192
-            event["ph"] = "b"
-            counter = counter + 1
-            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
-            counter_mutex.release()
+            scope = None
+            ChromeTracingAdvice.__update_async_log(scope, func, "b")
             rc = func(*args, **kwargs)
-            event["ts"] = time.time() * 1000000
-            event["ph"] = "e"
-            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+            ChromeTracingAdvice.__update_async_log(scope, func, "e")
             return rc
 
         return trace

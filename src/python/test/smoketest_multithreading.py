@@ -2,6 +2,7 @@
 
 import time
 import threading
+
 import perfflowaspect
 import perfflowaspect.aspect
 
@@ -9,22 +10,24 @@ import perfflowaspect.aspect
 @perfflowaspect.aspect.critical_path()
 def bar(message):
     time.sleep(1)
+    print(message)
 
 
 @perfflowaspect.aspect.critical_path()
 def foo(message):
-    time.sleep(2)
+    time.sleep(1)
     bar(message)
 
 
-def thread_function(name):
-    foo("hello")
+@perfflowaspect.aspect.critical_path()
+def thd_fn(name):
+    foo("Hello from Thread ID: " + str(name))
 
 
 def main():
     threads = []
-    for i in range(10):
-        t = threading.Thread(target=thread_function, args=(i,))
+    for i in range(5):
+        t = threading.Thread(target=thd_fn, args=(i,))
         t.start()
         threads.append(t)
 
