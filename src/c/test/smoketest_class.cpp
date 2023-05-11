@@ -9,12 +9,13 @@
 \************************************************************/
 
 #include <iostream>
-#include <unistd.h>  
+#include <unistd.h>
 
 using namespace std;
 
-class SmokeTest {      
-  public:             
+class SmokeTest
+{
+public:
     void foo();
 };
 
@@ -22,14 +23,15 @@ __attribute__((annotate("@critical_path()")))
 void SmokeTest::foo()
 {
     usleep(2000000); // Sleep fpr 2 seconds.
-    std::cout <<"Hello from foo function in SmokeTest class." <<std::endl;
+    std::cout << "Hello from foo function in SmokeTest class." << std::endl;
 }
 
-int main() {
-  SmokeTest st;  
+int main()
+{
+    SmokeTest st;
 
-  st.foo(); 
-  
-  return 0;
+    st.foo();
+
+    return 0;
 }
 
