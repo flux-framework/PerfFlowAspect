@@ -9,13 +9,12 @@
  Basic Tutorial
 ################
 
-PerfFlowAspect is based on Aspect-Oriented Programming (AOP). 
-PerfFlowAspect relies on annotated functions in the user's source code and can
-invoke specific performance-analysis actions, a piece of tracing code, etc. on
-those points of execution. In AOP, these trigger points are called join points
-in the source code, and the functionality invoked is called `advice`.
-To learn more about AOP and associated terminology, please refer to our 
-presentation slides (TBD).
+PerfFlowAspect is based on Aspect-Oriented Programming (AOP). PerfFlowAspect
+relies on annotated functions in the user's source code and can invoke specific
+performance-analysis actions, a piece of tracing code, etc. on those points of
+execution. In AOP, these trigger points are called join points in the source
+code, and the functionality invoked is called `advice`. To learn more about AOP
+and associated terminology, please refer to our presentation slides (TBD).
 
 The python package ``perfflowaspect`` contains the PerfFlowAspect tool for the
 Python language. The file ``src/python/perfflowaspect/aspect.py`` contains a key
