@@ -9,8 +9,9 @@
  Upcoming Features
 ###################
 
-Upcoming features include the ability to enable and disable PerfFlowAspect with
-an environment variable, and also allow for collection of other statistics, such
-as GPU utilization. Please follow our GitHub issues
-page for learning about upcoming features, as well as for suggesting new
-features for PerfFlowAspect.
+Upcoming features include the ability to specify catgories while tracing, 
+a connector for Hatchet, and allow for collection of other statistics, such
+as GPU utilization. Additionally, the team plans to provide examples of how
+various benchmarks and workflows have been annotated with PerfFlowAspect. 
+Please follow our GitHub issues page for learning about upcoming features, 
+as well as for suggesting new features for PerfFlowAspect.
