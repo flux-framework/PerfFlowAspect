@@ -11,6 +11,6 @@
 
 Upcoming features include the ability to enable and disable PerfFlowAspect with
 an environment variable, and also allow for collection of other statistics, such
-as CPU usage, memory usage, and GPU utilization. Please follow our GitHub issues
+as GPU utilization. Please follow our GitHub issues
 page for learning about upcoming features, as well as for suggesting new
 features for PerfFlowAspect.

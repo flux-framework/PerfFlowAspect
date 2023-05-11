@@ -60,6 +60,7 @@ uniformity as to how performance is measured and controlled.
 -  Stephanie Brink
 -  James Corbett
 -  Stephen Herbein (NVIDIA)
+-  Aliza Lisan (University of Oregon)
 -  Francesco Di Natale (NVIDIA)
 -  Tapasya Patki
 
