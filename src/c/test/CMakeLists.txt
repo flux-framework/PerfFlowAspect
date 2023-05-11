@@ -2,6 +2,7 @@ set(SMOKETESTS
     smoketest
     smoketest2
     smoketest3
+    smoketest_class
     smoketest_MPI
     smoketest_MT
 )
