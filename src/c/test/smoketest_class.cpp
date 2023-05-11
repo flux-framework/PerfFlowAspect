@@ -15,15 +15,26 @@ using namespace std;
 
 class SmokeTest
 {
+private:
+    void bar();
 public:
     void foo();
 };
 
 __attribute__((annotate("@critical_path()")))
+void SmokeTest::bar()
+{
+    std::cout << "Hello from the bar private method in SmokeTest class." <<
+              std::endl;
+    usleep(1000000); // Sleep for 1 second.
+}
+
+__attribute__((annotate("@critical_path()")))
 void SmokeTest::foo()
 {
-    usleep(2000000); // Sleep fpr 2 seconds.
-    std::cout << "Hello from foo function in SmokeTest class." << std::endl;
+    std::cout << "Hello from foo public method in SmokeTest class." << std::endl;
+    usleep(1000000); // Sleep for 1 second.
+    bar();
 }
 
 int main()
