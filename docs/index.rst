@@ -63,6 +63,7 @@ uniformity as to how performance is measured and controlled.
 -  Aliza Lisan (University of Oregon)
 -  Francesco Di Natale (NVIDIA)
 -  Tapasya Patki
+-  Tapasya Patki
 
 ******************************
  PerfFlowAspect Documentation
