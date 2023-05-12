@@ -15,7 +15,7 @@ performance-analysis actions, a piece of tracing code, etc. on those points of
 execution. In AOP, these trigger points are called join points in the source
 code, and the functionality invoked is called `advice`. To learn more about AOP
 and associated terminology, please refer to our presentation slides `here
-<ppts/PerfFlowAspectTutorialSlides.pdf>`.
+<ppts/PerfFlowAspectTutorialSlides.pdf>`_.
 
 The python package ``perfflowaspect`` contains the PerfFlowAspect tool for the
 Python language. The file ``src/python/perfflowaspect/aspect.py`` contains a key
