@@ -65,6 +65,7 @@ uniformity as to how performance is measured and controlled.
 -  Francesco Di Natale (NVIDIA)
 -  Tapasya Patki
 -  Jae-Seung Yeom
+-  Hariharan Devarajan
 
 ******************************
  PerfFlowAspect Documentation
