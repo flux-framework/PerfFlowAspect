@@ -18,13 +18,13 @@ and associated terminology, please refer to our presentation slides `here
 <ppts/PerfFlowAspectTutorialSlides.pdf>`_.
 
 The python package ``perfflowaspect`` contains the PerfFlowAspect tool for the
-Python language. The file ``src/python/perfflowaspect/aspect.py`` contains a
-key annotating decorator. Users can use the
-``@perfflowaspect.aspect.critical_path()`` decorator to annotate their
-functions that are likely to be on the critical path of the workflow's
-end-to-end performance. These annotated functions then serve as the join points
-that can be weaved with PerfFlowAspect to be acted upon. The decorator accepts
-the following pointcut values at the join points:
+Python language. The file ``src/python/perfflowaspect/aspect.py`` contains a key
+annotating decorator. Users can use the
+``@perfflowaspect.aspect.critical_path()`` decorator to annotate their functions
+that are likely to be on the critical path of the workflow's end-to-end
+performance. These annotated functions then serve as the join points that can be
+weaved with PerfFlowAspect to be acted upon. The decorator accepts the following
+pointcut values at the join points:
 
 -  ``before``: The advice is invoked only before the join point.
 -  ``after``: The advice is invoked only after the join point.
