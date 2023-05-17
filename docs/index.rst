@@ -60,8 +60,12 @@ uniformity as to how performance is measured and controlled.
 -  Stephanie Brink
 -  James Corbett
 -  Stephen Herbein (NVIDIA)
+-  Aliza Lisan (University of Oregon)
+-  Daniel Milroy
 -  Francesco Di Natale (NVIDIA)
 -  Tapasya Patki
+-  Jae-Seung Yeom
+-  Hariharan Devarajan
 
 ******************************
  PerfFlowAspect Documentation

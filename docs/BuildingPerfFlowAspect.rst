@@ -13,7 +13,7 @@
  Python Install
 ****************
 
-The minimum Python version needed is 3.6. You can get PerfFlowAspect from its
+The minimum Python version needed is 3.8. You can get PerfFlowAspect from its
 GitHub repository using this command:
 
 .. code:: bash
