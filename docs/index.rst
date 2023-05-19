@@ -56,7 +56,7 @@ uniformity as to how performance is measured and controlled.
  Contributors
 **************
 
--  Dong H. Ahn
+-  Dong H. Ahn (NVIDIA)
 -  Stephanie Brink
 -  James Corbett
 -  Stephen Herbein (NVIDIA)

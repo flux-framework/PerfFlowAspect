@@ -8,13 +8,11 @@
 
 [tool.poetry]
 name = "perfflowaspect"
-version = "0.0.1"
+version = "0.1.0"
 description = "A tool to analyze cross-cutting performance concerns of composite scientific workflows."
 authors = [
-    "Dong H. Ahn <ahn1@llnl.gov>",
-    "Stephen Herbein <herbein@llnl.gov>",
-    "James Corbett <corbett8@llnl.gov>",
-    "Francesco Di Natale <dinatale3@llnl.gov>",
+    "Tapasya Patki <patki1@llnl.gov>",
+    "Stephanie Brink <brink2@llnl.gov>",
 ]
 license = "LGPL-3.0-only"
 
