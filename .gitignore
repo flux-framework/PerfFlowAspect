@@ -1,3 +1,4 @@
+src/c/build
 src/c/parser/lex.yy.c
 src/c/parser/lex.yy.o
 src/c/parser/libperfflow_parser.so

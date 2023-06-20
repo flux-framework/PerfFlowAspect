@@ -1,0 +1,5 @@
+{
+    "name": "PerfFlowAspect Development Environment",
+    "dockerFile": "Dockerfile",
+    "context": "../"
+}
