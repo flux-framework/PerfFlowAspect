@@ -10,6 +10,7 @@ set(SMOKETESTS
 find_package(MPI REQUIRED)
 find_package(Threads REQUIRED)
 find_package(CUDA REQUIRED)
+find_package(OpenMP REQUIRED)
 include_directories(${MPI_INCLUDE_PATH})
 
 set(perfflow_deps "-L../runtime -lperfflow_runtime -lcrypto")
@@ -24,6 +25,11 @@ foreach(TEST ${SMOKETESTS})
     set_source_files_properties(${TEST}.cpp COMPILE_FLAGS "-Xclang -load -Xclang ../weaver/weave/libWeavePass.so -fPIC")
     target_link_libraries(${TEST} ${perfflow_deps})
 endforeach()
+
+message(STATUS " [*] Adding test: smoketest_omp")
+add_executable(smoketest_omp smoketest_omp.cpp)
+set_source_files_properties(smoketest_omp.cpp COMPILE_FLAGS "-Xclang -load -Xclang ../weaver/weave/libWeavePass.so -fPIC")
+target_link_libraries(smoketest_omp ${perfflow_deps} ${OpenMP_CXX_FLAGS})
 
 message(STATUS " [*] Adding test: smoketest_cuda")
 set(CUDA_NVCC_FLAGS  "-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=../../../weaver/weave/libWeavePass.so")
