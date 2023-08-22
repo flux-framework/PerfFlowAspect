@@ -19,7 +19,7 @@ add_library(perfflow_runtime SHARED
             ${perfflow_runtime_headers}
 )
 
-target_link_libraries(perfflow_runtime ${JANSSON_LIBRARY} OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(perfflow_runtime ${JANSSON_LIBRARY} OpenSSL::SSL OpenSSL::Crypto caliper)
 
 install(TARGETS perfflow_runtime
         EXPORT perfflow_export
