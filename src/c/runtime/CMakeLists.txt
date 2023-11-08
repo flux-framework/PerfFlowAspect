@@ -13,16 +13,16 @@ set(perfflow_runtime_sources
 )
 
 find_package(OpenSSL REQUIRED)
+find_package(caliper REQUIRED)
 
-set(perfflow_runtime_deps -ljansson
-)
+set(perfflow_runtime_deps -ljansson)
 
 add_library(perfflow_runtime SHARED
             ${perfflow_runtime_sources}
             ${perfflow_runtime_headers}
 )
 
-target_link_libraries(perfflow_runtime ${perfflow_runtime_deps} OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(perfflow_runtime ${perfflow_runtime_deps} OpenSSL::SSL OpenSSL::Crypto caliper)
 
 install(TARGETS perfflow_runtime
         EXPORT perfflow_export
