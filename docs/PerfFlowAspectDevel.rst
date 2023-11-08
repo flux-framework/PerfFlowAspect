@@ -7,7 +7,7 @@ We provide both a base container for `VSCode
 <https://code.visualstudio.com/docs/remote/containers>`_, and a production
 container with PerfFlowAspect you can use for application development outside of
 that. This is done via the `.devcontainer
-<https://code.visualstudio.com/docs/remote/containers#_create-a-devcontainerjson-file`_
+<https://code.visualstudio.com/docs/remote/containers#_create-a-devcontainerjson-file>`_
 directory. You can follow the `DevContainers tutorial
 <https://code.visualstudio.com/docs/remote/containers-tutorial>`_ where you'll
 basically need to:
