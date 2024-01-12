@@ -9,7 +9,8 @@ set(SMOKETESTS
 
 find_package(MPI REQUIRED)
 find_package(Threads REQUIRED)
-find_package(CUDA REQUIRED)
+#find_package(CUDA REQUIRED)
+find_package(CUDA)
 include_directories(${MPI_INCLUDE_PATH})
 
 set(perfflow_deps "-L../runtime -lperfflow_runtime -lcrypto")
@@ -25,17 +26,21 @@ foreach(TEST ${SMOKETESTS})
     target_link_libraries(${TEST} ${perfflow_deps})
 endforeach()
 
-message(STATUS " [*] Adding test: smoketest_cuda")
-set(CUDA_NVCC_FLAGS  "-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=../../../weaver/weave/libWeavePass.so")
-cuda_add_executable(smoketest_cuda smoketest_cuda_wrapper.cpp smoketest_cuda_kernel.cu)
-target_link_libraries(smoketest_cuda ${perfflow_deps} ${CUDA_LIBRARIES} cuda)
+IF(CUDA_FOUND)
+    message(STATUS " [*] Adding test: smoketest_cuda")
+    set(CUDA_NVCC_FLAGS  "-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=../../../weaver/weave/libWeavePass.so")
+    cuda_add_executable(smoketest_cuda smoketest_cuda_wrapper.cpp smoketest_cuda_kernel.cu)
+    target_link_libraries(smoketest_cuda ${perfflow_deps} ${CUDA_LIBRARIES} cuda)
+ENDIF()
 
 configure_file(t0001-cbinding-basic.t.in
     ${CMAKE_CURRENT_BINARY_DIR}/t0001-cbinding-basic.t
     @ONLY)
 
+IF(CUDA_FOUND)
 install(TARGETS ${SMOKETESTS} smoketest_cuda
         DESTINATION test)
+ENDIF()
 
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/t0001-cbinding-basic.t
         DESTINATION test)
