@@ -12,7 +12,7 @@
 #include "llvm/IR/Attributes.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/LegacyPassManager.h"
-#include "llvm/IR/CallSite.h"
+#include "llvm/IR/AbstractCallSite.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Argument.h"
 #include "llvm/IR/IRBuilder.h"
