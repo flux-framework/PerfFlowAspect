@@ -26,21 +26,21 @@ foreach(TEST ${SMOKETESTS})
     target_link_libraries(${TEST} ${perfflow_deps})
 endforeach()
 
-IF(CUDA_FOUND)
+if(CUDA_FOUND)
     message(STATUS " [*] Adding test: smoketest_cuda")
     set(CUDA_NVCC_FLAGS  "-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=../../../weaver/weave/libWeavePass.so")
     cuda_add_executable(smoketest_cuda smoketest_cuda_wrapper.cpp smoketest_cuda_kernel.cu)
     target_link_libraries(smoketest_cuda ${perfflow_deps} ${CUDA_LIBRARIES} cuda)
-ENDIF()
+endif()
 
 configure_file(t0001-cbinding-basic.t.in
     ${CMAKE_CURRENT_BINARY_DIR}/t0001-cbinding-basic.t
     @ONLY)
 
-IF(CUDA_FOUND)
-install(TARGETS ${SMOKETESTS} smoketest_cuda
-        DESTINATION test)
-ENDIF()
+if(CUDA_FOUND)
+    install(TARGETS ${SMOKETESTS} smoketest_cuda
+            DESTINATION test)
+endif()
 
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/t0001-cbinding-basic.t
         DESTINATION test)
