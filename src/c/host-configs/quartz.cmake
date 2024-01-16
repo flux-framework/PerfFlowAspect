@@ -9,3 +9,4 @@
 ##############################################################
 
 set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-14.0.6/bin/clang++" CACHE PATH "")
+set(LLVM_DIR "/usr/tce/packages/clang/clang-14.0.6/lib/cmake/llvm" CACHE PATH "")
