@@ -9,7 +9,6 @@ set(SMOKETESTS
 
 find_package(MPI REQUIRED)
 find_package(Threads REQUIRED)
-#find_package(CUDA REQUIRED)
 find_package(CUDA)
 include_directories(${MPI_INCLUDE_PATH})
 
