@@ -46,11 +46,13 @@ install(FILES
 
 # Create pkg-config .pc file
 set(PKG_CONFIG_LIBDIR ${CMAKE_INSTALL_PREFIX}/${PERFFLOWASPECT_INSTALL_LIB_DIR})
-set(PKG_CONFIG_LIBS "-L\${libdir} -lperfflow_runtime -L\${libdir} -lperfflow_parser -L\${libdir} -lWeavePass")
+
+set(PKG_CONFIG_LIBS "-L\${libdir} -lperfflow_runtime -L\${libdir} -lperfflow_parser -lssl -lcrypto")
 
 configure_file(
 perfflowaspect.pc.in
-${CMAKE_CURRENT_BINARY_DIR}/perfflowaspect.pc)
+${CMAKE_CURRENT_BINARY_DIR}/perfflowaspect.pc
+@ONLY)
 
 install(FILES ${PROJECT_BINARY_DIR}/config/perfflowaspect.pc
         DESTINATION share)
