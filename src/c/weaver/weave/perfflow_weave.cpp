@@ -12,7 +12,11 @@
 #include "llvm/IR/Attributes.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/LegacyPassManager.h"
+#ifdef PERFFLOWASPECT_CLANG_11_NEWER
+#include "llvm/IR/AbstractCallSite.h"
+#else
 #include "llvm/IR/CallSite.h"
+#endif
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Argument.h"
 #include "llvm/IR/IRBuilder.h"
