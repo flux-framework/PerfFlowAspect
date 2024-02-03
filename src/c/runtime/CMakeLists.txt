@@ -14,6 +14,12 @@ set(perfflow_runtime_sources
 
 include_directories(${JANSSON_INCLUDE_DIRS})
 
+find_package(caliper REQUIRED)
+
+message(STATUS "RRR ${caliper_LIB_DIR} ${caliper_CONFIG_LOADED}")
+
+include_directories(${caliper_INCLUDE_DIR})
+
 add_library(perfflow_runtime SHARED
             ${perfflow_runtime_sources}
             ${perfflow_runtime_headers}
