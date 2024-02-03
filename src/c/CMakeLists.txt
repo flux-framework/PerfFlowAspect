@@ -2,13 +2,6 @@ cmake_minimum_required(VERSION 3.12)
 
 project(PerfFlowAspect VERSION "0.1.0")
 
-# Fail if someone tries to config an in-source build.
-if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
-   message(FATAL_ERROR "In-source builds are not supported. Please remove "
-                       "CMakeCache.txt from the 'src' dir and configure an "
-                       "out-of-source build in another directory.")
-endif()
-
 # Fail if using Clang < 9.0
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # require at least Clang 9.0
@@ -24,22 +17,7 @@ else()
     message(WARNING "Unsupported CXX compiler: please use Clang >= 9.0")
 endif()
 
-# Always use position independent code
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-# Set build type
-set(default_build_type "Debug")
-
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Using default build type: \"${default_build_type}\"")
-  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
-      STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-else()
-  message(STATUS "Setting build type to \"${CMAKE_BUILD_TYPE}\"")
-endif()
-
+include(cmake/CMakeBasics.cmake)
 
 include(GNUInstallDirs)
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
@@ -48,7 +26,6 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 message(STATUS "CMAKE_INSTALL_RPATH = ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 
-
 # the RPATH to be used when installing, but only if it's not a system directory
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
      "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" isSystemDir)
@@ -56,6 +33,7 @@ if("${isSystemDir}" STREQUAL "-1")
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 endif("${isSystemDir}" STREQUAL "-1")
 
+include(cmake/Setup3rdParty.cmake)
 
 add_subdirectory(parser)
 add_subdirectory(runtime)
@@ -73,11 +51,11 @@ install(TARGETS perfflowaspect
 
 add_subdirectory(config)
 
-message(STATUS "Config Dir: ${PERFFLOWASPECT_INSTALL_CONFIG_DIR}")
-
 if (NOT DEFINED PERFFLOWASPECT_INSTALL_CONFIG_DIR)
     set(PERFFLOWASPECT_INSTALL_CONFIG_DIR "share")
 endif()
+
+message(STATUS "Config Dir: ${PERFFLOWASPECT_INSTALL_CONFIG_DIR}")
 
 install(EXPORT perfflow_export
     FILE perfflowaspect_targets.cmake

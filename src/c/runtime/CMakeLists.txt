@@ -15,6 +15,10 @@ set(perfflow_runtime_sources
 find_package(OpenSSL REQUIRED)
 find_package(caliper REQUIRED)
 
+message(STATUS "RRR ${caliper_LIB_DIR} ${caliper_CONFIG_LOADED}")
+
+include_directories(${caliper_INCLUDE_DIR})
+
 set(perfflow_runtime_deps -ljansson)
 
 add_library(perfflow_runtime SHARED
