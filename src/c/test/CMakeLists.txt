@@ -36,6 +36,9 @@ configure_file(t0001-cbinding-basic.t.in
     ${CMAKE_CURRENT_BINARY_DIR}/t0001-cbinding-basic.t
     @ONLY)
 
+install(TARGETS ${SMOKETESTS}
+        DESTINATION test)
+
 if(CUDA_FOUND)
     install(TARGETS ${SMOKETESTS} smoketest_cuda
             DESTINATION test)
