@@ -7,10 +7,9 @@ set(SMOKETESTS
     smoketest_MT
 )
 
-find_package(MPI REQUIRED)
-find_package(Threads REQUIRED)
-find_package(CUDA)
-include_directories(${MPI_INCLUDE_PATH})
+if(MPI_FOUND)
+    include_directories(${MPI_INCLUDE_PATH})
+endif()
 
 set(perfflow_deps "-L../runtime -lperfflow_runtime -lcrypto")
 set(THREADS_PREFER_PTHREAD_FLAG ON)

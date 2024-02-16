@@ -1,6 +1,3 @@
-find_package(BISON REQUIRED)
-find_package(FLEX REQUIRED)
-
 set(LEX_FLAGS "--nodefault")
 
 set(YACC_FLAGS "-t --report=none")

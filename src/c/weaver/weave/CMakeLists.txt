@@ -12,8 +12,7 @@ set_target_properties(WeavePass PROPERTIES
     COMPILE_FLAGS "-fno-rtti"
 )
 
-find_library(JANSSON_LIB jansson)
-target_link_libraries(WeavePass perfflow_parser "${JANSSON_LIB}")
+target_link_libraries(WeavePass perfflow_parser ${JANSSON_LIB})
 
 add_library(WeavePassPlugin INTERFACE)
 target_compile_options(WeavePassPlugin INTERFACE
