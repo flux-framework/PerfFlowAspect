@@ -11,7 +11,7 @@ if(MPI_FOUND)
     include_directories(${MPI_INCLUDE_PATH})
 endif()
 
-set(perfflow_deps "-L../runtime -lperfflow_runtime -lcrypto")
+set(perfflow_deps "-L../runtime -lperfflow_runtime" OpenSSL::Crypto)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 message(STATUS "Adding CXX unit tests")
