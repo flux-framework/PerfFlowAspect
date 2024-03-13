@@ -2,8 +2,7 @@
 
 test_description='Test basics of Perfflow Aspect C-binding'
 
-. @CMAKE_SOURCE_DIR@/../common/sharness/sharness.sh
-export LD_LIBRARY_PATH=@CMAKE_BINARY_DIR@/runtime:@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@
+. @CMAKE_SOURCE_DIR@/../../common/sharness/sharness.sh
 
 fixup_ctf_file(){
     ifn=$1 &&

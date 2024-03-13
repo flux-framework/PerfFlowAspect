@@ -28,7 +28,7 @@ include(cmake/Setup3rdParty.cmake)
 
 include(GNUInstallDirs)
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 
@@ -42,7 +42,7 @@ endif("${isSystemDir}" STREQUAL "-1")
 add_subdirectory(parser)
 add_subdirectory(runtime)
 add_subdirectory(weaver)
-add_subdirectory(test)
+#add_subdirectory(test)
 
 add_library(perfflowaspect INTERFACE)
 target_link_libraries(perfflowaspect INTERFACE perfflow_runtime perfflow_parser WeavePassPlugin)
@@ -67,5 +67,7 @@ install(EXPORT perfflow_export
     NAMESPACE perfflowaspect::
     DESTINATION ${CMAKE_INSTALL_PREFIX}/${PERFFLOWASPECT_INSTALL_CONFIG_DIR}
 )
+
+#add_subdirectory(test)
 
 message(STATUS "PerfFlowAspect version: \"${PROJECT_VERSION}\"")
