@@ -48,7 +48,6 @@ if(MPI_FOUND)
     include_directories(${MPI_INCLUDE_PATH})
 endif()
 
-#set(perfflow_deps "-L../runtime -lperfflow_runtime" OpenSSL::Crypto )
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 message(STATUS "Adding CXX unit tests")
@@ -57,7 +56,6 @@ foreach(TEST ${SMOKETESTS})
     add_executable(${TEST} ${TEST}.cpp)
     target_link_libraries(${TEST} ${MPI_LIBRARIES})
     target_link_libraries(${TEST} pthread)
-    #set_source_files_properties(${TEST}.cpp COMPILE_FLAGS "-Xclang -load -Xclang ../weaver/weave/libWeavePass.so -fPIC")
     target_link_libraries(${TEST} 
                             OpenSSL::Crypto 
                             perfflowaspect::WeavePassPlugin 
