@@ -164,6 +164,7 @@ bool WeavingPass::doInitialization(Module &m)
             std::string pcut, scope, flow;
             if (perfflow_parser_parse(anno.data(), pcut, scope, flow) == 0)
             {
+                outs() << "WeavePass: Found valid annotation: " << anno << "\n"; 
                 if (pcut == "around" || pcut == "before")
                     changed = insertBefore(m, *fn,
                                            anno, 0, scope, flow, pcut) || changed;
