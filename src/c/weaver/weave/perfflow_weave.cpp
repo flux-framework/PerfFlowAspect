@@ -144,6 +144,8 @@ bool WeavingPass::insertBefore(Module &m, Function &f, StringRef &a,
 
 bool WeavingPass::doInitialization(Module &m)
 {
+    outs() << "WeavePass loaded successfully. \n";
+
     auto annotations = m.getNamedGlobal("llvm.global.annotations");
     if (!annotations)
     {
