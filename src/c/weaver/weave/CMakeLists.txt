@@ -26,6 +26,29 @@ install(TARGETS WeavePassPlugin
         RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
+if(CUDA_FOUND)
+    enable_language(CUDA)
+    add_library(WeavePassCudaPlugin INTERFACE)
+    target_compile_options(WeavePassCudaPlugin INTERFACE
+    "$<$<BUILD_INTERFACE:$<COMPILE_LANGUAGE:CXX>:-Xclang -load -Xclang $<TARGET_FILE:WeavePass>>>$<$<INSTALL_INTERFACE:$<COMPILE_LANGUAGE:CXX>:-Xclang -load -Xclang $<TARGET_FILE:perfflowaspect::WeavePass>>><$<$<BUILD_INTERFACE:$<COMPILE_LANGUAGE:CUDA>:-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=$<TARGET_FILE:WeavePass>>><$<$<INSTALL_INTERFACE:$<COMPILE_LANGUAGE:CUDA>:-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=$<TARGET_FILE:perfflowaspect::WeavePass>>>"
+)
+
+#    "SHELL:$<BUILD_INTERFACE:$<COMPILE_LANGUAGE:CXX>:-Xclang -load -Xclang $<TARGET_FILE:WeavePass>>$<INSTALL_INTERFACE:$<COMPILE_LANGUAGE:CXX>:-Xclang -load -Xclang $<TARGET_FILE:perfflowaspect::WeavePass>>$<BUILD_INTERFACE:$<COMPILE_LANGUAGE:CUDA>:-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=$<TARGET_FILE:WeavePass>>$<INSTALL_INTERFACE:$<COMPILE_LANGUAGE:CUDA>:-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=$<TARGET_FILE:perfflowaspect::WeavePass>>"
+
+
+#    target_compile_options(WeavePassCudaPlugin INTERFACE
+#    $<$<COMPILE_LANGUAGE:CUDA>:-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=$<TARGET_FILE:WeavePass>>
+#SHELL:$<BUILD_INTERFACE:-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=$<TARGET_FILE:WeavePass>>$<INSTALL_INTERFACE:-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=$<TARGET_FILE:perfflowaspect::WeavePass>>>"
+ #   )
+
+    install(TARGETS WeavePassCudaPlugin
+            EXPORT perfflow_export
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+endif()
+
 install(TARGETS WeavePass
         EXPORT perfflow_export
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

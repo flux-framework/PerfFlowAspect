@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.2)
 
 project(PerfFlowAspect VERSION "0.1.0")
 
 # Build Options
-option(PERFFLOWASPECT_WITH_CUDA "Build CUDA smoketest" OFF)
-option(PERFFLOWASPECT_WITH_MPI "Build MPI smoketest" ON)
-option(PERFFLOWASPECT_WITH_MULTITHREADS "Build multi-threaded smoketest" ON)
+option(PERFFLOWASPECT_WITH_CUDA "Build with CUDA" ON)
+option(PERFFLOWASPECT_WITH_MPI "Build with MPI" ON)
+option(PERFFLOWASPECT_WITH_MULTITHREADS "Build with multi-threadeding" ON)
 
 # Fail if using Clang < 9.0
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -44,7 +44,13 @@ add_subdirectory(runtime)
 add_subdirectory(weaver)
 
 add_library(perfflowaspect INTERFACE)
-target_link_libraries(perfflowaspect INTERFACE perfflow_runtime perfflow_parser WeavePassPlugin)
+
+if(CUDA_FOUND)
+    target_link_libraries(perfflowaspect INTERFACE perfflow_runtime perfflow_parser WeavePassPlugin WeavePassCudaPlugin)
+else()
+    target_link_libraries(perfflowaspect INTERFACE perfflow_runtime perfflow_parser WeavePassPlugin)
+endif()
+
 install(TARGETS perfflowaspect
         EXPORT perfflow_export
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

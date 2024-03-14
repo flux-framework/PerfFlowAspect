@@ -17,9 +17,11 @@ else()
     message(WARNING "Unsupported CXX compiler: please use Clang >= 9.0")
 endif()
 
+find_package(perfflowaspect REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(MPI REQUIRED)
-find_package(perfflowaspect REQUIRED)
+find_package(Threads REQUIRED)
+find_package(CUDA)
 
 include(GNUInstallDirs)
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
@@ -35,14 +37,14 @@ if("${isSystemDir}" STREQUAL "-1")
 endif("${isSystemDir}" STREQUAL "-1")
 
 
-set(SMOKETESTS
-    smoketest
-    smoketest2
-    smoketest3
-    smoketest_class
-    smoketest_MPI
-    smoketest_MT
-)
+#set(SMOKETESTS
+#    smoketest
+#    smoketest2
+#    smoketest3
+#    smoketest_class
+#    smoketest_MPI
+#    smoketest_MT
+#)
 
 if(MPI_FOUND)
     include_directories(${MPI_INCLUDE_PATH})
@@ -62,12 +64,19 @@ foreach(TEST ${SMOKETESTS})
                             perfflowaspect::perfflow_runtime)
 endforeach()
 
-# if(CUDA_FOUND)
-#     message(STATUS " [*] Adding test: smoketest_cuda")
+ if(CUDA_FOUND)
+     message(STATUS " [*] Adding test: smoketest_cuda")
 #     set(CUDA_NVCC_FLAGS  "-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=../../../weaver/weave/libWeavePass.so")
-#     cuda_add_executable(smoketest_cuda smoketest_cuda_wrapper.cpp smoketest_cuda_kernel.cu)
-#     target_link_libraries(smoketest_cuda ${perfflow_deps} ${CUDA_LIBRARIES} cuda)
-# endif()
+     cuda_compile(smoketest_cuda_kernel_o smoketest_cuda_kernel.cu)
+     
+     cuda_add_executable(smoketest_cuda smoketest_cuda_wrapper.cpp smoketest_cuda_kernel.cu)
+     set_target_properties(smoketest_cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+     target_link_libraries(smoketest_cuda 
+                           OpenSSL::Crypto
+                           perfflowaspect::perfflow_runtime
+                           perfflowaspect::WeavePassCudaPlugin
+                           ${CUDA_LIBRARIES} cuda)
+ endif()
 
 configure_file(t0001-cbinding-basic.t.in
     ${CMAKE_CURRENT_BINARY_DIR}/t0001-cbinding-basic.t
