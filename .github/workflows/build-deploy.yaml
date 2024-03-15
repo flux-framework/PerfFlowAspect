@@ -69,4 +69,6 @@ jobs:
 
     - name: Deploy
       if: (github.event_name != 'pull_request')
+      env:
+        container: ${{ matrix.container[2] }}
       run: docker push ${container}:latest
