@@ -1,4 +1,4 @@
-name: build PerfFlowAspect
+name: Devcontainer Build
 
 on:
   workflow_dispatch:
@@ -69,6 +69,7 @@ jobs:
         docker push ${container}:${tag}
 
     - name: Deploy
+      if: (github.event_name != 'pull_request')
       env:
         container: ${{ matrix.container[2] }}
       run: docker push ${container}:latest
