@@ -1,7 +1,8 @@
 name: build PerfFlowAspect
 
 on:
-
+  workflow_dispatch:
+  
   # Publish packages on release
   release:
     types: [published]
@@ -68,7 +69,6 @@ jobs:
         docker push ${container}:${tag}
 
     - name: Deploy
-      if: (github.event_name != 'pull_request')
       env:
         container: ${{ matrix.container[2] }}
       run: docker push ${container}:latest
