@@ -1,20 +1,8 @@
-name: build PerfFlowAspect
+name: Devcontainer Build
 
 on:
-
-  # Publish packages on release
-  release:
-    types: [published]
-
-  # We might want to remove this, OR provide a base container
-  # that will more quickly build from, or use cache
-  pull_request: []
-
-  # On push to main we build and deploy images
-  push:
-    branches:
-    - main
-
+  workflow_dispatch:
+  
 jobs:
   build:
     permissions:
