@@ -132,8 +132,6 @@ class ChromeTracingAdvice:
     #             instance-path: hierarchical component path
     #             hostname: name of the host where this process is running
     #             pid: process id
-    # To toggle output format (default: log-format=Array)
-    #     PERFFLOW_OPTIONS="log-format=Array|Object"
     # To change the directory in which the log file is created
     #     PERFFLOW_OPTIONS="log-dir=DIR"
     # To disable logging (default: log-enable=True)
@@ -142,6 +140,8 @@ class ChromeTracingAdvice:
     #     PERFFLOW_OPTIONS="cpu-mem-usage=True"
     # To collect B (begin) and E (end) events as single X (complete) duration event (default: log-event=Verbose)
     #     PERFFLOW_OPTIONS="log-event=Compact"
+    # To toggle output format (default: log-format=Array)
+    #     PERFFLOW_OPTIONS="log-format=Array|Object"
     # You can combine the options in colon (:) delimited format
 
     parse_perfflow_options()
@@ -163,15 +163,17 @@ class ChromeTracingAdvice:
                 "perfflow warning: unknown option param={}".format(inc), file=sys.stderr
             )
 
-    fn += ".pfw"
-
     log_format = perfflow_options["log-format"]
-    if log_format in ["Array"]:
+    if log_format in ["Array", "array", "ARRAY"]:
         array_format = True
-    elif log_format == "Object":
+        fn += "ARRAY"
+    elif log_format in ["Object", "object", "OBJECT"]:
         array_format = False
+        fn += "OBJECT"
     else:
         raise ValueError("perfflow invalid option: log-format=[Array|Object]")
+
+    fn += ".pfw"
 
     log_dir = perfflow_options["log-dir"]
     if log_dir is not None:
