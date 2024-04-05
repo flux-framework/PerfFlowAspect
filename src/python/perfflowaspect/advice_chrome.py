@@ -41,6 +41,8 @@ def cannonicalize_perfflow_options():
         perfflow_options["cpu-mem-usage"] = "False"
     if perfflow_options.get("log-event") is None:
         perfflow_options["log-event"] = "Verbose"
+    if perfflow_options.get("log-format") is None:
+        perfflow_options["log-format"] = "Array"
 
 
 def parse_perfflow_options():
@@ -130,6 +132,8 @@ class ChromeTracingAdvice:
     #             instance-path: hierarchical component path
     #             hostname: name of the host where this process is running
     #             pid: process id
+    # To toggle output format (default: log-format=Array)
+    #     PERFFLOW_OPTIONS="log-format=Array|Object"
     # To change the directory in which the log file is created
     #     PERFFLOW_OPTIONS="log-dir=DIR"
     # To disable logging (default: log-enable=True)
@@ -160,6 +164,14 @@ class ChromeTracingAdvice:
             )
 
     fn += ".pfw"
+
+    log_format = perfflow_options["log-format"]
+    if log_format in ["Array"]:
+        array_format = True
+    elif log_format == "Object":
+        array_format = False
+    else:
+        raise ValueError("perfflow invalid option: log-format=[Array|Object]")
 
     log_dir = perfflow_options["log-dir"]
     if log_dir is not None:
