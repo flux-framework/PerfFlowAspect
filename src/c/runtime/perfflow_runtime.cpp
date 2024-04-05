@@ -27,7 +27,7 @@ void perfflow_weave_init()
     {
         if (!(advice = create_advice(advice_kind)))
         {
-            // USE C IO since it more reliable in libray init function
+            // USE C IO since it more reliable in library init function
             fprintf(stderr, "error: unknown (%s)\n", advice_kind.c_str());
             fprintf(stderr, "error: perfflow advice not activated\n");
         }
