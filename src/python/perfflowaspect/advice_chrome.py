@@ -166,10 +166,10 @@ class ChromeTracingAdvice:
     log_format = perfflow_options["log-format"]
     if log_format in ["Array", "array", "ARRAY"]:
         array_format = True
-        fn += "ARRAY"
+        fn += "-ARRAY"
     elif log_format in ["Object", "object", "OBJECT"]:
         array_format = False
-        fn += "OBJECT"
+        fn += "-OBJECT"
     else:
         raise ValueError("perfflow invalid option: log-format=[Array|Object]")
 
@@ -279,6 +279,8 @@ class ChromeTracingAdvice:
             fh.setFormatter(formatter)
             ChromeTracingAdvice.logger.addHandler(fh)
             ChromeTracingAdvice.logger.debug("[")
+            if ChromeTracingAdvice.array_format == False:
+                ChromeTracingAdvice.logger.debug("\"traceEvents\": [")
         ChromeTracingAdvice.logger.debug(s)
 
     @staticmethod
