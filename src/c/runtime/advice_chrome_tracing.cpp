@@ -258,6 +258,10 @@ int advice_chrome_tracing_t::cannonicalize_perfflow_options()
     {
         m_perfflow_options["log-event"] = "Verbose";
     }
+    if (m_perfflow_options.find("log-format") == m_perfflow_options.end())
+    {
+        m_perfflow_options["log-format"] = "Array";
+    }
     return 0;
 }
 
@@ -441,6 +445,8 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     //     PERFFLOW_OPTIONS="cpu-mem-usage=True"
     // To collect B (begin) and E (end) events as single X (complete) duration event (default: log-event=Verbose)
     //     PERFFLOW_OPTIONS="log-event=Compact"
+    // To output events in object format (default: log-format=Array)
+    //     PERFFLOW_OPTIONS="log-format=Object"
     // You can combine the options in colon (:) delimited format
 
     if (parse_perfflow_options() < 0)
@@ -488,6 +494,22 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
         {
             m_fn += "." + std::to_string(getpid());
         }
+    }
+
+    std::string log_format = m_perfflow_options["log-format"];
+    if (log_format == "Array" || log_format == "array" || log_format == "ARRAY")
+    {
+        m_array_format = 1;
+    }
+    else if (log_format == "Object" || log_format == "object" || log_format == "OBJECT")
+    {
+        m_array_format = 0;
+    }
+    else
+    {
+        throw std::system_error(errno,
+                                std::system_category(),
+                                "invalid log-format value");
     }
 
     m_fn += ".pfw";
