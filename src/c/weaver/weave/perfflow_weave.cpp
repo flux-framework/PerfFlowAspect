@@ -55,7 +55,7 @@ bool WeavingPass::insertAfter(Module &m, Function &f, StringRef &a,
     params.push_back(int8PtrType);
     params.push_back(int8PtrType);
 
-    // voidType is return type, parms are parameters and no variable length args
+    // voidType is return type, params are parameters and no variable length args
     FunctionType *weaveFuncTy = FunctionType::get(voidType, params, false);
     // Note: Use FunctionCallee after for Clang 9 or higher
     FunctionCallee after = m.getOrInsertFunction("perfflow_weave_after",
