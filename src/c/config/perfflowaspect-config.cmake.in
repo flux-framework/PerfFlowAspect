@@ -1,6 +1,6 @@
 if (NOT PERFFLOWASPECT_CONFIG_LOADED)
   set(PERFFLOWASPECT_VERSION        "@PROJECT_VERSION@")
-  set(PERFFLOWASPECT_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@")
+  set(PERFFLOWASPECT_DIR "@CMAKE_INSTALL_PREFIX@")
   set(PERFFLOWASPECT_LIB_DIR        "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@")
 
   include(CMakeFindDependencyMacro)
@@ -8,8 +8,8 @@ if (NOT PERFFLOWASPECT_CONFIG_LOADED)
   find_dependency(OpenSSL REQUIRED)
 
   # Library targets imported from file
-  # include(${PERFFLOWASPECT_INSTALL_PREFIX}/share/perfflowaspect_setup_targets.cmake)
-  include(${PERFFLOWASPECT_INSTALL_PREFIX}/share/perfflowaspect_targets.cmake)
+  # include(${PERFFLOWASPECT_DIR}/share/perfflowaspect_setup_targets.cmake)
+  include(${PERFFLOWASPECT_DIR}/share/perfflowaspect_targets.cmake)
 
   set(PERFFLOWASPECT_CONFIG_LOADED TRUE)
 endif()
