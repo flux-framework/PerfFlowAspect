@@ -34,9 +34,8 @@ endif()
 # Check for valid PerfFlowAspect install
 #
 get_filename_component(PERFFLOWASPECT_DIR ${PERFFLOWASPECT_DIR} ABSOLUTE)
-if(NOT EXISTS ${PERFFLOWASPECT_DIR}/lib/cmake/perfflowaspect-config.cmake)
-    message(FATAL_ERROR "Could not find PerfFlowAspect CMake include file
-(${PERFFLOWASPECT_DIR}/lib/cmake/perfflowaspect-config.cmake)")
+if(NOT EXISTS ${PERFFLOWASPECT_DIR}/share/perfflowaspect-config.cmake)
+    message(FATAL_ERROR "Could not find PerfFlowAspect CMake include file (${PERFFLOWASPECT_DIR}/share/perfflowaspect-config.cmake)")
 endif()
 
 #
