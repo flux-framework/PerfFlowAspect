@@ -289,7 +289,9 @@ class ChromeTracingAdvice:
             else:
                 ChromeTracingAdvice.logger.debug("{")
                 ChromeTracingAdvice.logger.debug("  \"displayTimeUnit\": \"us\",")
-                ChromeTracingAdvice.logger.debug("  \"otherData\": {},")
+                ChromeTracingAdvice.logger.debug("  \"otherData\": {")
+                ChromeTracingAdvice.logger.debug("")
+                ChromeTracingAdvice.logger.debug("  },")
                 ChromeTracingAdvice.logger.debug("  \"traceEvents\": [")
         ChromeTracingAdvice.logger.debug(s)
 
