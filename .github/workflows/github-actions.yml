@@ -7,6 +7,40 @@ jobs:
   build-c:
     name: check c bindings
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        config: [boilerplate, release, debug_cuda_only, debug_mpi_only, debug_threads_only]
+
+        include:
+          - config: boilerplate
+            PERFFLOWASPECT_WITH_CUDA: ON
+            PERFFLOWASPECT_WITH_MPI: ON
+            PERFFLOWASPECT_WITH_MULTITHREADS: ON
+            CMAKE_BUILD_TYPE: Debug
+
+          - config: release
+            PERFFLOWASPECT_WITH_CUDA: ON
+            PERFFLOWASPECT_WITH_MPI: ON
+            PERFFLOWASPECT_WITH_MULTITHREADS: ON
+            CMAKE_BUILD_TYPE: Release
+
+          - config: debug_cuda_only
+            PERFFLOWASPECT_WITH_CUDA: ON
+            PERFFLOWASPECT_WITH_MPI: OFF
+            PERFFLOWASPECT_WITH_MULTITHREADS: OFF
+            CMAKE_BUILD_TYPE: Debug
+
+          - config: debug_mpi_only
+            PERFFLOWASPECT_WITH_CUDA: OFF
+            PERFFLOWASPECT_WITH_MPI: ON
+            PERFFLOWASPECT_WITH_MULTITHREADS: OFF
+            CMAKE_BUILD_TYPE: Debug
+
+          - config: debug_threads_only
+            PERFFLOWASPECT_WITH_CUDA: OFF
+            PERFFLOWASPECT_WITH_MPI: OFF
+            PERFFLOWASPECT_WITH_MULTITHREADS: ON
+            CMAKE_BUILD_TYPE: Debug
 
     steps:
       # Checkout PerfFlowAspect repository under $GITHUB_WORKSPACE
@@ -34,7 +68,11 @@ jobs:
           cd src/c
           mkdir build install
           cd build
-          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm-10/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install"
+          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm-10/cmake -DCMAKE_INSTALL_PREFIX=../install"
+          export CMAKE_OPTS="${CMAKE_OPTS} -DCMAKE_BUILD_TYPE=${{matrix.CMAKE_BUILD_TYPE}}"
+          export CMAKE_OPTS="${CMAKE_OPTS} -DPERFFLOWASPECT_WITH_CUDA=${{matrix.PERFFLOWASPECT_WITH_CUDA}}"
+          export CMAKE_OPTS="${CMAKE_OPTS} -DPERFFLOWASPECT_WITH_MPI=${{matrix.PERFFLOWASPECT_WITH_MPI}}"
+          export CMAKE_OPTS="${CMAKE_OPTS} -DPERFFLOWASPECT_WITH_MULTITHREADS=${{matrix.PERFFLOWASPECT_WITH_MULTITHREADS}}"
           echo -e ${CMAKE_OPTS}
           cmake ${CMAKE_OPTS} ..
           # build
