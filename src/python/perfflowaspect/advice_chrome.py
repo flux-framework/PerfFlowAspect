@@ -250,7 +250,7 @@ class ChromeTracingAdvice:
         except KeyError:
             raise ValueError("Invalid pointcut: {}".format(pointcut))
         event = cls.create_sync_event(*args, phase, **kwargs)
-        if ChromeTracingAdvice.array_format == True:
+        if ChromeTracingAdvice.array_format:
             cls.__flush_log(json.dumps(event) + ",")
         else:
             cls.__flush_log("    " + json.dumps(event) + ",")
@@ -264,7 +264,7 @@ class ChromeTracingAdvice:
         except KeyError:
             raise ValueError("Invalid pointcut: {}".format(pointcut))
         event = cls.create_async_event(*args, phase, **kwargs)
-        if ChromeTracingAdvice.array_format == True:
+        if ChromeTracingAdvice.array_format:
             cls.__flush_log(json.dumps(event) + ",")
         else:
             cls.__flush_log("    " + json.dumps(event) + ",")
@@ -284,15 +284,15 @@ class ChromeTracingAdvice:
             formatter = logging.Formatter("%(message)s")
             fh.setFormatter(formatter)
             ChromeTracingAdvice.logger.addHandler(fh)
-            if ChromeTracingAdvice.array_format == True:
+            if ChromeTracingAdvice.array_format:
                 ChromeTracingAdvice.logger.debug("[")
             else:
                 ChromeTracingAdvice.logger.debug("{")
-                ChromeTracingAdvice.logger.debug("  \"displayTimeUnit\": \"us\",")
-                ChromeTracingAdvice.logger.debug("  \"otherData\": {")
+                ChromeTracingAdvice.logger.debug('  "displayTimeUnit": "us",')
+                ChromeTracingAdvice.logger.debug('  "otherData": {')
                 ChromeTracingAdvice.logger.debug("")
                 ChromeTracingAdvice.logger.debug("  },")
-                ChromeTracingAdvice.logger.debug("  \"traceEvents\": [")
+                ChromeTracingAdvice.logger.debug('  "traceEvents": [')
         ChromeTracingAdvice.logger.debug(s)
 
     @staticmethod
@@ -307,7 +307,7 @@ class ChromeTracingAdvice:
             event["ts"] = event_ts
         if event_dur is not None:
             event["dur"] = event_dur
-        if ChromeTracingAdvice.array_format == True:
+        if ChromeTracingAdvice.array_format:
             ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
         else:
             ChromeTracingAdvice.__flush_log("    " + json.dumps(event) + ",")
@@ -330,7 +330,7 @@ class ChromeTracingAdvice:
             event["ts"] = event_ts
         if event_dur is not None:
             event["dur"] = event_dur
-        if ChromeTracingAdvice.array_format == True:
+        if ChromeTracingAdvice.array_format:
             ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
         else:
             ChromeTracingAdvice.__flush_log("    " + json.dumps(event) + ",")
