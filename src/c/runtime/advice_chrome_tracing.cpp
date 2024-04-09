@@ -501,7 +501,8 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     {
         m_array_format = 1;
     }
-    else if (log_format == "Object" || log_format == "object" || log_format == "OBJECT")
+    else if (log_format == "Object" || log_format == "object" ||
+             log_format == "OBJECT")
     {
         m_array_format = 0;
     }
