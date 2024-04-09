@@ -1,8 +1,8 @@
 set(CMAKE_CXXFLAGS "${CMAKE_CXXFLAGS} -O0 -g -std=c++11")
 
 set(perfflow_runtime_headers
-	advice_base.hpp
-	advice_chrome_tracing.hpp
+    advice_base.hpp
+    advice_chrome_tracing.hpp
     advice_dispatcher.hpp
 )
 
@@ -11,6 +11,8 @@ set(perfflow_runtime_sources
     advice_dispatcher.cpp
     perfflow_runtime.cpp
 )
+
+include_directories(${JANSSON_INCLUDE_DIRS})
 
 add_library(perfflow_runtime SHARED
             ${perfflow_runtime_sources}
