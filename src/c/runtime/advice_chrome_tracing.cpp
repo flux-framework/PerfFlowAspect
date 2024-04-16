@@ -204,16 +204,38 @@ int advice_chrome_tracing_t::flush_if(size_t size)
         }
         m_oss.seekp(0, std::ios::end);
         std::stringstream::pos_type offset = m_oss.tellp();
-        if (offset >= size)
+        if (m_array_format)
         {
-            if (!m_ofs.is_open())
+            if (offset >= size)
             {
-                m_ofs.open(m_fn, std::ofstream::out);
-                m_ofs << "[" << std::endl;
+                if (!m_ofs.is_open())
+                {
+                    m_ofs.open(m_fn, std::ofstream::out);
+                    m_ofs << "[" << std::endl;
+                }
+                m_ofs << m_oss.str();
+                m_oss.str("");
+                m_oss.clear();
             }
-            m_ofs << m_oss.str();
-            m_oss.str("");
-            m_oss.clear();
+        }
+        else
+        {
+            if (offset >= size)
+            {
+                if (!m_ofs.is_open())
+                {
+                    m_ofs.open(m_fn, std::ofstream::out);
+                    m_ofs << "{" << std::endl;
+                    m_ofs << "  \"displayTimeUnit\": \"us\"," << std::endl;
+                    m_ofs << "  \"otherData\": {" << std::endl;
+                    m_ofs << "" << std::endl;
+                    m_ofs << "  }," << std::endl;
+                    m_ofs << "  \"traceEvents\": [" << std::endl;
+                }
+                m_ofs << m_oss.str();
+                m_oss.str("");
+                m_oss.clear();
+            }
         }
         if ((rc = pthread_mutex_unlock(&m_mutex)) < 0)
         {
@@ -476,6 +498,26 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
                                 "gethostname failed");
 
     m_fn = "perfflow";
+
+    std::string log_format = m_perfflow_options["log-format"];
+    if (log_format == "Array" || log_format == "array" || log_format == "ARRAY")
+    {
+        m_array_format = 1;
+        m_fn += ".array";
+    }
+    else if (log_format == "Object" || log_format == "object" ||
+             log_format == "OBJECT")
+    {
+        m_array_format = 0;
+        m_fn += ".object";
+    }
+    else
+    {
+        throw std::system_error(errno,
+                                std::system_category(),
+                                "invalid log-format value");
+    }
+
     for (auto &inc : include_list)
     {
         if (inc == "name")
@@ -494,23 +536,6 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
         {
             m_fn += "." + std::to_string(getpid());
         }
-    }
-
-    std::string log_format = m_perfflow_options["log-format"];
-    if (log_format == "Array" || log_format == "array" || log_format == "ARRAY")
-    {
-        m_array_format = 1;
-    }
-    else if (log_format == "Object" || log_format == "object" ||
-             log_format == "OBJECT")
-    {
-        m_array_format = 0;
-    }
-    else
-    {
-        throw std::system_error(errno,
-                                std::system_category(),
-                                "invalid log-format value");
     }
 
     m_fn += ".pfw";

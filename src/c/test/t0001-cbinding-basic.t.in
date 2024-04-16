@@ -43,162 +43,162 @@ EOF
 '
 
 test_expect_success 'c binding: correctly named ctf file produced' '
-    test -f perfflow.$(hostname).[0-9]*.pfw
+    test -f perfflow.array.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'c binding: ctf file appears good' '
-    sanity_check perfflow.$(hostname).[0-9]*.pfw &&
-    rm perfflow.$(hostname).[0-9]*.pfw
+    sanity_check perfflow.array.$(hostname).[0-9]*.pfw &&
+    rm perfflow.array.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: log-dir works' '
     PERFFLOW_OPTIONS="log-dir=./logdir" ../smoketest &&
-    sanity_check ./logdir/perfflow.$(hostname).[0-9]*.pfw &&
-    rm ./logdir/perfflow.$(hostname).[0-9]*.pfw
+    sanity_check ./logdir/perfflow.array.$(hostname).[0-9]*.pfw &&
+    rm ./logdir/perfflow.array.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: name can be included in filename' '
     PERFFLOW_OPTIONS="name=mycomponent:log-filename-include=name" \
 	../smoketest &&
-    test -f perfflow.mycomponent.pfw &&
-    sanity_check perfflow.mycomponent.pfw &&
-    rm perfflow.mycomponent.pfw
+    test -f perfflow.array.mycomponent.pfw &&
+    sanity_check perfflow.array.mycomponent.pfw &&
+    rm perfflow.array.mycomponent.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: instance-path included in filename' '
     PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
-    test -f perfflow.{[a-f0-9]*}.pfw &&
-    sanity_check perfflow.{[a-f0-9]*}.pfw &&
-    rm perfflow.{[a-f0-9]*}.pfw
+    test -f perfflow.array.{[a-f0-9]*}.pfw &&
+    sanity_check perfflow.array.{[a-f0-9]*}.pfw &&
+    rm perfflow.array.{[a-f0-9]*}.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: filename includes all' '
     PERFFLOW_OPTIONS="log-filename-include=name,instance-path,hostname,pid" \
 	../smoketest &&
-    test -f perfflow.generic.{[a-f0-9]*}.$(hostname).[0-9]*.pfw &&
-    sanity_check perfflow.generic.{[a-f0-9]*}.$(hostname).[0-9]*.pfw &&
-    rm perfflow.generic.{[a-f0-9]*}.$(hostname).[0-9]*.pfw
+    test -f perfflow.array.generic.{[a-f0-9]*}.$(hostname).[0-9]*.pfw &&
+    sanity_check perfflow.array.generic.{[a-f0-9]*}.$(hostname).[0-9]*.pfw &&
+    rm perfflow.array.generic.{[a-f0-9]*}.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: filename includes all in correct order' '
     PERFFLOW_OPTIONS="log-filename-include=hostname,instance-path,pid,name" \
 	../smoketest &&
-    test -f perfflow.$(hostname).{[a-f0-9]*}.[0-9]*.generic.pfw &&
-    sanity_check perfflow.$(hostname).{[a-f0-9]*}.[0-9]*.generic.pfw &&
-    rm perfflow.$(hostname).{[a-f0-9]*}.[0-9]*.generic.pfw
+    test -f perfflow.array.$(hostname).{[a-f0-9]*}.[0-9]*.generic.pfw &&
+    sanity_check perfflow.array.$(hostname).{[a-f0-9]*}.[0-9]*.generic.pfw &&
+    rm perfflow.array.$(hostname).{[a-f0-9]*}.[0-9]*.generic.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: SLURM supported' '
     SLURM_JOB_ID=123456 SLURM_STEP_ID=1 \
 PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
     sha1=$(echo -n "123456.1" | sha1sum | awk "{print \$1}" | cut -c1-8) &&
-    test -f perfflow.{${sha1}}.pfw &&
-    sanity_check perfflow.{${sha1}}.pfw &&
-    rm perfflow.{${sha1}}.pfw
+    test -f perfflow.array.{${sha1}}.pfw &&
+    sanity_check perfflow.array.{${sha1}}.pfw &&
+    rm perfflow.array.{${sha1}}.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: LSF supported' '
     LSB_JOBID=123456 LS_JOBPID=1 \
 PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
     sha1=$(echo -n "123456.1" | sha1sum | awk "{print \$1}" | cut -c1-8) &&
-    test -f perfflow.{${sha1}}.pfw &&
-    sanity_check perfflow.{${sha1}}.pfw &&
-    rm perfflow.{${sha1}}.pfw
+    test -f perfflow.array.{${sha1}}.pfw &&
+    sanity_check perfflow.array.{${sha1}}.pfw &&
+    rm perfflow.array.{${sha1}}.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: SLURM_JOB_ID + STEP_ID must be given' '
     SLURM_JOB_ID=123456 \
 PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
     sha1=$(echo -n "1" | sha1sum | awk "{print \$1}" | cut -c1-8) &&
-    test -f perfflow.{${sha1}}.pfw &&
-    sanity_check perfflow.{${sha1}}.pfw &&
-    rm perfflow.{${sha1}}.pfw
+    test -f perfflow.array.{${sha1}}.pfw &&
+    sanity_check perfflow.array.{${sha1}}.pfw &&
+    rm perfflow.array.{${sha1}}.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: LSB_JOBID + LS_JOBPID must be given' '
     LSB_JOBID=123456 \
 PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
     sha1=$(echo -n "1" | sha1sum | awk "{print \$1}" | cut -c1-8) &&
-    test -f perfflow.{${sha1}}.pfw &&
-    sanity_check perfflow.{${sha1}}.pfw &&
-    rm perfflow.{${sha1}}.pfw
+    test -f perfflow.array.{${sha1}}.pfw &&
+    sanity_check perfflow.array.{${sha1}}.pfw &&
+    rm perfflow.array.{${sha1}}.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: Flux supported' '
     FLUX_JOB_ID=123456 \
 PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
-    test -f perfflow.{123456}.pfw &&
-    sanity_check perfflow.{123456}.pfw &&
-    rm perfflow.{123456}.pfw
+    test -f perfflow.array.{123456}.pfw &&
+    sanity_check perfflow.array.{123456}.pfw &&
+    rm perfflow.array.{123456}.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: Flux f58-encoded jobid supported' '
     FLUX_JOB_ID=ƒeF9QZG3 \
 PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
-    test -f perfflow.{ƒeF9QZG3}.pfw &&
-    sanity_check perfflow.{ƒeF9QZG3}.pfw &&
-    rm perfflow.{ƒeF9QZG3}.pfw
+    test -f perfflow.array.{ƒeF9QZG3}.pfw &&
+    sanity_check perfflow.array.{ƒeF9QZG3}.pfw &&
+    rm perfflow.array.{ƒeF9QZG3}.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: nested instance-path supported' '
     PERFFLOW_INSTANCE_PATH=fffffff.444444 FLUX_JOB_ID=123456 \
 PERFFLOW_OPTIONS="log-filename-include=instance-path" ../smoketest &&
-    test -f perfflow.{fffffff.444444.123456}.pfw &&
-    sanity_check perfflow.{fffffff.444444.123456}.pfw &&
-    rm perfflow.{fffffff.444444.123456}.pfw
+    test -f perfflow.array.{fffffff.444444.123456}.pfw &&
+    sanity_check perfflow.array.{fffffff.444444.123456}.pfw &&
+    rm perfflow.array.{fffffff.444444.123456}.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest &&
-    ! test -f perfflow.$(hostname).[0-9]*.pfw &&
-    if test -f perfflow.$(hostname).[0-9]*.pfw; then rm perfflow.$(hostname).[0-9]*.pfw; fi
+    ! test -f perfflow.array.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.array.$(hostname).[0-9]*.pfw; then rm perfflow.array.$(hostname).[0-9]*.pfw; fi
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest' '
     PERFFLOW_OPTIONS="log-enable=True" ../smoketest &&
-    test -f perfflow.$(hostname).[0-9]*.pfw &&
-    rm perfflow.$(hostname).[0-9]*.pfw
+    test -f perfflow.array.$(hostname).[0-9]*.pfw &&
+    rm perfflow.array.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest2' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest2 &&
-    ! test -f perfflow.$(hostname).[0-9]*.pfw &&
-    if test -f perfflow.$(hostname).[0-9]*.pfw; then rm perfflow.$(hostname).[0-9]*.pfw; fi
+    ! test -f perfflow.array.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.array.$(hostname).[0-9]*.pfw; then rm perfflow.array.$(hostname).[0-9]*.pfw; fi
 '
 
 test_expect_success 'c binding: smoketest3 runs ok in default' '
     ../smoketest3 &&
-    rm perfflow.$(hostname).[0-9]*.pfw
+    rm perfflow.array.$(hostname).[0-9]*.pfw
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest3' '
     PERFFLOW_OPTIONS="log-enable=False" ../smoketest3 &&
-    ! test -f perfflow.$(hostname).[0-9]*.pfw &&
-    if test -f perfflow.$(hostname).[0-9]*.pfw; then rm perfflow.$(hostname).[0-9]*.pfw; fi
+    ! test -f perfflow.array.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.array.$(hostname).[0-9]*.pfw; then rm perfflow.array.$(hostname).[0-9]*.pfw; fi
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest3' '
     PERFFLOW_OPTIONS="log-enable=True" ../smoketest3 &&
-    test -f perfflow.$(hostname).[0-9]*.pfw &&
-    rm perfflow.$(hostname).[0-9]*.pfw
+    test -f perfflow.array.$(hostname).[0-9]*.pfw &&
+    rm perfflow.array.$(hostname).[0-9]*.pfw
 '
 
 if test -f ../smoketest_MT; then
     test_expect_success 'c binding: smoketest_MT runs ok in default' '
         ../smoketest_MT &&
-        rm perfflow.$(hostname).[0-9]*.pfw
+        rm perfflow.array.$(hostname).[0-9]*.pfw
     '
 
     test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_MT' '
         PERFFLOW_OPTIONS="log-enable=False" ../smoketest_MT &&
-        ! test -f perfflow.$(hostname).[0-9]*.pfw &&
-        if test -f perfflow.$(hostname).[0-9]*.pfw; then rm perfflow.$(hostname).[0-9]*.pfw; fi
+        ! test -f perfflow.array.$(hostname).[0-9]*.pfw &&
+        if test -f perfflow.array.$(hostname).[0-9]*.pfw; then rm perfflow.array.$(hostname).[0-9]*.pfw; fi
     '
 
     test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_MT' '
         PERFFLOW_OPTIONS="log-enable=True" ../smoketest_MT &&
-        test -f perfflow.$(hostname).[0-9]*.pfw &&
-        rm perfflow.$(hostname).[0-9]*.pfw
+        test -f perfflow.array.$(hostname).[0-9]*.pfw &&
+        rm perfflow.array.$(hostname).[0-9]*.pfw
     '
 else
     say "Skipping multithreaded smoketests...disabled in the build."
@@ -207,19 +207,19 @@ fi
 if test -f ../smoketest_MPI; then
     test_expect_success 'c binding: smoketest_MPI runs ok in default' '
         mpirun -n 2 ../smoketest_MPI &&
-        rm perfflow.$(hostname).[0-9]*.pfw
+        rm perfflow.array.$(hostname).[0-9]*.pfw
     '
 
     test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_MPI' '
         PERFFLOW_OPTIONS="log-enable=False"  mpirun -n 2 ../smoketest_MPI &&
-        test `ls -1 perfflow.$(hostname).[0-9]*.pfw 2>/dev/null | wc -l` -eq 0 &&
-        if test `ls -1 perfflow.$(hostname).[0-9]*.pfw 2>/dev/null | wc -l` -gt 0; then rm -f perfflow.$(hostname).[0-9]*.pfw; fi
+        test `ls -1 perfflow.array.$(hostname).[0-9]*.pfw 2>/dev/null | wc -l` -eq 0 &&
+        if test `ls -1 perfflow.array.$(hostname).[0-9]*.pfw 2>/dev/null | wc -l` -gt 0; then rm -f perfflow.array.$(hostname).[0-9]*.pfw; fi
     '
 
     test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_MPI' '
         PERFFLOW_OPTIONS="log-enable=True"  mpirun -n 2 ../smoketest_MPI &&
-        test `ls -1 perfflow.$(hostname).[0-9]*.pfw 2>/dev/null | wc -l` -eq 2 &&
-        rm perfflow.$(hostname).[0-9]*.pfw
+        test `ls -1 perfflow.array.$(hostname).[0-9]*.pfw 2>/dev/null | wc -l` -eq 2 &&
+        rm perfflow.array.$(hostname).[0-9]*.pfw
     '
 else
     say "Skipping MPI smoketests...disabled in the build."
@@ -227,18 +227,24 @@ fi
 
 test_expect_success 'PERFFLOW_OPTIONS: use compact format smoketest' '
     PERFFLOW_OPTIONS="log-event=compact" ../smoketest &&
-    sanity_check_compact ./perfflow.$(hostname).[0-9]*.pfw &&
-    if test -f perfflow.$(hostname).[0-9]*.pfw; then
-        rm perfflow.$(hostname).[0-9]*.pfw
+    sanity_check_compact ./perfflow.array.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.array.$(hostname).[0-9]*.pfw; then
+        rm perfflow.array.$(hostname).[0-9]*.pfw
     fi
 '
 
 test_expect_success 'PERFFLOW_OPTIONS: use verbose (default) format smoketest' '
     PERFFLOW_OPTIONS="log-event=verbose" ../smoketest &&
-    sanity_check ./perfflow.$(hostname).[0-9]*.pfw &&
-    if test -f perfflow.$(hostname).[0-9]*.pfw; then
-        rm perfflow.$(hostname).[0-9]*.pfw
+    sanity_check ./perfflow.array.$(hostname).[0-9]*.pfw &&
+    if test -f perfflow.array.$(hostname).[0-9]*.pfw; then
+        rm perfflow.array.$(hostname).[0-9]*.pfw
     fi
+'
+
+test_expect_success 'PERFFLOW_OPTIONS: output object format smoketest' '
+    PERFFLOW_OPTIONS="log-enable=True:log-format=object" ../smoketest &&
+    test -f perfflow.object.$(hostname).[0-9]*.pfw &&
+    rm perfflow.object.$(hostname).[0-9]*.pfw
 '
 
 if test -f ../smoketest_cuda; then
@@ -270,7 +276,7 @@ fi
 
 test_expect_success 'c binding: smoketest_class runs ok in default' '
     ../smoketest_class &&
-    rm perfflow.$(hostname).[0-9]*.pfw
+    rm perfflow.array.$(hostname).[0-9]*.pfw
 '
 
 test_done
