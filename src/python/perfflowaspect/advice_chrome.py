@@ -149,6 +149,17 @@ class ChromeTracingAdvice:
     set_perfflow_instance_path(inst_path)
 
     fn = "perfflow"
+
+    log_format = perfflow_options["log-format"]
+    if log_format in ["Array", "array", "ARRAY"]:
+        array_format = True
+        fn += ".array"
+    elif log_format in ["Object", "object", "OBJECT"]:
+        array_format = False
+        fn += ".object"
+    else:
+        raise ValueError("perfflow invalid option: log-format=[Array|Object]")
+
     for inc in perfflow_options["log-filename-include"].split(","):
         if inc == "name":
             fn += "." + perfflow_options["name"]
@@ -162,16 +173,6 @@ class ChromeTracingAdvice:
             print(
                 "perfflow warning: unknown option param={}".format(inc), file=sys.stderr
             )
-
-    log_format = perfflow_options["log-format"]
-    if log_format in ["Array", "array", "ARRAY"]:
-        array_format = True
-        fn += "-ARRAY"
-    elif log_format in ["Object", "object", "OBJECT"]:
-        array_format = False
-        fn += "-OBJECT"
-    else:
-        raise ValueError("perfflow invalid option: log-format=[Array|Object]")
 
     fn += ".pfw"
 
