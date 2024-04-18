@@ -45,8 +45,18 @@ configure_file(t0001-cbinding-basic.t.in
 install(TARGETS ${SMOKETESTS}
         DESTINATION test)
 
-if(CUDA_FOUND)
-    install(TARGETS ${SMOKETESTS} smoketest_cuda
+if(PERFFLOWASPECT_WITH_MULTITHREADS)
+    install(TARGETS smoketest_MT
+            DESTINATION test)
+endif()
+
+if(PERFFLOWASPECT_WITH_MPI)
+    install(TARGETS smoketest_MPI
+            DESTINATION test)
+endif()
+
+if(PERFFLOWASPECT_WITH_CUDA)
+    install(TARGETS smoketest_cuda
             DESTINATION test)
 endif()
 
