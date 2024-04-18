@@ -263,6 +263,7 @@ if test -f ../smoketest_MPI; then
         '
     else
         say "Skipping CUDA smoketests...NVIDIA GPU not present."
+    fi
 else
     say "Skipping CUDA smoketests...disabled in the build."
 fi
