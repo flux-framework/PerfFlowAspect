@@ -241,27 +241,31 @@ test_expect_success 'PERFFLOW_OPTIONS: use verbose (default) format smoketest' '
     fi
 '
 
-# Run cuda tests if NVIDIA GPU is present
-lspci=$(lspci | grep -i nvidia 2>/dev/null)
-if [ -n "${lspci}" ]; then
-    test_expect_success 'c binding: smoketest_cuda runs ok in default' '
-        ../smoketest_cuda &&
-        rm perfflow.$(hostname).[0-9]*.pfw
-    '
+if test -f ../smoketest_MPI; then
+    # Run cuda tests if NVIDIA GPU is present
+    lspci=$(lspci | grep -i nvidia 2>/dev/null)
+    if [ -n "${lspci}" ]; then
+        test_expect_success 'c binding: smoketest_cuda runs ok in default' '
+            ../smoketest_cuda &&
+            rm perfflow.$(hostname).[0-9]*.pfw
+        '
 
-    test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_cuda' '
-        PERFFLOW_OPTIONS="log-enable=False" ../smoketest_cuda &&
-        ! test -f perfflow.$(hostname).[0-9]*.pfw &&
-        if test -f perfflow.$(hostname).[0-9]*.pfw; then rm perfflow.$(hostname).[0-9]*.pfw; fi
-    '
+        test_expect_success 'PERFFLOW_OPTIONS: disable logging smoketest_cuda' '
+            PERFFLOW_OPTIONS="log-enable=False" ../smoketest_cuda &&
+            ! test -f perfflow.$(hostname).[0-9]*.pfw &&
+            if test -f perfflow.$(hostname).[0-9]*.pfw; then rm perfflow.$(hostname).[0-9]*.pfw; fi
+        '
 
-    test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_cuda' '
-        PERFFLOW_OPTIONS="log-enable=True" ../smoketest_cuda &&
-        test -f perfflow.$(hostname).[0-9]*.pfw &&
-        rm perfflow.$(hostname).[0-9]*.pfw
-    '
+        test_expect_success 'PERFFLOW_OPTIONS: enable logging smoketest_cuda' '
+            PERFFLOW_OPTIONS="log-enable=True" ../smoketest_cuda &&
+            test -f perfflow.$(hostname).[0-9]*.pfw &&
+            rm perfflow.$(hostname).[0-9]*.pfw
+        '
+    else
+        say "Skipping CUDA smoketests...NVIDIA GPU not present."
+    fi
 else
-    say "Skipping CUDA smoketests...NVIDIA GPU not found."
+    say "Skipping CUDA smoketests...disabled in the build."
 fi
 
 test_expect_success 'c binding: smoketest_class runs ok in default' '

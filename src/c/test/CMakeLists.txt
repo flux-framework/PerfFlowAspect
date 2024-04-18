@@ -18,7 +18,7 @@ endforeach()
 if(PERFFLOWASPECT_WITH_MULTITHREADS)
     message(STATUS " [*] Adding test: smoketest_MT")
     add_executable(smoketest_MT smoketest_MT.cpp)
-    set_source_files_properties(${TEST}.cpp COMPILE_FLAGS "-Xclang -load -Xclang ../weaver/weave/libWeavePass.so -fPIC")
+    set_source_files_properties(smoketest_MT.cpp COMPILE_FLAGS "-Xclang -load -Xclang ../weaver/weave/libWeavePass.so -fPIC")
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     target_link_libraries(smoketest_MT ${perfflow_deps} pthread)
 endif()
@@ -45,8 +45,18 @@ configure_file(t0001-cbinding-basic.t.in
 install(TARGETS ${SMOKETESTS}
         DESTINATION test)
 
-if(CUDA_FOUND)
-    install(TARGETS ${SMOKETESTS} smoketest_cuda
+if(PERFFLOWASPECT_WITH_MULTITHREADS)
+    install(TARGETS smoketest_MT
+            DESTINATION test)
+endif()
+
+if(PERFFLOWASPECT_WITH_MPI)
+    install(TARGETS smoketest_MPI
+            DESTINATION test)
+endif()
+
+if(PERFFLOWASPECT_WITH_CUDA)
+    install(TARGETS smoketest_cuda
             DESTINATION test)
 endif()
 
