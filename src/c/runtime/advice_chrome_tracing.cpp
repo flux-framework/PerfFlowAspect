@@ -204,16 +204,38 @@ int advice_chrome_tracing_t::flush_if(size_t size)
         }
         m_oss.seekp(0, std::ios::end);
         std::stringstream::pos_type offset = m_oss.tellp();
-        if (offset >= size)
+        if (m_array_format)
         {
-            if (!m_ofs.is_open())
+            if (offset >= size)
             {
-                m_ofs.open(m_fn, std::ofstream::out);
-                m_ofs << "[" << std::endl;
+                if (!m_ofs.is_open())
+                {
+                    m_ofs.open(m_fn, std::ofstream::out);
+                    m_ofs << "[" << std::endl;
+                }
+                m_ofs << m_oss.str();
+                m_oss.str("");
+                m_oss.clear();
             }
-            m_ofs << m_oss.str();
-            m_oss.str("");
-            m_oss.clear();
+        }
+        else
+        {
+            if (offset >= size)
+            {
+                if (!m_ofs.is_open())
+                {
+                    m_ofs.open(m_fn, std::ofstream::out);
+                    m_ofs << "{" << std::endl;
+                    m_ofs << "  \"displayTimeUnit\": \"us\"," << std::endl;
+                    m_ofs << "  \"otherData\": {" << std::endl;
+                    m_ofs << "" << std::endl;
+                    m_ofs << "  }," << std::endl;
+                    m_ofs << "  \"traceEvents\": [" << std::endl;
+                }
+                m_ofs << m_oss.str();
+                m_oss.str("");
+                m_oss.clear();
+            }
         }
         if ((rc = pthread_mutex_unlock(&m_mutex)) < 0)
         {
@@ -257,6 +279,10 @@ int advice_chrome_tracing_t::cannonicalize_perfflow_options()
     if (m_perfflow_options.find("log-event") == m_perfflow_options.end())
     {
         m_perfflow_options["log-event"] = "Verbose";
+    }
+    if (m_perfflow_options.find("log-format") == m_perfflow_options.end())
+    {
+        m_perfflow_options["log-format"] = "Array";
     }
     return 0;
 }
@@ -441,6 +467,8 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
     //     PERFFLOW_OPTIONS="cpu-mem-usage=True"
     // To collect B (begin) and E (end) events as single X (complete) duration event (default: log-event=Verbose)
     //     PERFFLOW_OPTIONS="log-event=Compact"
+    // To output events in object format (default: log-format=Array)
+    //     PERFFLOW_OPTIONS="log-format=Object"
     // You can combine the options in colon (:) delimited format
 
     if (parse_perfflow_options() < 0)
@@ -470,6 +498,26 @@ advice_chrome_tracing_t::advice_chrome_tracing_t ()
                                 "gethostname failed");
 
     m_fn = "perfflow";
+
+    std::string log_format = m_perfflow_options["log-format"];
+    if (log_format == "Array" || log_format == "array" || log_format == "ARRAY")
+    {
+        m_array_format = 1;
+        m_fn += ".array";
+    }
+    else if (log_format == "Object" || log_format == "object" ||
+             log_format == "OBJECT")
+    {
+        m_array_format = 0;
+        m_fn += ".object";
+    }
+    else
+    {
+        throw std::system_error(errno,
+                                std::system_category(),
+                                "invalid log-format value");
+    }
+
     for (auto &inc : include_list)
     {
         if (inc == "name")

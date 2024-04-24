@@ -60,6 +60,7 @@ private:
     int m_after_counter = 0;
     int m_cpu_mem_usage_enable = 0;
     int m_compact_event_enable = 0;
+    int m_array_format = 1;
     pthread_mutex_t m_before_counter_mutex;
     pthread_mutex_t m_after_counter_mutex;
     pthread_mutex_t m_mutex;
