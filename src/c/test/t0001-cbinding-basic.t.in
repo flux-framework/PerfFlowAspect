@@ -241,7 +241,7 @@ test_expect_success 'PERFFLOW_OPTIONS: use verbose (default) format smoketest' '
     fi
 '
 
-if test -f ../smoketest_MPI; then
+if test -f ../smoketest_cuda; then
     # Run cuda tests if NVIDIA GPU is present
     lspci=$(lspci | grep -i nvidia 2>/dev/null)
     if [ -n "${lspci}" ]; then
