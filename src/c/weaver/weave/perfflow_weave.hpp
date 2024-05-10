@@ -42,7 +42,9 @@ private:
     bool insertBefore (Module &m, Function &f, StringRef &a,
                        int async, std::string &scope, std::string &flow, std::string pcut);
 
+#ifdef PERFFLOWASPECT_WITH_CALIPER
     bool instrumentCaliper(Module &M, Function &F);
+#endif
 };
 
 }

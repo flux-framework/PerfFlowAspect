@@ -88,6 +88,7 @@ bool WeavingPass::insertAfter(Module &m, Function &f, StringRef &a,
     return true;
 }
 
+#ifdef PERFFLOWASPECT_WITH_CALIPER
 bool WeavingPass::instrumentCaliper(Module &M, Function &F)
 {
     IRBuilder<> IRB(M.getContext());
@@ -134,6 +135,7 @@ bool WeavingPass::instrumentCaliper(Module &M, Function &F)
 
     return RetFound;
 }
+#endif
 
 bool WeavingPass::insertBefore(Module &m, Function &f, StringRef &a,
                                int async, std::string &scope, std::string &flow, std::string pcut)
@@ -220,9 +222,11 @@ bool WeavingPass::doInitialization(Module &m)
         auto e = cast<ConstantStruct> (a->getOperand(i));
         if (auto *fn = dyn_cast<Function> (e->getOperand(0)->getOperand(0)))
         {
+#ifdef PERFFLOWASPECT_WITH_CALIPER
             // We insert Caliper Instrumentation before weaver.
             // Thus weaver will include Caliper overheads
             changed |= instrumentCaliper(m, *fn);
+#endif
 
             auto anno = cast<ConstantDataArray>(
                             cast<GlobalVariable>(e->getOperand(1)->getOperand(0))
