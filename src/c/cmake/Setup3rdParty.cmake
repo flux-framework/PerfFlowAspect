@@ -30,4 +30,8 @@ if(PERFFLOWASPECT_WITH_CALIPER)
         message(STATUS "PPP ${caliper_DIR}")
         include(cmake/thirdparty/FindCaliper.cmake)
     endif()
+
+    if(CALIPER_FOUND)
+        add_definitions(-DPERFFLOWASPECT_WITH_CALIPER)
+    endif()
 endif()
