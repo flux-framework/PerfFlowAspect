@@ -205,11 +205,13 @@ bool WeavingPass::doInitialization(Module &m)
     //AB.addAttribute(Attribute::ArgMemOnly);
     AttributeList Attrs = AttributeList::get(m.getContext(),
                           AttributeList::FunctionIndex, AB);
+#ifdef PERFFLOWASPECT_WITH_CALIPER
     // Insert Functions on the module
     CaliBeginRegion = m.getOrInsertFunction(
                           "cali_begin_region", Attrs, IRB.getVoidTy(), IRB.getInt8PtrTy());
     CaliEndRegion = m.getOrInsertFunction("cali_end_region", Attrs,
                                           IRB.getVoidTy(), IRB.getInt8PtrTy());
+#endif
 
     bool changed = false;
     auto a = cast<ConstantArray> (annotations->getOperand(0));
