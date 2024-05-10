@@ -14,18 +14,21 @@ set(perfflow_runtime_sources
 
 include_directories(${JANSSON_INCLUDE_DIRS})
 
-find_package(caliper REQUIRED)
-
-message(STATUS "RRR ${caliper_LIB_DIR} ${caliper_CONFIG_LOADED}")
-
-include_directories(${caliper_INCLUDE_DIR})
+if(PERFFLOWASPECT_WITH_CALIPER)
+    message(STATUS "RRR ${caliper_LIB_DIR} ${caliper_CONFIG_LOADED}")
+    include_directories(${caliper_INCLUDE_DIR})
+endif()
 
 add_library(perfflow_runtime SHARED
             ${perfflow_runtime_sources}
             ${perfflow_runtime_headers}
 )
 
-target_link_libraries(perfflow_runtime ${JANSSON_LIBRARY} OpenSSL::SSL OpenSSL::Crypto caliper)
+if(PERFFLOWASPECT_WITH_CALIPER)
+    target_link_libraries(perfflow_runtime ${JANSSON_LIBRARY} OpenSSL::SSL OpenSSL::Crypto caliper)
+else()
+    target_link_libraries(perfflow_runtime ${JANSSON_LIBRARY} OpenSSL::SSL OpenSSL::Crypto)
+endif()
 
 install(TARGETS perfflow_runtime
         EXPORT perfflow_export

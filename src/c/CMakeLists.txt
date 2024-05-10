@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 project(PerfFlowAspect VERSION "0.1.0")
 
 # Build Options
+option(PERFFLOWASPECT_WITH_CALIPER "Build with Caliper support" ON)
 option(PERFFLOWASPECT_WITH_CUDA "Build CUDA smoketest" ON)
 option(PERFFLOWASPECT_WITH_MPI "Build MPI smoketest" ON)
 option(PERFFLOWASPECT_WITH_MULTITHREADS "Build multi-threaded smoketest" ON)
