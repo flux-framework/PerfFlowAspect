@@ -29,7 +29,6 @@
 
 using namespace llvm;
 
-
 /******************************************************************************
  *                                                                            *
  *                 Private Methods of WeavingPass Class                       *
@@ -89,7 +88,8 @@ bool WeavingPass::insertAfter(Module &m, Function &f, StringRef &a,
     return true;
 }
 
-bool WeavingPass::instrumentCaliper(Module &M, Function &F){
+bool WeavingPass::instrumentCaliper(Module &M, Function &F)
+{
     IRBuilder<> IRB(M.getContext());
     BasicBlock &Entry = F.getEntryBlock();
     SplitBlock(&Entry, &*Entry.getFirstInsertionPt());
@@ -100,30 +100,36 @@ bool WeavingPass::instrumentCaliper(Module &M, Function &F){
     IRB.CreateCall(CaliBeginRegion, {FnStr});
 
     bool RetFound = false;
-    for (inst_iterator It = inst_begin(F), E = inst_end(F); It != E; ++It) {
-      Instruction *I = &*It;
-      if (!isa<ReturnInst>(I) && !isa<CallInst>(I) && !isa<InvokeInst>(I))
-        continue;
+    for (inst_iterator It = inst_begin(F), E = inst_end(F); It != E; ++It)
+    {
+        Instruction *I = &*It;
+        if (!isa<ReturnInst>(I) && !isa<CallInst>(I) && !isa<InvokeInst>(I))
+        {
+            continue;
+        }
 
-      if ( isa<ReturnInst>(I) ) {
-          IRB.SetInsertPoint(I);
-          IRB.CreateCall(CaliEndRegion, {FnStr});
-          RetFound = true;
-      }
+        if (isa<ReturnInst>(I))
+        {
+            IRB.SetInsertPoint(I);
+            IRB.CreateCall(CaliEndRegion, {FnStr});
+            RetFound = true;
+        }
 
-      // This is a call instruction
-      CallBase *CB = dyn_cast<CallBase>(I);
-      if ( CB && CB->doesNotReturn() ){
-          IRB.SetInsertPoint(I);
-          IRB.CreateCall(CaliEndRegion, {FnStr});
-          RetFound = true;
-      }
+        // This is a call instruction
+        CallBase *CB = dyn_cast<CallBase>(I);
+        if (CB && CB->doesNotReturn())
+        {
+            IRB.SetInsertPoint(I);
+            IRB.CreateCall(CaliEndRegion, {FnStr});
+            RetFound = true;
+        }
     }
 
     // All functions need to have at least one exit block
-    if (!RetFound) {
-      dbgs() << "Could not find return for " << FunctionName << "\n";
-      abort();
+    if (!RetFound)
+    {
+        dbgs() << "Could not find return for " << FunctionName << "\n";
+        abort();
     }
 
     return RetFound;
@@ -176,7 +182,6 @@ bool WeavingPass::insertBefore(Module &m, Function &f, StringRef &a,
     return true;
 }
 
-
 /******************************************************************************
  *                                                                            *
  *                 Public Methods of WeavingPass Class                        *
@@ -199,13 +204,12 @@ bool WeavingPass::doInitialization(Module &m)
     //It was not added in LLVM@10.
     //AB.addAttribute(Attribute::ArgMemOnly);
     AttributeList Attrs = AttributeList::get(m.getContext(),
-            AttributeList::FunctionIndex, AB);
+                          AttributeList::FunctionIndex, AB);
     // Insert Functions on the module
     CaliBeginRegion = m.getOrInsertFunction(
-        "cali_begin_region", Attrs, IRB.getVoidTy(), IRB.getInt8PtrTy());
+                          "cali_begin_region", Attrs, IRB.getVoidTy(), IRB.getInt8PtrTy());
     CaliEndRegion = m.getOrInsertFunction("cali_end_region", Attrs,
                                           IRB.getVoidTy(), IRB.getInt8PtrTy());
-
 
     bool changed = false;
     auto a = cast<ConstantArray> (annotations->getOperand(0));
