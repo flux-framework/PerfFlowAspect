@@ -101,6 +101,8 @@ variable. Separate multiple variables with a colon as follows:
 +----------------------+--------------------------------------------------------------+---------------+---------------------------------+
 | log-event            | Collect B and E events (verbose) or single X event (compact) | Verbose       | Verbose, Compact                |
 +----------------------+--------------------------------------------------------------+---------------+---------------------------------+
+| log-format           | Dump JSON events in array or object format                   | Array         | Array, Object                   |
++----------------------+--------------------------------------------------------------+---------------+---------------------------------+
 
 **********************************************
  Visualization of PerfFlowAspect Output Files

@@ -41,6 +41,8 @@ def cannonicalize_perfflow_options():
         perfflow_options["cpu-mem-usage"] = "False"
     if perfflow_options.get("log-event") is None:
         perfflow_options["log-event"] = "Verbose"
+    if perfflow_options.get("log-format") is None:
+        perfflow_options["log-format"] = "Array"
 
 
 def parse_perfflow_options():
@@ -138,6 +140,8 @@ class ChromeTracingAdvice:
     #     PERFFLOW_OPTIONS="cpu-mem-usage=True"
     # To collect B (begin) and E (end) events as single X (complete) duration event (default: log-event=Verbose)
     #     PERFFLOW_OPTIONS="log-event=Compact"
+    # To toggle output format (default: log-format=Array)
+    #     PERFFLOW_OPTIONS="log-format=Array|Object"
     # You can combine the options in colon (:) delimited format
 
     parse_perfflow_options()
@@ -145,6 +149,17 @@ class ChromeTracingAdvice:
     set_perfflow_instance_path(inst_path)
 
     fn = "perfflow"
+
+    log_format = perfflow_options["log-format"]
+    if log_format in ["Array", "array", "ARRAY"]:
+        array_format = True
+        fn += ".array"
+    elif log_format in ["Object", "object", "OBJECT"]:
+        array_format = False
+        fn += ".object"
+    else:
+        raise ValueError("perfflow invalid option: log-format=[Array|Object]")
+
     for inc in perfflow_options["log-filename-include"].split(","):
         if inc == "name":
             fn += "." + perfflow_options["name"]
@@ -236,7 +251,10 @@ class ChromeTracingAdvice:
         except KeyError:
             raise ValueError("Invalid pointcut: {}".format(pointcut))
         event = cls.create_sync_event(*args, phase, **kwargs)
-        cls.__flush_log(json.dumps(event) + ",")
+        if ChromeTracingAdvice.array_format:
+            cls.__flush_log(json.dumps(event) + ",")
+        else:
+            cls.__flush_log("    " + json.dumps(event) + ",")
 
     async_pointcut_phase_map = {"before": "b", "instant": "n", "after": "e"}
 
@@ -247,7 +265,10 @@ class ChromeTracingAdvice:
         except KeyError:
             raise ValueError("Invalid pointcut: {}".format(pointcut))
         event = cls.create_async_event(*args, phase, **kwargs)
-        cls.__flush_log(json.dumps(event) + ",")
+        if ChromeTracingAdvice.array_format:
+            cls.__flush_log(json.dumps(event) + ",")
+        else:
+            cls.__flush_log("    " + json.dumps(event) + ",")
 
     @classmethod
     def __create_event_from_func(cls, func):
@@ -264,7 +285,15 @@ class ChromeTracingAdvice:
             formatter = logging.Formatter("%(message)s")
             fh.setFormatter(formatter)
             ChromeTracingAdvice.logger.addHandler(fh)
-            ChromeTracingAdvice.logger.debug("[")
+            if ChromeTracingAdvice.array_format:
+                ChromeTracingAdvice.logger.debug("[")
+            else:
+                ChromeTracingAdvice.logger.debug("{")
+                ChromeTracingAdvice.logger.debug('  "displayTimeUnit": "us",')
+                ChromeTracingAdvice.logger.debug('  "otherData": {')
+                ChromeTracingAdvice.logger.debug("")
+                ChromeTracingAdvice.logger.debug("  },")
+                ChromeTracingAdvice.logger.debug('  "traceEvents": [')
         ChromeTracingAdvice.logger.debug(s)
 
     @staticmethod
@@ -279,7 +308,10 @@ class ChromeTracingAdvice:
             event["ts"] = event_ts
         if event_dur is not None:
             event["dur"] = event_dur
-        ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+        if ChromeTracingAdvice.array_format:
+            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+        else:
+            ChromeTracingAdvice.__flush_log("    " + json.dumps(event) + ",")
         counter = counter + 1
         counter_mutex.release()
 
@@ -299,7 +331,10 @@ class ChromeTracingAdvice:
             event["ts"] = event_ts
         if event_dur is not None:
             event["dur"] = event_dur
-        ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+        if ChromeTracingAdvice.array_format:
+            ChromeTracingAdvice.__flush_log(json.dumps(event) + ",")
+        else:
+            ChromeTracingAdvice.__flush_log("    " + json.dumps(event) + ",")
         counter = counter + 1
         counter_mutex.release()
 
