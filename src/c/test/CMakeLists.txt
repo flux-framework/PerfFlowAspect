@@ -3,9 +3,10 @@ set(SMOKETESTS
     smoketest2
     smoketest3
     smoketest_class
+    # smoketest_adiak
 )
 
-set(perfflow_deps "-L../runtime -lperfflow_runtime" OpenSSL::Crypto)
+set(perfflow_deps "-L../runtime -lperfflow_runtime" OpenSSL::Crypto adiak::adiak)
 
 message(STATUS "Adding CXX unit tests")
 foreach(TEST ${SMOKETESTS})
@@ -38,6 +39,15 @@ if(PERFFLOWASPECT_WITH_CUDA)
     target_link_libraries(smoketest_cuda ${perfflow_deps} ${CUDA_LIBRARIES})
 endif()
 
+if(PERFFLOWASPECT_WITH_ADIAK)
+    message(STATUS " [*] Adding test: smoketest_adiak")
+    add_executable(smoketest_adiak smoketest_adiak.cpp)
+    set_source_files_properties(smoketest_adiak.cpp COMPILE_FLAGS "-Xclang -load -Xclang ../weaver/weave/libWeavePass.so -fPIC")
+    include_directories(${MPI_INCLUDE_PATH} ${adiak_INCLUDE_DIRS})
+    link_directories(${adiak_LIBRARY_DIRS})
+    target_link_libraries(smoketest_adiak ${perfflow_deps} ${MPI_LIBRARIES} adiak::adiak)
+endif()
+
 configure_file(t0001-cbinding-basic.t.in
     ${CMAKE_CURRENT_BINARY_DIR}/t0001-cbinding-basic.t
     @ONLY)
@@ -57,6 +67,11 @@ endif()
 
 if(PERFFLOWASPECT_WITH_CUDA)
     install(TARGETS smoketest_cuda
+            DESTINATION test)
+endif()
+
+if(PERFFLOWASPECT_WITH_ADIAK)
+    install(TARGETS smoketest_adiak
             DESTINATION test)
 endif()
 

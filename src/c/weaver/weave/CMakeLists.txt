@@ -12,7 +12,7 @@ set_target_properties(WeavePass PROPERTIES
     COMPILE_FLAGS "-fno-rtti"
 )
 
-target_link_libraries(WeavePass perfflow_parser ${JANSSON_LIB})
+target_link_libraries(WeavePass perfflow_parser ${JANSSON_LIB} adiak::adiak)
 
 add_library(WeavePassPlugin INTERFACE)
 target_compile_options(WeavePassPlugin INTERFACE
