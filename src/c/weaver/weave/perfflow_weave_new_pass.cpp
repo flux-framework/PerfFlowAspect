@@ -34,7 +34,7 @@ bool NewWeavingPass::runOnModule(Module &M)
     outs() << "NewWeavePass loaded successfully. \n";
     errs() << "NewWeavePass had some error. \n";
 
-    // The following loops through each function. This is where we need to check annotation 
+    // The following loops through each function. This is where we need to check annotation
     // (from doInitialization in the legacy pass and add the insertBefore/insertAfter)
     // for (auto &F : M)
     // {
@@ -74,7 +74,7 @@ PreservedAnalyses NewWeavingPass::run(llvm::Module &M,
     bool Changed = runOnModule(M);
 
     return (Changed ? llvm::PreservedAnalyses::none()
-                    : llvm::PreservedAnalyses::all());
+            : llvm::PreservedAnalyses::all());
 }
 
 // Register the new pass.
@@ -84,20 +84,20 @@ PreservedAnalyses NewWeavingPass::run(llvm::Module &M,
 llvm::PassPluginLibraryInfo getNewWeavingPassPluginInfo()
 {
     return {LLVM_PLUGIN_API_VERSION, "inject-func-call", LLVM_VERSION_STRING,
-            [](PassBuilder &PB)
+            [](PassBuilder & PB)
+    {
+        PB.registerPipelineParsingCallback(
+            [](StringRef Name, ModulePassManager & MPM,
+               ArrayRef<PassBuilder::PipelineElement>)
+        {
+            if (Name == "new-weaving-pass")
             {
-                PB.registerPipelineParsingCallback(
-                    [](StringRef Name, ModulePassManager &MPM,
-                       ArrayRef<PassBuilder::PipelineElement>)
-                    {
-                        if (Name == "new-weaving-pass")
-                        {
-                            MPM.addPass(NewWeavingPass());
-                            return true;
-                        }
-                        return false;
-                    });
-            }};
+                MPM.addPass(NewWeavingPass());
+                return true;
+            }
+            return false;
+        });
+    }};
 }
 
 extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
