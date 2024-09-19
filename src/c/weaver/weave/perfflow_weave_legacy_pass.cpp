@@ -24,7 +24,7 @@
 #include "llvm/Support/raw_ostream.h"
 
 #include "../../parser/perfflow_parser.hpp"
-#include "perfflow_weave.hpp"
+#include "perfflow_weave_legacy_pass.hpp"
 
 using namespace llvm;
 
