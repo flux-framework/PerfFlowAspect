@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: LGPL-3.0
 \************************************************************/
 
-#ifndef PERFFLOW_WEAVE_H
-#define PERFFLOW_WEAVE_H
+#ifndef PERFFLOW_WEAVE_LEGACY_PASS_H
+#define PERFFLOW_WEAVE_LEGACY_PASS_H
 
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Module.h"
@@ -38,7 +38,7 @@ private:
 
 }
 
-#endif // PERFFLOW_WEAVE_H
+#endif // PERFFLOW_WEAVE_LEGACY_PASS_H
 
 
 /*
