@@ -35,8 +35,7 @@ bool NewWeavingPass::runOnModule(Module &M)
     // We do nothing right now, let's build to see if this goes through and loads correctly.
     // The build will probably fail as we are not parsing the annotations.
 
-    outs() << "NewWeavePass loaded successfully. \n";
-    errs() << "NewWeavePass had some error. \n";
+    outs() << "NewWeavePass loaded successfully! \n";
 
     // The following loops through each function. This is where we need to check annotation
     // (from doInitialization in the legacy pass and add the insertBefore/insertAfter)
@@ -85,6 +84,7 @@ PreservedAnalyses NewWeavingPass::run(llvm::Module &M,
 // See docs here: https://github.com/banach-space/llvm-tutor/blob/main/lib/InjectFuncCall.cpp#L139
 // And here: https://rocmdocs.amd.com/projects/llvm-project/en/latest/LLVM/llvm/html/WritingAnLLVMNewPMPass.html
 // https://stackoverflow.com/questions/54447985/how-to-automatically-register-and-load-modern-pass-in-clang/75999804#75999804
+// https://github.com/llvm/llvm-project/issues/56137
 
 PassPluginLibraryInfo getNewWeavingPassPluginInfo()
 {
@@ -105,28 +105,3 @@ extern "C" LLVM_ATTRIBUTE_WEAK PassPluginLibraryInfo llvmGetPassPluginInfo()
 {
     return getNewWeavingPassPluginInfo();
 }
-
-
-//     return {LLVM_PLUGIN_API_VERSION, "new-weaving-pass", LLVM_VERSION_STRING,
-//             [](PassBuilder &PB)
-//             {
-//                  PB.registerPipelineEarlySimplificationEPCallback(
-//                     [](ModulePassManager &MPM, auto) {
-//                             MPM.addPass(NewWeavingPass());
-//                     return true;
-//                     }
-//                 );
-//             }}; 
-//             //     PB.registerPipelineParsingCallback(
-//             //         [](StringRef Name, ModulePassManager &MPM,
-//             //            ArrayRef<PassBuilder::PipelineElement>)
-//             //         {
-//             //             if (Name == "new-weaving-pass")
-//             //             {
-//             //                 MPM.addPass(NewWeavingPass());
-//             //                 return true;
-//             //             }
-//             //             return false;
-//             //         });
-//             // }};
-// }
