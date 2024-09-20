@@ -11,18 +11,23 @@
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Attributes.h"
 #include "llvm/IR/Constants.h"
-#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/AbstractCallSite.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Argument.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/PassManager.h"
+#include "llvm/Passes/PassBuilder.h"
+#include "llvm/Passes/PassPlugin.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include "../../parser/perfflow_parser.hpp"
 #include "perfflow_weave_new_pass.hpp"
+#include <iostream>
+
 
 using namespace llvm;
+// using namespace std;
 
 // Implement the runOnModule Function
 bool NewWeavingPass::runOnModule(Module &M)
@@ -100,8 +105,8 @@ llvm::PassPluginLibraryInfo getNewWeavingPassPluginInfo()
     }};
 }
 
-extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
-llvmGetPassPluginInfo()
-{
-    return getNewWeavingPassPluginInfo();
-}
+// extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
+// llvmGetPassPluginInfo()
+// {
+//     return getNewWeavingPassPluginInfo();
+// }
