@@ -51,7 +51,7 @@ public:
 //                        int async, std::string &scope, std::string &flow, std::string pcut);
 // };
 
-// }
+ }
 
 #endif // PERFFLOW_WEAVE_NEW_PASS_H
 
