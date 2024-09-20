@@ -85,23 +85,41 @@ PreservedAnalyses NewWeavingPass::run(llvm::Module &M,
 // See docs here: https://github.com/banach-space/llvm-tutor/blob/main/lib/InjectFuncCall.cpp#L139
 // And here: https://rocmdocs.amd.com/projects/llvm-project/en/latest/LLVM/llvm/html/WritingAnLLVMNewPMPass.html
 
+PassPluginLibraryInfo getPassPluginInfo() {
+  const auto callback = [](PassBuilder &PB) {
+    PB.registerPipelineEarlySimplificationEPCallback(
+        [&](ModulePassManager &MPM, auto) {
+          MPM.addPass(createModuleToFunctionPassAdaptor(MyPass()));
+          return true;
+        });
+  };
+
+
+
 llvm::PassPluginLibraryInfo getNewWeavingPassPluginInfo()
 {
     return {LLVM_PLUGIN_API_VERSION, "new-weaving-pass", LLVM_VERSION_STRING,
             [](PassBuilder &PB)
             {
-                PB.registerPipelineParsingCallback(
-                    [](StringRef Name, ModulePassManager &MPM,
-                       ArrayRef<PassBuilder::PipelineElement>)
-                    {
-                        if (Name == "new-weaving-pass")
-                        {
+                 PB.registerPipelineEarlySimplificationEPCallback(
+                    [](ModulePassManager &MPM, auto) {
                             MPM.addPass(NewWeavingPass());
-                            return true;
-                        }
-                        return false;
-                    });
-            }};
+                    return true;
+                    }
+                )
+            }}; 
+            //     PB.registerPipelineParsingCallback(
+            //         [](StringRef Name, ModulePassManager &MPM,
+            //            ArrayRef<PassBuilder::PipelineElement>)
+            //         {
+            //             if (Name == "new-weaving-pass")
+            //             {
+            //                 MPM.addPass(NewWeavingPass());
+            //                 return true;
+            //             }
+            //             return false;
+            //         });
+            // }};
 }
 
 extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
