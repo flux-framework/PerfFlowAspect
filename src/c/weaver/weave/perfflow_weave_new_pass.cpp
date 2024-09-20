@@ -25,7 +25,6 @@
 #include "perfflow_weave_new_pass.hpp"
 #include <iostream>
 
-
 using namespace llvm;
 // using namespace std;
 
@@ -79,7 +78,7 @@ PreservedAnalyses NewWeavingPass::run(llvm::Module &M,
     bool Changed = runOnModule(M);
 
     return (Changed ? llvm::PreservedAnalyses::none()
-            : llvm::PreservedAnalyses::all());
+                    : llvm::PreservedAnalyses::all());
 }
 
 // Register the new pass.
@@ -89,20 +88,20 @@ PreservedAnalyses NewWeavingPass::run(llvm::Module &M,
 llvm::PassPluginLibraryInfo getNewWeavingPassPluginInfo()
 {
     return {LLVM_PLUGIN_API_VERSION, "inject-func-call", LLVM_VERSION_STRING,
-            [](PassBuilder & PB)
-    {
-        PB.registerPipelineParsingCallback(
-            [](StringRef Name, ModulePassManager & MPM,
-               ArrayRef<PassBuilder::PipelineElement>)
-        {
-            if (Name == "new-weaving-pass")
+            [](PassBuilder &PB)
             {
-                MPM.addPass(NewWeavingPass());
-                return true;
-            }
-            return false;
-        });
-    }};
+                PB.registerPipelineParsingCallback(
+                    [](StringRef Name, ModulePassManager &MPM,
+                       ArrayRef<PassBuilder::PipelineElement>)
+                    {
+                        if (Name == "new-weaving-pass")
+                        {
+                            MPM.addPass(NewWeavingPass());
+                            return true;
+                        }
+                        return false;
+                    });
+            }};
 }
 
 // extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
