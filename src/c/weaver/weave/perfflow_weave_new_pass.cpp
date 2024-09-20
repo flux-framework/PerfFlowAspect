@@ -77,7 +77,7 @@ PreservedAnalyses NewWeavingPass::run(llvm::Module &M,
     bool Changed = runOnModule(M);
 
     return (Changed ? llvm::PreservedAnalyses::none()
-                    : llvm::PreservedAnalyses::all());
+            : llvm::PreservedAnalyses::all());
 }
 
 // Register the new pass.
@@ -89,12 +89,14 @@ PreservedAnalyses NewWeavingPass::run(llvm::Module &M,
 PassPluginLibraryInfo getNewWeavingPassPluginInfo()
 {
 
-    const auto pass_callback = [](PassBuilder &PB) {
+    const auto pass_callback = [](PassBuilder & PB)
+    {
         PB.registerPipelineEarlySimplificationEPCallback(
-            [&](ModulePassManager &MPM, auto) {
-                MPM.addPass(NewWeavingPass());
-                return true;
-            }
+            [&](ModulePassManager & MPM, auto)
+        {
+            MPM.addPass(NewWeavingPass());
+            return true;
+        }
         );
     };
 
