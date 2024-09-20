@@ -95,7 +95,7 @@ llvm::PassPluginLibraryInfo getNewWeavingPassPluginInfo()
                             MPM.addPass(NewWeavingPass());
                     return true;
                     }
-                )
+                );
             }}; 
             //     PB.registerPipelineParsingCallback(
             //         [](StringRef Name, ModulePassManager &MPM,
