@@ -87,7 +87,7 @@ PreservedAnalyses NewWeavingPass::run(llvm::Module &M,
 
 llvm::PassPluginLibraryInfo getNewWeavingPassPluginInfo()
 {
-    return {LLVM_PLUGIN_API_VERSION, "inject-func-call", LLVM_VERSION_STRING,
+    return {LLVM_PLUGIN_API_VERSION, "new-weaving-pass", LLVM_VERSION_STRING,
             [](PassBuilder &PB)
             {
                 PB.registerPipelineParsingCallback(
@@ -104,8 +104,8 @@ llvm::PassPluginLibraryInfo getNewWeavingPassPluginInfo()
             }};
 }
 
-// extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
-// llvmGetPassPluginInfo()
-// {
-//     return getNewWeavingPassPluginInfo();
-// }
+extern "C" LLVM_ATTRIBUTE_WEAK ::llvm::PassPluginLibraryInfo
+llvmGetPassPluginInfo()
+{
+    return getNewWeavingPassPluginInfo();
+}
