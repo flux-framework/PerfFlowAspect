@@ -15,6 +15,17 @@ foreach(TEST ${SMOKETESTS})
     target_link_libraries(${TEST} ${perfflow_deps})
 endforeach()
 
+# Build Options
+option(PERFFLOWASPECT_WITH_MULTITHREADS "Build multi-threaded smoketest" ON)
+find_package(CUDA QUIET)
+if(CUDA_FOUND)
+    option(PERFFLOWASPECT_WITH_CUDA "Build CUDA smoketest" ON)
+endif()
+find_package(MPI QUIET)
+if(MPI_FOUND)
+    option(PERFFLOWASPECT_WITH_MPI "Build MPI smoketest" ON)
+endif()
+
 if(PERFFLOWASPECT_WITH_MULTITHREADS)
     message(STATUS " [*] Adding test: smoketest_MT")
     add_executable(smoketest_MT smoketest_MT.cpp)
