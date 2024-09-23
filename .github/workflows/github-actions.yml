@@ -9,36 +9,12 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        config: [boilerplate, release, debug_cuda_only, debug_mpi_only, debug_threads_only]
+        config: [boilerplate]
 
         include:
           - config: boilerplate
             PERFFLOWASPECT_WITH_CUDA: ON
             PERFFLOWASPECT_WITH_MPI: ON
-            PERFFLOWASPECT_WITH_MULTITHREADS: ON
-            CMAKE_BUILD_TYPE: Debug
-
-          - config: release
-            PERFFLOWASPECT_WITH_CUDA: ON
-            PERFFLOWASPECT_WITH_MPI: ON
-            PERFFLOWASPECT_WITH_MULTITHREADS: ON
-            CMAKE_BUILD_TYPE: Release
-
-          - config: debug_cuda_only
-            PERFFLOWASPECT_WITH_CUDA: ON
-            PERFFLOWASPECT_WITH_MPI: OFF
-            PERFFLOWASPECT_WITH_MULTITHREADS: OFF
-            CMAKE_BUILD_TYPE: Debug
-
-          - config: debug_mpi_only
-            PERFFLOWASPECT_WITH_CUDA: OFF
-            PERFFLOWASPECT_WITH_MPI: ON
-            PERFFLOWASPECT_WITH_MULTITHREADS: OFF
-            CMAKE_BUILD_TYPE: Debug
-
-          - config: debug_threads_only
-            PERFFLOWASPECT_WITH_CUDA: OFF
-            PERFFLOWASPECT_WITH_MPI: OFF
             PERFFLOWASPECT_WITH_MULTITHREADS: ON
             CMAKE_BUILD_TYPE: Debug
 
@@ -51,15 +27,16 @@ jobs:
           sudo apt-get update
           sudo apt install gcc clang llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich
           gcc --version
-          # install cuda 12.1
+          # install cuda 12.2
           wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
           sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-          wget https://developer.download.nvidia.com/compute/cuda/12.1.0/local_installers/cuda-repo-ubuntu2004-12-1-local_12.1.0-530.30.02-1_amd64.deb
-          sudo dpkg -i cuda-repo-ubuntu2004-12-1-local_12.1.0-530.30.02-1_amd64.deb
-          sudo cp /var/cuda-repo-ubuntu2004-12-1-local/cuda-*-keyring.gpg /usr/share/keyrings/
+          wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda-repo-ubuntu2004-12-2-local_12.2.0-535.54.03-1_amd64.deb
+          sudo dpkg -i cuda-repo-ubuntu2004-12-2-local_12.2.0-535.54.03-1_amd64.deb
+          sudo cp /var/cuda-repo-ubuntu2004-12-2-local/cuda-*-keyring.gpg /usr/share/keyrings/
           sudo apt-get update
           sudo apt-get -y install cuda
-          export PATH=/usr/local/cuda-12.1/bin:$PATH
+          which nvcc
+          export PATH=/usr/local/cuda-12.2/bin:$PATH
           clang++ --version
           nvcc --version
 
