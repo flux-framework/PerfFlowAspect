@@ -49,7 +49,8 @@ jobs:
       - name: Setup Build Env
         run: |
           sudo apt-get update
-          sudo apt install clang llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich
+          sudo apt install gcc clang llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich
+          gcc --version
           # install cuda 12.1
           wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
           sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
