@@ -147,10 +147,10 @@ bool WeavingPass::doInitialization(Module &m)
 {
     outs() << "WeavePass loaded successfully. \n";
 
-    bool changed = false; 
+    bool changed = false;
     WeaveCommon weaver;
-    
-    changed = weaver.modifyAnnotatedFunctions(m); 
+
+    changed = weaver.modifyAnnotatedFunctions(m);
 
     // auto annotations = m.getNamedGlobal("llvm.global.annotations");
     // if (!annotations)
