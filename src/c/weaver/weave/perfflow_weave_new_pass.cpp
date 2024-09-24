@@ -39,16 +39,22 @@ bool NewWeavingPass::runOnModule(Module &M)
 
     // The following loops through each function. This is where we need to check annotation
     // (from doInitialization in the legacy pass and add the insertBefore/insertAfter)
-    // for (auto &F : M)
-    // {
-    //     if (F.isDeclaration())
-    //         continue;
+     for (auto &F : M)
+    {
+        if (F.isDeclaration())
+             continue;
 
     //     // Get an IR builder. Sets the insertion point to the top of the function
-    //     IRBuilder<> Builder(&*F.getEntryBlock().getFirstInsertionPt());
+        IRBuilder<> Builder(&*F.getEntryBlock().getFirstInsertionPt());
 
     //     // Inject a global variable that contains the function name
-    //     auto FuncName = Builder.CreateGlobalStringPtr(F.getName());
+        auto FuncName = Builder.CreateGlobalStringPtr(F.getName());
+
+        if (strcmp(F.getName(),"main")==0)
+        {
+             outs("We found main! We will insert Adiak call here eventually")
+             continue;
+        }
 
     //     // Printf requires i8*, but PrintfFormatStrVar is an array: [n x i8]. Add
     //     // a cast: [n x i8] -> i8*
@@ -65,7 +71,7 @@ bool NewWeavingPass::runOnModule(Module &M)
     //         Printf, {FormatStrPtr, FuncName, Builder.getInt32(F.arg_size())});
 
     //     InsertedAtLeastOnePrintf = true;
-    // }
+    }
 
     return PatkiTest;
 }
