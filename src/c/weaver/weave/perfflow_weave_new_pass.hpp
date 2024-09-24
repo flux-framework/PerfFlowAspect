@@ -22,8 +22,6 @@ namespace {
 
 class NewWeavingPass : public PassInfoMixin<NewWeavingPass> {
 public:
-  // Revist this if we really need a function pass 
-  // PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM);
   PreservedAnalyses run(Module &M, ModuleAnalysisManager &);
   bool runOnModule(Module &M);
 
@@ -34,24 +32,7 @@ public:
 
 };
 
-
-
-// class WeavingPass : public FunctionPass
-// {
-// public:
-//     static char ID;
-//     WeavingPass () : FunctionPass (ID) {}
-//     virtual bool doInitialization (Module &m);
-//     virtual bool runOnFunction (Function &F);
-
-// private:
-//     bool insertAfter (Module &m, Function &f, StringRef &a,
-//                       int async, std::string &scope, std::string &flow, std::string pcut);
-//     bool insertBefore (Module &m, Function &f, StringRef &a,
-//                        int async, std::string &scope, std::string &flow, std::string pcut);
-// };
-
- }
+}
 
 #endif // PERFFLOW_WEAVE_NEW_PASS_H
 
