@@ -24,6 +24,7 @@
 #include "../../parser/perfflow_parser.hpp"
 #include "perfflow_weave_new_pass.hpp"
 #include <iostream>
+#include <cstring>
 
 using namespace llvm;
 // using namespace std;
@@ -50,9 +51,9 @@ bool NewWeavingPass::runOnModule(Module &M)
     //     // Inject a global variable that contains the function name
         auto FuncName = Builder.CreateGlobalStringPtr(F.getName());
 
-        if (strcmp(F.getName(),"main")==0)
+        if (F.getName().str()=="main")
         {
-             outs("We found main! We will insert Adiak call here eventually")
+             outs() << "We found main! We will insert Adiak call here eventually.\n";
              continue;
         }
 
