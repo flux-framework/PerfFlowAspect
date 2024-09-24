@@ -21,7 +21,6 @@
 
 using namespace llvm;
 
-
 /******************************************************************************
  *                                                                            *
  *                 Public Methods of NewWeavingPass Class                         *
@@ -36,22 +35,7 @@ bool NewWeavingPass::runOnModule(Module &M)
 
     WeaveCommon weaver;
     changed = weaver.modifyAnnotatedFunctions(M);
-
-    // Placeholder: search for the main() function to insert an Adiak call
-    for (auto &F : M)
-    {
-        if (F.isDeclaration())
-        {
-            continue;
-        }
-
-        if (F.getName().str() == "main")
-        {
-            outs() << "We found main! We will insert Adiak call here eventually.\n";
-            continue;
-        }
-    }
-
+    
     return changed;
 }
 
@@ -92,3 +76,7 @@ extern "C" LLVM_ATTRIBUTE_WEAK PassPluginLibraryInfo llvmGetPassPluginInfo()
 {
     return getNewWeavingPassPluginInfo();
 }
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */
