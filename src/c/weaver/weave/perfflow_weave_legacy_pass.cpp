@@ -19,7 +19,7 @@ using namespace llvm;
 
 /******************************************************************************
  *                                                                            *
- *                 Public Methods of WeavingPass Class                        *
+ *                 Public Methods of LegacyWeavingPass Class                        *
  *                                                                            *
  ******************************************************************************/
 

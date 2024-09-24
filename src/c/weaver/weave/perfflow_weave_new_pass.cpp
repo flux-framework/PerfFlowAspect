@@ -21,6 +21,13 @@
 
 using namespace llvm;
 
+
+/******************************************************************************
+ *                                                                            *
+ *                 Public Methods of NewWeavingPass Class                         *
+ *                                                                            *
+ ******************************************************************************/
+
 // Implement the runOnModule Function
 bool NewWeavingPass::runOnModule(Module &M)
 {

@@ -36,7 +36,6 @@ public:
 
 #endif // PERFFLOW_WEAVE_NEW_PASS_H
 
-
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */
