@@ -20,11 +20,12 @@
 //#include "llvm/IR/Module.h"
 // #include "llvm/IR/Argument.h"
 // #include "llvm/IR/IRBuilder.h"
-// #include "llvm/Transforms/IPO/PassManagerBuilder.h"
+#include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/Support/raw_ostream.h"
 
 // #include "../../parser/perfflow_parser.hpp"
 #include "perfflow_weave_legacy_pass.hpp"
+#include "perfflow_weave_common.hpp"
 
 using namespace llvm;
 
@@ -146,8 +147,10 @@ bool WeavingPass::doInitialization(Module &m)
 {
     outs() << "WeavePass loaded successfully. \n";
 
+    bool changed = false; 
     WeaveCommon weaver;
-    weaver.modifyAnnotatedFunctions(m); 
+    
+    changed = weaver.modifyAnnotatedFunctions(m); 
 
     // auto annotations = m.getNamedGlobal("llvm.global.annotations");
     // if (!annotations)
