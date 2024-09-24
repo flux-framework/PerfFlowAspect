@@ -29,11 +29,11 @@ public:
     virtual bool doInitialization (Module &m);
     virtual bool runOnFunction (Function &F);
 
-private:
-    bool insertAfter (Module &m, Function &f, StringRef &a,
-                      int async, std::string &scope, std::string &flow, std::string pcut);
-    bool insertBefore (Module &m, Function &f, StringRef &a,
-                       int async, std::string &scope, std::string &flow, std::string pcut);
+// private:
+//     bool insertAfter (Module &m, Function &f, StringRef &a,
+//                       int async, std::string &scope, std::string &flow, std::string pcut);
+//     bool insertBefore (Module &m, Function &f, StringRef &a,
+//                        int async, std::string &scope, std::string &flow, std::string pcut);
 };
 
 }
