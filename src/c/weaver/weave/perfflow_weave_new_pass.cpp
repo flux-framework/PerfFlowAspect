@@ -35,7 +35,7 @@ bool NewWeavingPass::runOnModule(Module &M)
 
     WeaveCommon weaver;
     changed = weaver.modifyAnnotatedFunctions(M);
-    
+
     return changed;
 }
 
