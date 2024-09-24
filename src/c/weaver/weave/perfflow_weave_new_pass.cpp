@@ -42,43 +42,45 @@ bool NewWeavingPass::runOnModule(Module &M)
     // The following loops through each function. This is where we need to check annotation
     // (from doInitialization in the legacy pass and add the insertBefore/insertAfter)
 
-    WeaveCommon weaver; 
+    WeaveCommon weaver;
     changed = weaver.modifyAnnotatedFunctions(M);
 
     for (auto &F : M)
     {
         if (F.isDeclaration())
-             continue;
-
-        if (F.getName().str()=="main")
         {
-             outs() << "We found main! We will insert Adiak call here eventually.\n";
-             continue;
+            continue;
         }
 
-    //     // Get an IR builder. Sets the insertion point to the top of the function
-    //    IRBuilder<> Builder(&*F.getEntryBlock().getFirstInsertionPt());
+        if (F.getName().str() == "main")
+        {
+            outs() << "We found main! We will insert Adiak call here eventually.\n";
+            continue;
+        }
 
-    //     // Inject a global variable that contains the function name
-    //      auto FuncName = Builder.CreateGlobalStringPtr(F.getName());
+        //     // Get an IR builder. Sets the insertion point to the top of the function
+        //    IRBuilder<> Builder(&*F.getEntryBlock().getFirstInsertionPt());
 
-      
+        //     // Inject a global variable that contains the function name
+        //      auto FuncName = Builder.CreateGlobalStringPtr(F.getName());
 
-    //     // Printf requires i8*, but PrintfFormatStrVar is an array: [n x i8]. Add
-    //     // a cast: [n x i8] -> i8*
-    //     llvm::Value *FormatStrPtr =
-    //         Builder.CreatePointerCast(PrintfFormatStrVar, PrintfArgTy, "formatStr");
 
-    //     // The following is visible only if you pass -debug on the command line
-    //     // *and* you have an assert build.
-    //     LLVM_DEBUG(dbgs() << " Injecting call to printf inside " << F.getName()
-    //                       << "\n");
 
-    //     // Finally, inject a call to printf
-    //     Builder.CreateCall(
-    //         Printf, {FormatStrPtr, FuncName, Builder.getInt32(F.arg_size())});
+        //     // Printf requires i8*, but PrintfFormatStrVar is an array: [n x i8]. Add
+        //     // a cast: [n x i8] -> i8*
+        //     llvm::Value *FormatStrPtr =
+        //         Builder.CreatePointerCast(PrintfFormatStrVar, PrintfArgTy, "formatStr");
 
-    //     InsertedAtLeastOnePrintf = true;
+        //     // The following is visible only if you pass -debug on the command line
+        //     // *and* you have an assert build.
+        //     LLVM_DEBUG(dbgs() << " Injecting call to printf inside " << F.getName()
+        //                       << "\n");
+
+        //     // Finally, inject a call to printf
+        //     Builder.CreateCall(
+        //         Printf, {FormatStrPtr, FuncName, Builder.getInt32(F.arg_size())});
+
+        //     InsertedAtLeastOnePrintf = true;
     }
 
     return changed;
