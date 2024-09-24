@@ -8,20 +8,20 @@
  * SPDX-License-Identifier: LGPL-3.0
 \************************************************************/
 
-#include "llvm/IR/Value.h"
-#include "llvm/IR/Attributes.h"
-#include "llvm/IR/Constants.h"
-#include "llvm/IR/AbstractCallSite.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/Argument.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/PassManager.h"
-#include "llvm/Passes/PassBuilder.h"
-#include "llvm/Passes/PassPlugin.h"
-#include "llvm/Transforms/IPO/PassManagerBuilder.h"
+// #include "llvm/IR/Value.h"
+// #include "llvm/IR/Attributes.h"
+// #include "llvm/IR/Constants.h"
+// #include "llvm/IR/AbstractCallSite.h"
+// #include "llvm/IR/Module.h"
+// #include "llvm/IR/Argument.h"
+// #include "llvm/IR/IRBuilder.h"
+// #include "llvm/IR/PassManager.h"
+// #include "llvm/Passes/PassBuilder.h"
+// #include "llvm/Passes/PassPlugin.h"
+// #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/Support/raw_ostream.h"
 
-#include "../../parser/perfflow_parser.hpp"
+// #include "../../parser/perfflow_parser.hpp"
 #include "perfflow_weave_new_pass.hpp"
 #include <iostream>
 #include <cstring>
@@ -32,7 +32,7 @@ using namespace llvm;
 // Implement the runOnModule Function
 bool NewWeavingPass::runOnModule(Module &M)
 {
-    bool PatkiTest = true;
+    bool changed = false;
     // We do nothing right now, let's build to see if this goes through and loads correctly.
     // The build will probably fail as we are not parsing the annotations.
 
@@ -40,22 +40,28 @@ bool NewWeavingPass::runOnModule(Module &M)
 
     // The following loops through each function. This is where we need to check annotation
     // (from doInitialization in the legacy pass and add the insertBefore/insertAfter)
-     for (auto &F : M)
+
+    WeaveCommon weaver; 
+    changed = weaver.modifyAnnotatedFunctions(M);
+
+    for (auto &F : M)
     {
         if (F.isDeclaration())
              continue;
-
-    //     // Get an IR builder. Sets the insertion point to the top of the function
-        IRBuilder<> Builder(&*F.getEntryBlock().getFirstInsertionPt());
-
-    //     // Inject a global variable that contains the function name
-        auto FuncName = Builder.CreateGlobalStringPtr(F.getName());
 
         if (F.getName().str()=="main")
         {
              outs() << "We found main! We will insert Adiak call here eventually.\n";
              continue;
         }
+
+    //     // Get an IR builder. Sets the insertion point to the top of the function
+    //    IRBuilder<> Builder(&*F.getEntryBlock().getFirstInsertionPt());
+
+    //     // Inject a global variable that contains the function name
+    //      auto FuncName = Builder.CreateGlobalStringPtr(F.getName());
+
+      
 
     //     // Printf requires i8*, but PrintfFormatStrVar is an array: [n x i8]. Add
     //     // a cast: [n x i8] -> i8*
@@ -74,7 +80,7 @@ bool NewWeavingPass::runOnModule(Module &M)
     //     InsertedAtLeastOnePrintf = true;
     }
 
-    return PatkiTest;
+    return changed;
 }
 
 // Run on module function.
