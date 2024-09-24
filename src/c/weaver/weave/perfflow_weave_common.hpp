@@ -222,3 +222,8 @@ bool WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
 } // End namespace
 
 #endif // PERFFLOW_WEAVE_COMMON_H
+
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */

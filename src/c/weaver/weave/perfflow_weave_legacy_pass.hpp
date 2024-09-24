@@ -21,21 +21,14 @@ using namespace llvm;
 
 namespace {
 
-class WeavingPass : public FunctionPass
+class LegacyWeavingPass : public FunctionPass
 {
 public:
     static char ID;
     WeavingPass () : FunctionPass (ID) {}
     virtual bool doInitialization (Module &m);
     virtual bool runOnFunction (Function &F);
-
-// private:
-//     bool insertAfter (Module &m, Function &f, StringRef &a,
-//                       int async, std::string &scope, std::string &flow, std::string pcut);
-//     bool insertBefore (Module &m, Function &f, StringRef &a,
-//                        int async, std::string &scope, std::string &flow, std::string pcut);
 };
-
 }
 
 #endif // PERFFLOW_WEAVE_LEGACY_PASS_H

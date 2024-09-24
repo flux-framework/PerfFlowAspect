@@ -8,43 +8,29 @@
  * SPDX-License-Identifier: LGPL-3.0
 \************************************************************/
 
-// #include "llvm/IR/Value.h"
-// #include "llvm/IR/Attributes.h"
-// #include "llvm/IR/Constants.h"
-// #include "llvm/IR/AbstractCallSite.h"
-// #include "llvm/IR/Module.h"
-// #include "llvm/IR/Argument.h"
-// #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/PassManager.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/Support/raw_ostream.h"
 
-// #include "../../parser/perfflow_parser.hpp"
 #include "perfflow_weave_new_pass.hpp"
 #include "perfflow_weave_common.hpp"
 #include <iostream>
 #include <cstring>
 
 using namespace llvm;
-// using namespace std;
 
 // Implement the runOnModule Function
 bool NewWeavingPass::runOnModule(Module &M)
 {
     bool changed = false;
-    // We do nothing right now, let's build to see if this goes through and loads correctly.
-    // The build will probably fail as we are not parsing the annotations.
-
     outs() << "NewWeavePass loaded successfully! \n";
-
-    // The following loops through each function. This is where we need to check annotation
-    // (from doInitialization in the legacy pass and add the insertBefore/insertAfter)
 
     WeaveCommon weaver;
     changed = weaver.modifyAnnotatedFunctions(M);
 
+    // Placeholder: search for the main() function to insert an Adiak call
     for (auto &F : M)
     {
         if (F.isDeclaration())
@@ -57,42 +43,18 @@ bool NewWeavingPass::runOnModule(Module &M)
             outs() << "We found main! We will insert Adiak call here eventually.\n";
             continue;
         }
-
-        //     // Get an IR builder. Sets the insertion point to the top of the function
-        //    IRBuilder<> Builder(&*F.getEntryBlock().getFirstInsertionPt());
-
-        //     // Inject a global variable that contains the function name
-        //      auto FuncName = Builder.CreateGlobalStringPtr(F.getName());
-
-
-
-        //     // Printf requires i8*, but PrintfFormatStrVar is an array: [n x i8]. Add
-        //     // a cast: [n x i8] -> i8*
-        //     llvm::Value *FormatStrPtr =
-        //         Builder.CreatePointerCast(PrintfFormatStrVar, PrintfArgTy, "formatStr");
-
-        //     // The following is visible only if you pass -debug on the command line
-        //     // *and* you have an assert build.
-        //     LLVM_DEBUG(dbgs() << " Injecting call to printf inside " << F.getName()
-        //                       << "\n");
-
-        //     // Finally, inject a call to printf
-        //     Builder.CreateCall(
-        //         Printf, {FormatStrPtr, FuncName, Builder.getInt32(F.arg_size())});
-
-        //     InsertedAtLeastOnePrintf = true;
     }
 
     return changed;
 }
 
 // Run on module function.
-PreservedAnalyses NewWeavingPass::run(llvm::Module &M,
-                                      llvm::ModuleAnalysisManager &)
+PreservedAnalyses NewWeavingPass::run(Module &M,
+                                      ModuleAnalysisManager &)
 {
-    bool Changed = runOnModule(M);
+    bool changed = runOnModule(M);
 
-    return (Changed ? llvm::PreservedAnalyses::none()
+    return (changed ? llvm::PreservedAnalyses::none()
             : llvm::PreservedAnalyses::all());
 }
 
