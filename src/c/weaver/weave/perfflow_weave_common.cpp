@@ -18,7 +18,7 @@
 
 bool WeaveCommon::modifyAnnotatedFunctions(Module &m)
 {
- auto annotations = m.getNamedGlobal("llvm.global.annotations");
+    auto annotations = m.getNamedGlobal("llvm.global.annotations");
     if (!annotations)
     {
         return false;
@@ -77,7 +77,7 @@ bool WeaveCommon::modifyAnnotatedFunctions(Module &m)
             }
         }
     }
-    return changed; 
+    return changed;
 
 }
 
