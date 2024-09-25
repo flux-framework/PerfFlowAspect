@@ -36,6 +36,24 @@ bool NewWeavingPass::runOnModule(Module &M)
     WeaveCommon weaver;
     changed = weaver.modifyAnnotatedFunctions(M);
 
+    // Placeholder: search for the main() function to insert an Adiak call
+    // Todo: Test Main Entry and Exit here
+    // Test an Adiak Callback
+    // Test writing to the metadata in object format
+    for (auto &F : M)
+    {
+        if (F.isDeclaration())
+        {
+            continue;
+        }
+
+        if (F.getName().str() == "main")
+        {
+            outs() << "We found main! We will insert Adiak call here eventually.\n";
+            continue;
+        }
+    }
+
     return changed;
 }
 
