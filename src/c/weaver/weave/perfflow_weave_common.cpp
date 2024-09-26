@@ -51,16 +51,22 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
         else
         {
             outs() << "e has " << e->getNumOperands() << " operands.\n";
-            outs() << "e's 0 operand has " << e->getOperand(0)->getNumOperands() << "\n";
-            outs() << "e's 1 operand has " << e->getOperand(1)->getNumOperands() << "\n";
-            outs() << "e's 2 operand has " << e->getOperand(2)->getNumOperands() << "\n";
-            outs() << "e's 3 operand has " << e->getOperand(3)->getNumOperands() << "\n";
-            outs() << "e's 4 operand has " << e->getOperand(4)->getNumOperands() << "\n";
-            outs() << "e's 0 operand name " << e->getOperand(0)->getName() << "\n";
-            outs() << "e's 1 operand name " << e->getOperand(1)->getName() << "\n";
-            outs() << "e's 2 operand name " << e->getOperand(2)->getName() << "\n";
-            outs() << "e's 3 operand name " << e->getOperand(3)->getName() << "\n";
-            outs() << "e's 4 operand name " << e->getOperand(4)->getName() << "\n";
+            outs() << "Printing e's operands: \n";
+            for (unsigned int k=0; k < e->getNumOperands(); k++)
+            {   
+                outs() << " Operand " << i << " is " << e->getOperand(i)->getName();
+                outs() << "Operand " << i << "has " << e->getOperand(i)->getNumOperands() << "operands \n";    
+            }
+            // outs() << "e's 0 operand has " << e->getOperand(0)->getNumOperands() << "\n";
+            // outs() << "e's 1 operand has " << e->getOperand(1)->getNumOperands() << "\n";
+            // outs() << "e's 2 operand has " << e->getOperand(2)->getNumOperands() << "\n";
+            // outs() << "e's 3 operand has " << e->getOperand(3)->getNumOperands() << "\n";
+            // outs() << "e's 4 operand has " << e->getOperand(4)->getNumOperands() << "\n";
+            // outs() << "e's 0 operand name " << e->getOperand(0)->getName() << "\n";
+            // outs() << "e's 1 operand name " << e->getOperand(1)->getName() << "\n";
+            // outs() << "e's 2 operand name " << e->getOperand(2)->getName() << "\n";
+            // outs() << "e's 3 operand name " << e->getOperand(3)->getName() << "\n";
+            // outs() << "e's 4 operand name " << e->getOperand(4)->getName() << "\n";
         }
 
         if (auto *fn = dyn_cast<Function> (e->getOperand(0)->getOperand(0)))
