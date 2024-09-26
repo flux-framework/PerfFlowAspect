@@ -18,19 +18,34 @@
 
 bool WeaveCommon::modifyAnnotatedFunctions(Module &m)
 {
-    auto annotations = m.getNamedGlobal("llvm.global.annotations");
+ auto annotations = m.getNamedGlobal("llvm.global.annotations");
     if (!annotations)
     {
         return false;
     }
 
     bool changed = false;
-    auto a = cast<ConstantArray> (annotations->getOperand(0));
+    
+    if (annotations.getNumOperands() > 0)
+    {
+         outs() << "I have %d operands!" << annotations.getNumOperands() << "\n";
+        auto a = cast<ConstantArray> (annotations->getOperand(0));
+    }
+    else
+        return changed;
+
+
     for (unsigned int i = 0; i < a->getNumOperands(); i++)
     {
         auto e = cast<ConstantStruct> (a->getOperand(i));
+        if (!e)
+        {
+            outs() << "I failed here at obtaining the struct. \n"; 
+        }
+
         if (auto *fn = dyn_cast<Function> (e->getOperand(0)->getOperand(0)))
         {
+            outs() << "I entered the part where we parse annotations. \n"; 
             auto anno = cast<ConstantDataArray>(
                             cast<GlobalVariable>(e->getOperand(1)->getOperand(0))
                             ->getOperand(0))
@@ -77,10 +92,9 @@ bool WeaveCommon::modifyAnnotatedFunctions(Module &m)
             }
         }
     }
-    return changed;
+    return changed; 
 
 }
-
 
 /******************************************************************************
  *                                                                            *
