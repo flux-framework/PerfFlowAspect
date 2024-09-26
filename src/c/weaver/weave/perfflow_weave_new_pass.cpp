@@ -20,6 +20,7 @@
 #include <cstring>
 
 using namespace llvm;
+using namespace weave_ns;
 
 /******************************************************************************
  *                                                                            *

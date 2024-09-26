@@ -16,6 +16,7 @@
 #include "perfflow_weave_common.hpp"
 
 using namespace llvm;
+using namespace weave_ns;
 
 /******************************************************************************
  *                                                                            *

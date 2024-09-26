@@ -10,15 +10,17 @@
 
 #include "perfflow_weave_common.hpp"
 
+using namespace llvm;
+
 /******************************************************************************
  *                                                                            *
  *                 Public Method of WeaveCommon Class                         *
  *                                                                            *
  ******************************************************************************/
 
-bool WeaveCommon::modifyAnnotatedFunctions(Module &m)
+bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
 {
-     outs() << "I am in modifyAnnotatedFunctions \n";
+    outs() << "I am in modifyAnnotatedFunctions \n";
 
     auto annotations = m.getNamedGlobal("llvm.global.annotations");
     if (!annotations)
@@ -27,29 +29,35 @@ bool WeaveCommon::modifyAnnotatedFunctions(Module &m)
     }
 
     bool changed = false;
-    
-    if (annotations.getNumOperands() > 0)
-    {
-        outs() << "I have %d operands!" << annotations.getNumOperands() << "\n";
-        auto a = cast<ConstantArray> (annotations->getOperand(0));
-    }
-    else
+
+    if (annotations->getNumOperands() <= 0)
     {
         outs() << "I have failed as there are no operands!\n";
         return changed;
     }
+    else
+    {
+        outs() << "I have " << annotations->getNumOperands() << " operands.\n";
+    }
 
+    auto a = cast<ConstantArray> (annotations->getOperand(0));
     for (unsigned int i = 0; i < a->getNumOperands(); i++)
     {
         auto e = cast<ConstantStruct> (a->getOperand(i));
         if (!e)
         {
-            outs() << "I failed here at obtaining the struct. \n"; 
+            outs() << "I failed here at obtaining the struct. \n";
+        }
+        else
+        {
+            outs() << "e has " << e->getNumOperands() << " operands.\n";
+            outs() << "e's first operand has " << e->getOperand(0)->getNumOperands() <<
+                   " operands.\n";
         }
 
         if (auto *fn = dyn_cast<Function> (e->getOperand(0)->getOperand(0)))
         {
-            outs() << "I entered the part where we parse annotations. \n"; 
+            outs() << "I entered the part where we parse annotations. \n";
             auto anno = cast<ConstantDataArray>(
                             cast<GlobalVariable>(e->getOperand(1)->getOperand(0))
                             ->getOperand(0))
@@ -96,7 +104,7 @@ bool WeaveCommon::modifyAnnotatedFunctions(Module &m)
             }
         }
     }
-    return changed; 
+    return changed;
 
 }
 
@@ -106,8 +114,8 @@ bool WeaveCommon::modifyAnnotatedFunctions(Module &m)
  *                                                                            *
  ******************************************************************************/
 
-bool WeaveCommon::insertAfter(Module &m, Function &f, StringRef &a,
-                              int async, std::string &scope, std::string &flow, std::string pcut)
+bool weave_ns::WeaveCommon::insertAfter(Module &m, Function &f, StringRef &a,
+                                        int async, std::string &scope, std::string &flow, std::string pcut)
 {
     if (m.empty() || f.empty())
     {
@@ -159,8 +167,8 @@ bool WeaveCommon::insertAfter(Module &m, Function &f, StringRef &a,
     return true;
 }
 
-bool WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
-                               int async, std::string &scope, std::string &flow, std::string pcut)
+bool weave_ns::WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
+        int async, std::string &scope, std::string &flow, std::string pcut)
 {
     if (m.empty() || f.empty())
     {

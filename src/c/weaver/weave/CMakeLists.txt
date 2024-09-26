@@ -2,12 +2,14 @@ if (PERFFLOWASPECT_CLANG_14_NEWER)
     # Add the new pass 
     add_library(WeavePass MODULE
         # List your source files here.
+        perfflow_weave_common.cpp
         perfflow_weave_new_pass.cpp
     )
 else()
     # Add the legacy pass if we have Clang < 14.
     add_library(WeavePass MODULE
         # List your source files here.
+        perfflow_weave_common.cpp
         perfflow_weave_legacy_pass.cpp
     )
 endif()
