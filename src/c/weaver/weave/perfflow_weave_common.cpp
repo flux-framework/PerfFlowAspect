@@ -18,7 +18,9 @@
 
 bool WeaveCommon::modifyAnnotatedFunctions(Module &m)
 {
- auto annotations = m.getNamedGlobal("llvm.global.annotations");
+     outs() << "I am in modifyAnnotatedFunctions \n";
+
+    auto annotations = m.getNamedGlobal("llvm.global.annotations");
     if (!annotations)
     {
         return false;
@@ -28,12 +30,14 @@ bool WeaveCommon::modifyAnnotatedFunctions(Module &m)
     
     if (annotations.getNumOperands() > 0)
     {
-         outs() << "I have %d operands!" << annotations.getNumOperands() << "\n";
+        outs() << "I have %d operands!" << annotations.getNumOperands() << "\n";
         auto a = cast<ConstantArray> (annotations->getOperand(0));
     }
     else
+    {
+        outs() << "I have failed as there are no operands!\n";
         return changed;
-
+    }
 
     for (unsigned int i = 0; i < a->getNumOperands(); i++)
     {
