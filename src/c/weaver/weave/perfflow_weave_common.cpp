@@ -38,7 +38,7 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
     else
     {
         outs() << "Annotations has " << annotations->getNumOperands() << " operands.\n";
-        outs() << "Annotations operand 0 has name " << annotations->getOperand(0)->getName() << "\n";
+        outs() << "Annotations operand 0 has name: " << annotations->getOperand(0)->getName() << "\n";
     }
 
     auto a = cast<ConstantArray> (annotations->getOperand(0));
@@ -56,7 +56,7 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
             for (unsigned int k=0; k < e->getNumOperands(); k++)
             {   
                 outs() << " Operand " << k << " name is " << e->getOperand(k)->getName() << "\n";
-                outs() << "Operand " << k << "has " << e->getOperand(k)->getNumOperands() << "operands \n";    
+                outs() << "Operand " << k << " has " << e->getOperand(k)->getNumOperands() << " operands \n";    
             }
             // outs() << "e's 0 operand has " << e->getOperand(0)->getNumOperands() << "\n";
             // outs() << "e's 1 operand has " << e->getOperand(1)->getNumOperands() << "\n";
