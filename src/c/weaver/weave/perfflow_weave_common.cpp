@@ -55,7 +55,7 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
             outs() << "Printing e's operands: \n";
             for (unsigned int k=0; k < e->getNumOperands(); k++)
             {   
-                outs() << " Operand " << k << " name is " << e->getOperand(k)->getName() << "\n";
+                outs() << " Operand " << k << " name is: " << e->getOperand(k)->getName() << "\n";
                 outs() << "Operand " << k << " has " << e->getOperand(k)->getNumOperands() << " operands \n";    
             }
             // outs() << "e's 0 operand has " << e->getOperand(0)->getNumOperands() << "\n";
@@ -70,11 +70,13 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
             // outs() << "e's 4 operand name " << e->getOperand(4)->getName() << "\n";
         }
 
-        if (auto *fn = dyn_cast<Function> (e->getOperand(0)->getOperand(0)))
+        // if (auto *fn = dyn_cast<Function> (e->getOperand(0)->getOperand(0)))
+         if (auto *fn = dyn_cast<Function> (e->getOperand(0)))
         {
             outs() << "I entered the part where we parse annotations. \n";
             auto anno = cast<ConstantDataArray>(
-                            cast<GlobalVariable>(e->getOperand(1)->getOperand(0))
+                            // cast<GlobalVariable>(e->getOperand(1)->getOperand(0))
+                            cast<GlobalVariable>(e->getOperand(1))
                             ->getOperand(0))
                         ->getAsCString();
             std::string pcut, scope, flow;
