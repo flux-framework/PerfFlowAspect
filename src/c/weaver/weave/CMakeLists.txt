@@ -12,8 +12,14 @@ else()
     )
 endif()
 
-# Use C++11 to compile our pass (i.e., supply -std=c++11).
-target_compile_features(WeavePass PRIVATE cxx_range_for cxx_auto_type)
+if (PERFFLOWASPECT_CLANG_14_NEWER)
+    # Use C++17 to compile our pass
+    target_compile_features(WeavePass PRIVATE cxx_std_17 cxx_range_for cxx_auto_type)
+else()
+    # Use C++11/C++14 to compile our pass (i.e., supply -std=c++11) (pick default)
+    target_compile_features(WeavePass PRIVATE cxx_range_for cxx_auto_type)
+endif()
+
 
 # LLVM is (typically) built with no C++ RTTI. We need to match that;
 # otherwise, we'll get linker errors about missing RTTI data.
