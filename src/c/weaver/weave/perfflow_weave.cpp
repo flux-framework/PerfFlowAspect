@@ -71,14 +71,14 @@ bool WeavingPass::insertAfter(Module &m, Function &f, StringRef &a,
         {
             IRBuilder<> builder(inst);
             Value *v1 = builder.CreateGlobalStringPtr(m.getName(), "str");
-            Value *FnNameStr = builder.CreateGlobalStringPtr(f.getName(), "str");
+            Value *v2 = builder.CreateGlobalStringPtr(f.getName(), "str");
             Value *v3 = builder.CreateGlobalStringPtr(StringRef(scope), "str");
             Value *v4 = builder.CreateGlobalStringPtr(StringRef(flow), "str");
             Value *v5 = builder.CreateGlobalStringPtr(StringRef(pcut), "str");
             std::vector<Value *> args;
             args.push_back(ConstantInt::get(Type::getInt32Ty(context), async));
             args.push_back(v1);
-            args.push_back(FnNameStr);
+            args.push_back(v2);
             args.push_back(v3);
             args.push_back(v4);
             args.push_back(v5);
@@ -167,7 +167,7 @@ bool WeavingPass::insertBefore(Module &m, Function &f, StringRef &a,
     auto &entry = f.getEntryBlock();
     IRBuilder<> builder(&entry);
     Value *v1 = builder.CreateGlobalStringPtr(m.getName(), "str");
-    Value *FnNameStr = builder.CreateGlobalStringPtr(f.getName(), "str");
+    Value *v2 = builder.CreateGlobalStringPtr(f.getName(), "str");
     Value *v3 = builder.CreateGlobalStringPtr(StringRef(scope), "str");
     Value *v4 = builder.CreateGlobalStringPtr(StringRef(flow), "str");
     Value *v5 = builder.CreateGlobalStringPtr(StringRef(pcut), "str");
@@ -175,7 +175,7 @@ bool WeavingPass::insertBefore(Module &m, Function &f, StringRef &a,
     std::vector<Value *> args;
     args.push_back(ConstantInt::get(Type::getInt32Ty(context), async));
     args.push_back(v1);
-    args.push_back(FnNameStr);
+    args.push_back(v2);
     args.push_back(v3);
     args.push_back(v4);
     args.push_back(v5);

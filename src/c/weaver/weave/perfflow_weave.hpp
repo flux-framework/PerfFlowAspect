@@ -30,7 +30,6 @@ class WeavingPass : public FunctionPass
 public:
     FunctionCallee CaliBeginRegion;
     FunctionCallee CaliEndRegion;
-
     static char ID;
     WeavingPass () : FunctionPass (ID) {}
     virtual bool doInitialization (Module &m);
