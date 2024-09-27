@@ -15,7 +15,6 @@ set(perfflow_runtime_sources
 include_directories(${JANSSON_INCLUDE_DIRS})
 
 if(PERFFLOWASPECT_WITH_CALIPER)
-    message(STATUS "RRR ${caliper_LIB_DIR} ${caliper_CONFIG_LOADED}")
     include_directories(${caliper_INCLUDE_DIR})
 endif()
 
