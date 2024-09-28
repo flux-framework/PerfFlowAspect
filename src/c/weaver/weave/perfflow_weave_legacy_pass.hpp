@@ -25,7 +25,7 @@ class LegacyWeavingPass : public FunctionPass
 {
 public:
     static char ID;
-    WeavingPass () : FunctionPass (ID) {}
+    LegacyWeavingPass () : FunctionPass (ID) {}
     virtual bool doInitialization (Module &m);
     virtual bool runOnFunction (Function &F);
 };
