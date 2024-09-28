@@ -19,15 +19,15 @@ if (PERFFLOWASPECT_CLANG_15_NEWER)
     target_compile_features(WeavePass PRIVATE cxx_std_17 cxx_range_for cxx_auto_type)
 else()
     # Use C++11/C++14 to compile our pass (i.e., supply -std=c++11) (pick default)
-    target_compile_features(WeavePass PRIVATE cxx_range_for cxx_auto_type)
+    target_compile_features(WeavePass PRIVATE cxx_std_14 cxx_range_for cxx_auto_type)
 endif()
 
 
 # LLVM is (typically) built with no C++ RTTI. We need to match that;
 # otherwise, we'll get linker errors about missing RTTI data.
-set_target_properties(WeavePass PROPERTIES
-    COMPILE_FLAGS "-fno-rtti"
-)
+    set_target_properties(WeavePass PROPERTIES
+        COMPILE_FLAGS "-fno-rtti  -stdlib=libstdc++"
+    )
 
 target_link_libraries(WeavePass perfflow_parser ${JANSSON_LIB})
 
