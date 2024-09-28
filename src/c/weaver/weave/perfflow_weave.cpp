@@ -184,6 +184,7 @@ bool WeavingPass::insertBefore(Module &m, Function &f, StringRef &a,
     return true;
 }
 
+
 /******************************************************************************
  *                                                                            *
  *                 Public Methods of WeavingPass Class                        *
@@ -209,10 +210,10 @@ bool WeavingPass::doInitialization(Module &m)
                           AttributeList::FunctionIndex, AB);
 #ifdef PERFFLOWASPECT_WITH_CALIPER
     // Insert Functions on the module
-    CaliBeginRegion = m.getOrInsertFunction(
-                          "cali_begin_region", Attrs, IRB.getVoidTy(), IRB.getInt8PtrTy());
-    CaliEndRegion = m.getOrInsertFunction("cali_end_region", Attrs,
-                                          IRB.getVoidTy(), IRB.getInt8PtrTy());
+    CaliBeginRegion = m.getOrInsertFunction("cali_begin_region", Attrs,
+                                            IRB.getVoidTy(), IRB.getInt8PtrTy());
+    CaliEndRegion = m.getOrInsertFunction("cali_end_region", Attrs, IRB.getVoidTy(),
+                                          IRB.getInt8PtrTy());
 #endif
 
     bool changed = false;
