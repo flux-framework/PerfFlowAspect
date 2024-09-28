@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        config: [boilerplate_caliper]
+        config: [boilerplate, release, debug_cuda_only, debug_mpi_only, debug_threads_only, boilerplate_caliper]
 
         include:
           - config: boilerplate
