@@ -58,27 +58,27 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
                 outs() << " Operand " << k << " name is: " << e->getOperand(k)->getName() << "\n";
                 outs() << "Operand " << k << " has " << e->getOperand(k)->getNumOperands() << " operands \n";    
             }
-            // outs() << "e's 0 operand has " << e->getOperand(0)->getNumOperands() << "\n";
-            // outs() << "e's 1 operand has " << e->getOperand(1)->getNumOperands() << "\n";
-            // outs() << "e's 2 operand has " << e->getOperand(2)->getNumOperands() << "\n";
-            // outs() << "e's 3 operand has " << e->getOperand(3)->getNumOperands() << "\n";
-            // outs() << "e's 4 operand has " << e->getOperand(4)->getNumOperands() << "\n";
-            // outs() << "e's 0 operand name " << e->getOperand(0)->getName() << "\n";
-            // outs() << "e's 1 operand name " << e->getOperand(1)->getName() << "\n";
-            // outs() << "e's 2 operand name " << e->getOperand(2)->getName() << "\n";
-            // outs() << "e's 3 operand name " << e->getOperand(3)->getName() << "\n";
-            // outs() << "e's 4 operand name " << e->getOperand(4)->getName() << "\n";
         }
-
-        // if (auto *fn = dyn_cast<Function> (e->getOperand(0)->getOperand(0)))
-         if (auto *fn = dyn_cast<Function> (e->getOperand(0)))
+#if defined(PERFFLOWASPECT_CLANG_15_NEWER)
+        auto *fn = dyn_cast<Function> (e->getOperand(0));
+#else
+        auto *fn = dyn_cast<Function> (e->getOperand(0)->getOperand(0));
+#endif
+         if (fn != NULL)
         {
             outs() << "I entered the part where we parse annotations. \n";
+#if defined(PERFFLOWASPECT_CLANG_15_NEWER)
             auto anno = cast<ConstantDataArray>(
-                            // cast<GlobalVariable>(e->getOperand(1)->getOperand(0))
                             cast<GlobalVariable>(e->getOperand(1))
                             ->getOperand(0))
                         ->getAsCString();
+#else
+            auto anno = cast<ConstantDataArray>(
+                            cast<GlobalVariable>(e->getOperand(1)->getOperand(0))
+                            ->getOperand(0))
+                        ->getAsCString();
+#endif
+          
             std::string pcut, scope, flow;
             if (perfflow_parser_parse(anno.data(), pcut, scope, flow) == 0)
             {
