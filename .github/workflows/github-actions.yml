@@ -110,6 +110,11 @@ jobs:
       # Checkout PerfFlowAspect repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
 
+      - name: Setup build environment
+        run: |
+          sudo apt install pipx
+          pipx ensurepath
+
       - name: Style check c/cpp/h files
         run: |
           sudo apt-get update
@@ -122,11 +127,8 @@ jobs:
 
       - name: Install python dependencies
         run: |
-          sudo apt install pip flake8 rstfmt
-
-      - name: Update black and flake8
-        run: |
-          sudo apt install black flake8
+          pipx install flake8 rstfmt
+          pipx install --upgrade black flake8
 
       - name: Format check with flake8 and black
         run: |
