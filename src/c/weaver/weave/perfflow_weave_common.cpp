@@ -38,7 +38,8 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
     else
     {
         outs() << "Annotations has " << annotations->getNumOperands() << " operands.\n";
-        outs() << "Annotations operand 0 has name: " << annotations->getOperand(0)->getName() << "\n";
+        outs() << "Annotations operand 0 has name: " << annotations->getOperand(
+                   0)->getName() << "\n";
     }
 
     auto a = cast<ConstantArray> (annotations->getOperand(0));
@@ -53,10 +54,12 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
         {
             outs() << "e has " << e->getNumOperands() << " operands.\n";
             outs() << "Printing e's operands: \n";
-            for (unsigned int k=0; k < e->getNumOperands(); k++)
-            {   
-                outs() << " Operand " << k << " name is: " << e->getOperand(k)->getName() << "\n";
-                outs() << "Operand " << k << " has " << e->getOperand(k)->getNumOperands() << " operands \n";    
+            for (unsigned int k = 0; k < e->getNumOperands(); k++)
+            {
+                outs() << " Operand " << k << " name is: " << e->getOperand(
+                           k)->getName() << "\n";
+                outs() << "Operand " << k << " has " << e->getOperand(k)->getNumOperands() <<
+                       " operands \n";
             }
         }
 #if defined(PERFFLOWASPECT_CLANG_15_NEWER)
@@ -64,7 +67,7 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
 #else
         auto *fn = dyn_cast<Function> (e->getOperand(0)->getOperand(0));
 #endif
-         if (fn != NULL)
+        if (fn != NULL)
         {
             outs() << "I entered the part where we parse annotations. \n";
 #if defined(PERFFLOWASPECT_CLANG_15_NEWER)
@@ -78,7 +81,7 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
                             ->getOperand(0))
                         ->getAsCString();
 #endif
-          
+
             std::string pcut, scope, flow;
             if (perfflow_parser_parse(anno.data(), pcut, scope, flow) == 0)
             {
