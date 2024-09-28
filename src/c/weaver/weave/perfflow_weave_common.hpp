@@ -15,7 +15,7 @@
 #include "llvm/IR/Attributes.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/LegacyPassManager.h"
-#if defined(PERFFLOWASPECT_CLANG_11_NEWER) || defined(PERFFLOWASPECT_CLANG_14_NEWER)
+#if defined(PERFFLOWASPECT_CLANG_11_NEWER) || defined(PERFFLOWASPECT_CLANG_15_NEWER)
 #include "llvm/IR/AbstractCallSite.h"
 #else
 #include "llvm/IR/CallSite.h"
