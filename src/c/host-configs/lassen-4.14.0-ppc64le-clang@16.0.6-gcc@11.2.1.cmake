@@ -11,6 +11,3 @@
 set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-14.0.5-gcc-8.3.1/bin/clang" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-14.0.5-gcc-8.3.1/bin/clang++" CACHE PATH "")
 set(LLVM_DIR "/usr/tce/packages/clang/clang-ibm-14.0.5-gcc-8.3.1/lib/cmake/llvm" CACHE PATH "")
-# Use both C and CXX flags to support both targets.
-set(CMAKE_C_FLAGS "-flegacy-pass-manager" CACHE STRING "")
-set(CMAKE_CXX_FLAGS "-flegacy-pass-manager" CACHE STRING "")
