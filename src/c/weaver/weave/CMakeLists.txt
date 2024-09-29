@@ -1,7 +1,16 @@
-add_library(WeavePass MODULE
-    # List your source files here.
-    perfflow_weave.cpp
-)
+if (PERFFLOWASPECT_CLANG_14_NEWER)
+    # Add the new pass 
+    add_library(WeavePass MODULE
+        # List your source files here.
+        perfflow_weave_new_pass.cpp
+    )
+else()
+    # Add the legacy pass if we have Clang < 14.
+    add_library(WeavePass MODULE
+        # List your source files here.
+        perfflow_weave_legacy_pass.cpp
+    )
+endif()
 
 # Use C++11 to compile our pass (i.e., supply -std=c++11).
 target_compile_features(WeavePass PRIVATE cxx_range_for cxx_auto_type)

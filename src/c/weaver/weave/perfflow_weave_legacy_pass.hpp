@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: LGPL-3.0
 \************************************************************/
 
-#ifndef PERFFLOW_WEAVE_H
-#define PERFFLOW_WEAVE_H
+#ifndef PERFFLOW_WEAVE_LEGACY_PASS_H
+#define PERFFLOW_WEAVE_LEGACY_PASS_H
 
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Module.h"
@@ -21,24 +21,17 @@ using namespace llvm;
 
 namespace {
 
-class WeavingPass : public FunctionPass
+class LegacyWeavingPass : public FunctionPass
 {
 public:
     static char ID;
     WeavingPass () : FunctionPass (ID) {}
     virtual bool doInitialization (Module &m);
     virtual bool runOnFunction (Function &F);
-
-private:
-    bool insertAfter (Module &m, Function &f, StringRef &a,
-                      int async, std::string &scope, std::string &flow, std::string pcut);
-    bool insertBefore (Module &m, Function &f, StringRef &a,
-                       int async, std::string &scope, std::string &flow, std::string pcut);
 };
-
 }
 
-#endif // PERFFLOW_WEAVE_H
+#endif // PERFFLOW_WEAVE_LEGACY_PASS_H
 
 
 /*
