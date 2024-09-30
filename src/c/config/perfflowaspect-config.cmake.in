@@ -6,7 +6,7 @@ if (NOT PERFFLOWASPECT_CONFIG_LOADED)
   set(PERFFLOWASPECT_CALIPER_ENABLED "@PERFFLOWASPECT_CALIPER_ENABLED@")
   set(PERFFLOWASPECT_CALIPER_DIR  "@caliper_DIR@")
 
-  include(${PERFFLOWASPECT_INSTALL_PREFIX}/share/perfflowaspect_setup_deps.cmake)
+  include(${PERFFLOWASPECT_DIR}/share/perfflowaspect_setup_deps.cmake)
 
   find_dependency(OpenSSL REQUIRED)
 
