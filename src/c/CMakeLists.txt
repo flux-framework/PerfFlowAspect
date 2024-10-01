@@ -14,7 +14,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(PERFFLOWASPECT_CLANG_11_NEWER FALSE CACHE BOOL "using >=clang11")
     endif()
 else()
-    message(WARNING "Unsupported CXX compiler: please use Clang >= 9.0")
+    message(FATAL_ERROR "Unsupported CXX compiler: please use Clang >= 9.0")
 endif()
 
 include(cmake/CMakeBasics.cmake)
