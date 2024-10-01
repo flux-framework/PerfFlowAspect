@@ -19,3 +19,19 @@ include(cmake/thirdparty/FindOpenSSL.cmake)
 if(PERFFLOWASPECT_WITH_MULTITHREADS)
     include(cmake/thirdparty/FindThreads.cmake)
 endif()
+
+if(PERFFLOWASPECT_WITH_CALIPER)
+    # first Check for CALIPER_DIR
+    if(NOT caliper_DIR)
+        MESSAGE(FATAL_ERROR "Caliper support needs explicit caliper_DIR")
+    endif()
+
+    if(caliper_DIR)
+        message(STATUS "PPP ${caliper_DIR}")
+        include(cmake/thirdparty/FindCaliper.cmake)
+    endif()
+
+    if(CALIPER_FOUND)
+        add_definitions(-DPERFFLOWASPECT_WITH_CALIPER)
+    endif()
+endif()
