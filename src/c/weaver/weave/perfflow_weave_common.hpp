@@ -23,7 +23,9 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Argument.h"
 #include "llvm/IR/IRBuilder.h"
-#include "llvm/Transforms/IPO/PassManagerBuilder.h"
+#if !defined(PERFFLOWASPECT_CLANG_15_NEWER)
+#include "llvm/Transforms/IPO/PassManagerBuilder.h" // legacy optimization pipeline  in this header removed as of Clang17
+#endif
 #include "llvm/Support/raw_ostream.h"
 
 #include "../../parser/perfflow_parser.hpp"
