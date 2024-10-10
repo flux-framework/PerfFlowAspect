@@ -145,14 +145,18 @@ bool weave_ns::WeaveCommon::insertAfter(Module &m, Function &f, StringRef &a,
     auto &context = m.getContext();
     Type *voidType = Type::getVoidTy(context);
     Type *int32Type = Type::getInt32Ty(context);
-    Type *int8PtrType = Type::getInt8PtrTy(context);
+#ifdef PERFFLOWASPECT_CLANG_18_NEWER
+    Type *int8Type = Type::getInt8Ty(context);
+#else
+    Type *int8Type = Type::getInt8PtrTy(context);
+#endif
     std::vector<llvm::Type *> params;
     params.push_back(int32Type);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
+    params.push_back(int8Type);
+    params.push_back(int8Type);
+    params.push_back(int8Type);
+    params.push_back(int8Type);
+    params.push_back(int8Type);
 
     // voidType is return type, params are parameters and no variable length args
     FunctionType *weaveFuncTy = FunctionType::get(voidType, params, false);
@@ -198,14 +202,18 @@ bool weave_ns::WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
     auto &context = m.getContext();
     Type *voidType = Type::getVoidTy(context);
     Type *int32Type = Type::getInt32Ty(context);
-    Type *int8PtrType = Type::getInt8PtrTy(context);
+#ifdef PERFFLOWASPECT_CLANG_18_NEWER
+    Type *int8Type = Type::getInt8Ty(context);
+#else
+    Type *int8Type = Type::getInt8PtrTy(context);
+#endif
     std::vector<llvm::Type *> params;
     params.push_back(int32Type);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
+    params.push_back(int8Type);
+    params.push_back(int8Type);
+    params.push_back(int8Type);
+    params.push_back(int8Type);
+    params.push_back(int8Type);
 
     // voidType is return type, params are parameters and no variable length args
     FunctionType *weaveFuncTy = FunctionType::get(voidType, params, false);
