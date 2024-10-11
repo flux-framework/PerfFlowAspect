@@ -8,225 +8,258 @@
  * SPDX-License-Identifier: LGPL-3.0
 \************************************************************/
 
-#include "llvm/IR/Value.h"
-#include "llvm/IR/Attributes.h"
+#include "llvm/ADT/StringExtras.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/Config/llvm-config.h"
 #include "llvm/IR/Constants.h"
-#include "llvm/IR/LegacyPassManager.h"
-#ifdef PERFFLOWASPECT_CLANG_11_NEWER
-#include "llvm/IR/AbstractCallSite.h"
-#else
-#include "llvm/IR/CallSite.h"
-#endif
-#include "llvm/IR/Module.h"
-#include "llvm/IR/Argument.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/GlobalVariable.h"
 #include "llvm/IR/IRBuilder.h"
-#include "llvm/Transforms/IPO/PassManagerBuilder.h"
-#include "llvm/Support/raw_ostream.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/Passes/OptimizationLevel.h"
+#include "llvm/Passes/PassBuilder.h"
+#include "llvm/Passes/PassPlugin.h"
 
-#include "../../parser/perfflow_parser.hpp"
-#include "perfflow_weave.hpp"
+// TODO: Unsure about the version numbers here and below.
+#if LLVM_VERSION_MAJOR > 12
+#include "llvm/IR/PassManager.h"
+#else
+#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/Pass.h"
+#include "llvm/Transforms/IPO/PassManagerBuilder.h"
+#endif
 
 using namespace llvm;
 
+#if LLVM_VERSION_MAJOR > 14
+bool stringRefStartsWith(StringRef S, StringRef P) { return S.starts_with(P); }
+bool stringRefEndsWith(StringRef S, StringRef P) { return S.ends_with(P); }
+#else
+bool stringRefStartsWith(StringRef S, StringRef P) { return S.startswith(P); }
+bool stringRefEndsWith(StringRef S, StringRef P) { return S.endswith(P); }
+#endif
 
-/******************************************************************************
- *                                                                            *
- *                 Private Methods of WeavingPass Class                       *
- *                                                                            *
- ******************************************************************************/
+static constexpr auto WEAVER_ANNOTATION_PREFIX = "@critical_path(";
+static constexpr auto WEAVER_ANNOTATION_SUFFIX = ")";
 
-bool WeavingPass::insertAfter(Module &m, Function &f, StringRef &a,
-                              int async, std::string &scope, std::string &flow, std::string pcut)
-{
-    if (m.empty() || f.empty())
-    {
-        return false;
-    }
+struct WeavingPassImpl {
+  WeavingPassImpl(Module &M) : M(M) {}
 
-    auto &context = m.getContext();
-    Type *voidType = Type::getVoidTy(context);
-    Type *int32Type = Type::getInt32Ty(context);
-    Type *int8PtrType = Type::getInt8PtrTy(context);
-    std::vector<llvm::Type *> params;
-    params.push_back(int32Type);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
+  Module &M;
+  LLVMContext &Ctx = M.getContext();
+  Type *VoidTy = Type::getVoidTy(Ctx);
+  Type *Int32Ty = Type::getInt32Ty(Ctx);
+  Type *VoidPtrTy = PointerType::get(Type::getInt8Ty(Ctx), 0);
 
-    // voidType is return type, params are parameters and no variable length args
-    FunctionType *weaveFuncTy = FunctionType::get(voidType, params, false);
-    // Note: Use FunctionCallee after for Clang 9 or higher
-    FunctionCallee after = m.getOrInsertFunction("perfflow_weave_after",
-                           weaveFuncTy);
-    // Constant *after = m.getOrInsertFunction("perfflow_weave_after",
-    //                                        weaveFuncTy);
+  FunctionType *WeaveFuncTy = FunctionType::get(
+      VoidTy, {Int32Ty, VoidPtrTy, VoidPtrTy, VoidPtrTy, VoidPtrTy, VoidPtrTy},
+      false);
 
-    // iterate through blocks
-    for (BasicBlock &bb : f)
-    {
-        Instruction *inst = bb.getTerminator();
-        if (isa<ReturnInst>(inst) || isa<ResumeInst>(inst))
-        {
-            IRBuilder<> builder(inst);
-            Value *v1 = builder.CreateGlobalStringPtr(m.getName(), "str");
-            Value *v2 = builder.CreateGlobalStringPtr(f.getName(), "str");
-            Value *v3 = builder.CreateGlobalStringPtr(StringRef(scope), "str");
-            Value *v4 = builder.CreateGlobalStringPtr(StringRef(flow), "str");
-            Value *v5 = builder.CreateGlobalStringPtr(StringRef(pcut), "str");
-            std::vector<Value *> args;
-            args.push_back(ConstantInt::get(Type::getInt32Ty(context), async));
-            args.push_back(v1);
-            args.push_back(v2);
-            args.push_back(v3);
-            args.push_back(v4);
-            args.push_back(v5);
-            builder.CreateCall(after, args);
-        }
+  void createCall(StringRef RuntimeFunctionName, Instruction &I, int Async,
+                  StringRef Scope, StringRef Flow, StringRef Pcut) {
+    auto FC = M.getOrInsertFunction(RuntimeFunctionName, WeaveFuncTy);
+
+    IRBuilder<> IRB(&I);
+    auto *ModuleName = IRB.CreateGlobalString(M.getName());
+    auto *FunctionName = IRB.CreateGlobalString(I.getFunction()->getName());
+    auto *ScopeName = IRB.CreateGlobalString(Scope);
+    auto *FlowName = IRB.CreateGlobalString(Flow);
+    auto *PcutName = IRB.CreateGlobalString(Pcut);
+    IRB.CreateCall(FC, {ConstantInt::get(Int32Ty, Async), ModuleName,
+                        FunctionName, ScopeName, FlowName, PcutName});
+  }
+
+  bool insertAfter(Function &F, int Async, StringRef Scope, StringRef Flow,
+                   StringRef Pcut) {
+    for (auto &BB : F) {
+      auto *TI = BB.getTerminator();
+      if (isa<ReturnInst>(TI) || isa<ResumeInst>(TI))
+        createCall("perfflow_weave_after", *TI, Async, Scope, Flow, Pcut);
     }
     return true;
-}
+  }
 
-bool WeavingPass::insertBefore(Module &m, Function &f, StringRef &a,
-                               int async, std::string &scope, std::string &flow, std::string pcut)
-{
-    if (m.empty() || f.empty())
-    {
+  bool insertBefore(Function &F, int Async, StringRef Scope, StringRef Flow,
+                    StringRef Pcut) {
+    createCall("perfflow_weave_before", F.getEntryBlock().front(), Async, Scope,
+               Flow, Pcut);
+    return true;
+  }
+
+  bool parseAnnotation(StringRef AnnotationString, StringRef &Pointcut,
+                       StringRef &Scope, StringRef &Flow, bool &Async,
+                       bool &Before, bool &After) {
+    auto Consume = [&](StringRef Tokens, StringRef Warning) {
+      AnnotationString = AnnotationString.trim();
+      if (AnnotationString.consume_front(Tokens))
+        return true;
+      if (!Warning.empty())
+        outs() << "WeavePass[WARN]: " << Warning << "\n";
+      return false;
+    };
+
+    std::array<StringRef *, 3> Values = {&Pointcut, &Scope, &Flow};
+    std::array<StringRef, 3> Options = {"pointcut", "scope", "flow"};
+    bool Progress = true;
+    while (Progress) {
+      Progress = false;
+      for (int Idx = 0; Idx < Options.size(); ++Idx) {
+        auto Option = Options[Idx];
+        AnnotationString = AnnotationString.trim();
+        if (!AnnotationString.consume_front(Option))
+          continue;
+        Progress = true;
+        if (!Consume("=", "expected \"=\" after option"))
+          return false;
+        if (!Consume("'", "expected \"'\" before value"))
+          return false;
+        AnnotationString = AnnotationString.trim();
+        *Values[Idx] =
+            AnnotationString.take_until([](char C) { return C == '\''; });
+        Consume(*Values[Idx], "");
+        if (!Consume("'", "expected \"'\" after value"))
+          return false;
+        if (!Consume(",", ""))
+          break;
+      }
+      if (!Progress && !AnnotationString.empty()) {
+        outs() << "Leftover annotation '" << AnnotationString
+               << "', expected (X='value', Y='value', ...) with X,Y in {"
+               << join(Options, ",") << "}\n";
         return false;
+      }
     }
 
-    auto &context = m.getContext();
-    Type *voidType = Type::getVoidTy(context);
-    Type *int32Type = Type::getInt32Ty(context);
-    Type *int8PtrType = Type::getInt8PtrTy(context);
-    std::vector<llvm::Type *> params;
-    params.push_back(int32Type);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
-    params.push_back(int8PtrType);
+    // TODO: verify the values
+    std::array<StringRef, 6> ValidValues = {"around",       "before",
+                                            "after",        "around_async",
+                                            "before_async", "after_async"};
+    if (!any_of(ValidValues,
+                [&](auto ValidValue) { return Pointcut.equals(ValidValue); })) {
+      outs() << "pointcut value was " << Pointcut << " but expected any of {"
+             << join(ValidValues, ",") << "}\n";
+      return false;
+    }
 
-    // voidType is return type, params are parameters and no variable length args
-    FunctionType *weaveFuncTy = FunctionType::get(voidType, params, false);
-    // Note: User FunctionCallee before for Clang >= 9.0
-    FunctionCallee before = m.getOrInsertFunction("perfflow_weave_before",
-                            weaveFuncTy);
-    //Constant *before = m.getOrInsertFunction ("perfflow_weave_before",
-    //                                          weaveFuncTy);
-    auto &entry = f.getEntryBlock();
-    IRBuilder<> builder(&entry);
-    Value *v1 = builder.CreateGlobalStringPtr(m.getName(), "str");
-    Value *v2 = builder.CreateGlobalStringPtr(f.getName(), "str");
-    Value *v3 = builder.CreateGlobalStringPtr(StringRef(scope), "str");
-    Value *v4 = builder.CreateGlobalStringPtr(StringRef(flow), "str");
-    Value *v5 = builder.CreateGlobalStringPtr(StringRef(pcut), "str");
-    builder.SetInsertPoint(&entry, entry.begin());
-    std::vector<Value *> args;
-    args.push_back(ConstantInt::get(Type::getInt32Ty(context), async));
-    args.push_back(v1);
-    args.push_back(v2);
-    args.push_back(v3);
-    args.push_back(v4);
-    args.push_back(v5);
-    builder.CreateCall(before, args);
+    if (stringRefStartsWith(Pointcut, "around")) {
+      Before = After = true;
+    } else if (stringRefStartsWith(Pointcut, "before")) {
+      Before = true;
+    } else if (stringRefStartsWith(Pointcut, "after")) {
+      After = true;
+    }
+    if (stringRefEndsWith(Pointcut, "_async"))
+      Async = true;
 
     return true;
-}
+  }
 
-
-/******************************************************************************
- *                                                                            *
- *                 Public Methods of WeavingPass Class                        *
- *                                                                            *
- ******************************************************************************/
-
-bool WeavingPass::doInitialization(Module &m)
-{
+  bool run() {
+    bool Changed = false;
     outs() << "WeavePass loaded successfully. \n";
 
-    auto annotations = m.getNamedGlobal("llvm.global.annotations");
-    if (!annotations)
-    {
-        return false;
-    }
+    auto *AnnotationsGV = M.getNamedGlobal("llvm.global.annotations");
+    if (!AnnotationsGV)
+      return false;
 
-    bool changed = false;
-    auto a = cast<ConstantArray> (annotations->getOperand(0));
-    for (unsigned int i = 0; i < a->getNumOperands(); i++)
-    {
-        auto e = cast<ConstantStruct> (a->getOperand(i));
-        if (auto *fn = dyn_cast<Function> (e->getOperand(0)->getOperand(0)))
-        {
-            auto anno = cast<ConstantDataArray>(
-                            cast<GlobalVariable>(e->getOperand(1)->getOperand(0))
-                            ->getOperand(0))
-                        ->getAsCString();
-            std::string pcut, scope, flow;
-            if (perfflow_parser_parse(anno.data(), pcut, scope, flow) == 0)
-            {
-                if (pcut == "around" || pcut == "before")
-                    changed = insertBefore(m, *fn,
-                                           anno, 0, scope, flow, pcut) || changed;
-                else if (pcut == "around_async" || pcut == "before_async")
-                {
-                    changed = insertBefore(m, *fn,
-                                           anno, 1, scope, flow, pcut) || changed;
-                }
-                if (pcut == "around" || pcut == "after")
-                {
-                    if (pcut == "around")
-                    {
-                        if (flow == "in" || flow == "out")
-                        {
-                            flow = "NA";
-                        }
-                    }
-                    changed = insertAfter(m, *fn,
-                                          anno, 0, scope, flow, pcut) || changed;
-                }
-                else if (pcut == "around_async" || pcut == "after_async")
-                {
-                    if (pcut == "around")
-                    {
-                        if (flow == "in" || flow == "out")
-                        {
-                            flow = "NA";
-                        }
-                    }
-                    changed = insertAfter(m, *fn,
-                                          anno, 1, scope, flow, pcut) || changed;
-                }
-            }
-            else
-            {
-                errs() << "WeavePass[WARN]: Ignoring " << anno << "\n";
-            }
-        }
+    // Get the array of annotations.
+    auto AnnotationsArray = AnnotationsGV->getInitializer();
+
+    for (auto &OpU : AnnotationsArray->operands()) {
+      // Check each element for function annotations.
+      auto AnnotationStruct = cast<ConstantStruct>(OpU);
+      auto *Fn = dyn_cast<Function>(
+          AnnotationStruct->getOperand(0)->stripPointerCasts());
+      if (!Fn)
+        continue;
+
+      // We expect global string annotations
+      auto *AnnotationStringGV = dyn_cast<GlobalVariable>(
+          AnnotationStruct->getOperand(1)->stripPointerCasts());
+      if (!AnnotationStringGV || !AnnotationStringGV->getInitializer())
+        continue;
+      StringRef AnnotationString =
+          cast<ConstantDataArray>(AnnotationStringGV->getInitializer())
+              ->getAsCString();
+      AnnotationString = AnnotationString.trim();
+
+      // Verify the annotation is meant for us.
+      if (!stringRefStartsWith(AnnotationString, WEAVER_ANNOTATION_PREFIX) ||
+          !stringRefEndsWith(AnnotationString, WEAVER_ANNOTATION_SUFFIX))
+        continue;
+      AnnotationString.consume_front(WEAVER_ANNOTATION_PREFIX);
+      AnnotationString.consume_back(WEAVER_ANNOTATION_SUFFIX);
+
+      // Parse the values.
+      StringRef Pointcut = "around", Scope = "NA", Flow = "NA";
+      bool Before = false, After = false, Async = false;
+      if (!parseAnnotation(AnnotationString, Pointcut, Scope, Flow, Async,
+                           Before, After)) {
+        errs() << "WeavePass[WARN]: Ignoring " << AnnotationString << "\n";
+        continue;
+      }
+      outs() << "Pointcut " << Pointcut << " Scope " << Scope
+             << " Flow: " << Flow << " Before " << Before << " After: " << After
+             << " Async " << Async << "\n";
+
+      // Insert runtime calls.
+      if (Before)
+        Changed |= insertBefore(*Fn, Async, Scope, Flow, Pointcut);
+      if (After)
+        Changed |= insertAfter(
+            *Fn, Async, Scope,
+            Before && (Flow.equals("in") || Flow.equals("out")) ? "NA" : Flow,
+            Pointcut);
     }
-    return changed;
+    return Changed;
+  }
+};
+
+namespace {
+
+#if LLVM_VERSION_MAJOR > 12
+
+struct WeavingPass : public PassInfoMixin<WeavingPass> {
+  PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
+    return WeavingPassImpl(M).run() ? PreservedAnalyses::none()
+                                    : PreservedAnalyses::all();
+  }
+  static bool isRequired() { return true; }
+  static void registerPass(PassBuilder &PB) {
+    PB.registerPipelineStartEPCallback(
+        [](ModulePassManager &MPM, auto) { MPM.addPass(WeavingPass()); });
+  }
+};
+
+extern "C" PassPluginLibraryInfo LLVM_ATTRIBUTE_WEAK llvmGetPassPluginInfo() {
+  return {LLVM_PLUGIN_API_VERSION, "weaver-pass", LLVM_VERSION_STRING,
+          WeavingPass::registerPass};
 }
 
-bool WeavingPass::runOnFunction(Function &F)
-{
-    return false;
-}
+#else
 
-char WeavingPass::ID = 0;
+struct WeavingLegacyPass : public ModulePass {
+  static char ID;
+  WeavingLegacyPass() : ModulePass(ID) {}
+  virtual bool runOnModule(Module &M) override {
+    outs() << __PRETTY_FUNCTION__ << "\n";
+    return WeavingPassImpl(M).run();
+  }
+};
 
-// Automatically enable the pass.
-// http://adriansampson.net/blog/clangpass.html
-static void registerWeavingPass(const PassManagerBuilder &,
-                                legacy::PassManagerBase &PM)
-{
-    PM.add(new WeavingPass());
+char WeavingLegacyPass::ID = 0;
+
+static void registerWeavingLegacyPass(const PassManagerBuilder &,
+                                      legacy::PassManagerBase &PM) {
+  outs() << __PRETTY_FUNCTION__ << "\n";
+  PM.add(new WeavingLegacyPass());
 }
 
 static RegisterStandardPasses
-RegisterMyPass(PassManagerBuilder::EP_EarlyAsPossible,
-               registerWeavingPass);
+    RegisterMyPass(PassManagerBuilder::EP_EarlyAsPossible,
+                   registerWeavingLegacyPass);
 
-/*
- * vi:tabstop=4 shiftwidth=4 expandtab
- */
+#endif
+
+} // namespace

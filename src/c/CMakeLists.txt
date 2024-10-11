@@ -34,14 +34,13 @@ if("${isSystemDir}" STREQUAL "-1")
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 endif("${isSystemDir}" STREQUAL "-1")
 
-add_subdirectory(parser)
 add_subdirectory(runtime)
 add_subdirectory(weaver)
 add_subdirectory(test)
 add_subdirectory(examples)
 
 add_library(perfflowaspect INTERFACE)
-target_link_libraries(perfflowaspect INTERFACE perfflow_runtime perfflow_parser WeavePassPlugin)
+target_link_libraries(perfflowaspect INTERFACE perfflow_runtime WeavePassPlugin)
 install(TARGETS perfflowaspect
         EXPORT perfflow_export
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

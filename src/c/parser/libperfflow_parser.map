@@ -1,7 +1,0 @@
-LIBPERFFLOW_PARSER {
-    global:
-        extern "C++" {
-            perfflow_parser_*;
-        };
-    local: *;
-};
