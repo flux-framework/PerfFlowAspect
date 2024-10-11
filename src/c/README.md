@@ -27,9 +27,6 @@ as required by the AOP paradigm.
 PerfFlowAspect requires Clang
 and LLVM development packages as well as a
 jansson-devel package for JSON manipulation.
-It additionally requires the dependencies of
-our annotation parser code: i.e.,
-`flex` and `bison`.
 Note that LLVM_DIR must be set to the corresponding
 LLVM cmake directory which may differ across
 different Linux distributions.
@@ -41,19 +38,17 @@ llvm-devel                | llvm-dev                | >= 9.0
 jansson-devel             | libjansson-dev          | >= 2.6
 openssl-devel             | libssl-dev              | >= 1.0.2
 cmake                     | cmake                   | >= 3.10
-flex                      | flex                    | >= 2.5.37
-bison                     | bison                   | >= 3.0.4
 make                      | make                    | >= 3.82
 
 ##### Installing RedHat/CentOS Packages
 ```
-yum install clang llvm-devel gcc gcc-c++ jansson-devel openssl-devel make make flex bison
+yum install clang llvm-devel gcc gcc-c++ jansson-devel openssl-devel cmake make
 ```
 
 ##### Installing Ubuntu Packages
 ```
 apt-get update
-apt install clang llvm-dev libjansson-dev libssl-dev bison flex make cmake make flex bison
+apt install clang llvm-dev libjansson-dev libssl-dev cmake make 
 ```
 
 ##### Building PerfFlowAspect
