@@ -65,6 +65,33 @@ private:
     pthread_mutex_t m_after_counter_mutex;
     pthread_mutex_t m_mutex;
     std::map<std::string, std::string> m_perfflow_options;
+    
+    struct m_statistics {
+        double cpu;
+        double wall;
+        long mem;
+        double ts;
+    };
+
+    struct m_identifier {
+        std::string name;
+        int pid;
+        int tid;
+
+        friend bool operator==(const m_identifier& l, const m_identifier& r) {
+            std::tuple<std::string, int, int> lval = std::make_tuple(l.name, l.pid, l.tid);
+            std::tuple<std::string, int, int> rval = std::make_tuple(r.name, r.pid, r.tid);
+            return (lval == rval);
+        };
+
+        friend bool operator<(const m_identifier& l, const m_identifier &r) {
+            std::tuple<std::string, int, int> lval = std::make_tuple(l.name, l.pid, l.tid);
+            std::tuple<std::string, int, int> rval = std::make_tuple(r.name, r.pid, r.tid);
+            return (lval < rval);
+        };
+    };
+
+    std::map<m_identifier, m_statistics> m_around_stack;
 };
 
 /*

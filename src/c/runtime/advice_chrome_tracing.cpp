@@ -777,6 +777,9 @@ int advice_chrome_tracing_t::before(const char *module,
         if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
                                               m_compact_event_enable == 1))
         {
+            m_statistics stats;
+            m_identifier ident;
+            
             jtemp = json_object_get(event, "name");
             std::string my_name = json_string_value(jtemp);
             jtemp = json_object_get(event, "pid");
@@ -784,27 +787,37 @@ int advice_chrome_tracing_t::before(const char *module,
             jtemp = json_object_get(event, "tid");
             int my_tid = (int) json_integer_value(jtemp);
 
-            fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
-                        my_tid) + ".txt";
-            std::ofstream myfile(fname.c_str());
+            ident.name = my_name;
+            ident.pid = my_pid;
+            ident.tid = my_tid;
+
+
+            // fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
+            //             my_tid) + ".txt";
+            // std::ofstream myfile(fname.c_str());
             if (m_cpu_mem_usage_enable == 1)
             {
                 cpu_start = get_cpu_time();
                 wall_start = get_wall_time();
                 mem_start = get_memory_usage();
-            }
 
-            if (myfile.is_open())
-            {
-                if (m_cpu_mem_usage_enable == 1)
-                {
-                    myfile << std::to_string(cpu_start) << "\n";
-                    myfile << std::to_string(wall_start) << "\n";
-                    myfile << std::to_string(mem_start) << "\n";
-                }
-                myfile << std::to_string(my_ts) << "\n";
-                myfile.close();
-            };
+                stats.cpu = cpu_start;
+                stats.wall = wall_start;
+                stats.mem = mem_start;
+            }
+            // if (myfile.is_open())
+            // {
+            //     if (m_cpu_mem_usage_enable == 1)
+            //     {
+            //         myfile << std::to_string(cpu_start) << "\n";
+            //         myfile << std::to_string(wall_start) << "\n";
+            //         myfile << std::to_string(mem_start) << "\n";
+            //     }
+            //     myfile << std::to_string(my_ts) << "\n";
+            //     myfile.close();
+            // };
+
+            m_around_stack.emplace(ident, stats);
         }
 
         json_decref(event);
@@ -838,6 +851,7 @@ int advice_chrome_tracing_t::after(const char *module,
                                    const char *flow,
                                    const char *pcut)
 {
+    
     double cpu_usage, wall_time, duration;
     long mem_usage;
     if (std::string("around") == pcut)
@@ -896,9 +910,11 @@ int advice_chrome_tracing_t::after(const char *module,
             }
         }
 
+        m_identifier ident;
+        m_statistics stats_before = NULL, stats_after = NULL;
         if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
                                               m_compact_event_enable == 1))
-        {
+        {            
             jtemp = json_object_get(event, "name");
             std::string my_name = json_string_value(jtemp);
             jtemp = json_object_get(event, "pid");
@@ -906,35 +922,60 @@ int advice_chrome_tracing_t::after(const char *module,
             jtemp = json_object_get(event, "tid");
             int my_tid = (int) json_integer_value(jtemp);
 
-            fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
-                        my_tid) + ".txt";
-            std::ifstream myfile(fname.c_str());
-            if (myfile.is_open())
-            {
-                std::vector<std::string> lines;
-                while (getline(myfile, line))
-                {
-                    lines.push_back(line);
-                }
-                if (m_cpu_mem_usage_enable == 1)
-                {
-                    cpu_start = std::stod(lines[0]);
-                    wall_start = std:: stod(lines[1]);
-                    mem_start = std::stol(lines[2]);
-                    prev_ts = std::stod(lines[3]);
-                }
-                else if (m_compact_event_enable == 1)
-                {
-                    prev_ts = std::stod(lines[0]);
-                }
-                myfile.close();
+            ident.name = my_name;
+            ident.pid = my_pid;
+            ident.tid = my_tid;
 
-                int status = remove(fname.c_str());
-                if (status != 0)
-                {
-                    std::perror("Error deleting file\n");
-                }
+            m_statistics stats_before = NULL;
+            if (m_around_stack.find(ident) != m_around_stack.end()) {
+                m_around_stack[ident];
+                m_around_stack.erase(ident);
             }
+
+            stats_after.cpu = cpu_usage;
+            stats_after.mem = mem_usage;
+            stats_after.wall = wall_time;
+
+            // m_around_stack.erase(ident);
+
+            if (m_cpu_mem_usage_enable == 1) {
+                cpu_start = stats_before.cpu;
+                wall_start = stats_before.wall;
+                mem_start = stats_before.mem;
+                prev_ts = stats_before.ts;
+            }
+            else if (m_compant_event_enable == 1) {
+                prev_ts = stats_before.ts;
+            }
+            // fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
+            //             my_tid) + ".txt";
+            // std::ifstream myfile(fname.c_str());
+            // if (myfile.is_open())
+            // {
+            //     std::vector<std::string> lines;
+            //     while (getline(myfile, line))
+            //     {
+            //         lines.push_back(line);
+            //     }
+            //     if (m_cpu_mem_usage_enable == 1)
+            //     {
+            //         cpu_start = std::stod(lines[0]);
+            //         wall_start = std:: stod(lines[1]);
+            //         mem_start = std::stol(lines[2]);
+            //         prev_ts = std::stod(lines[3]);
+            //     }
+            //     else if (m_compact_event_enable == 1)
+            //     {
+            //         prev_ts = std::stod(lines[0]);
+            //     }
+            //     myfile.close();
+
+            //     int status = remove(fname.c_str());
+            //     if (status != 0)
+            //     {
+            //         std::perror("Error deleting file\n");
+            //     }
+            // }
 
             cpu_usage = cpu_usage - cpu_start;
             if (cpu_usage < 0.0001)
