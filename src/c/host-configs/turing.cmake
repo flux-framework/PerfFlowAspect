@@ -11,3 +11,4 @@
 set(CMAKE_CXX_COMPILER "/cm/shared/spack/opt/spack/linux-ubuntu20.04-x86_64/gcc-12.1.0/llvm-14.0.6-issizheik6vcv6owwk7pk45xccoaaghy/bin/clang++" CACHE PATH "")
 set(CMAKE_C_COMPILER "/cm/shared/spack/opt/spack/linux-ubuntu20.04-x86_64/gcc-12.1.0/llvm-14.0.6-issizheik6vcv6owwk7pk45xccoaaghy/bin/clang" CACHE PATH "")
 set(LLVM_DIR "/cm/shared/spack/opt/spack/linux-ubuntu20.04-x86_64/gcc-12.1.0/llvm-14.0.6-issizheik6vcv6owwk7pk45xccoaaghy/lib/cmake/llvm" CACHE PATH "")
+set(CMAKE_CXX_FLAGS "-flegacy-pass-manager" CACHE STRING "")

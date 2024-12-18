@@ -777,8 +777,8 @@ int advice_chrome_tracing_t::before(const char *module,
         if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
                                               m_compact_event_enable == 1))
         {
-            m_statistics stats;
-            m_identifier ident;
+            m_statistics stats = {};
+            m_identifier ident = {};
             
             jtemp = json_object_get(event, "name");
             std::string my_name = json_string_value(jtemp);
@@ -791,7 +791,6 @@ int advice_chrome_tracing_t::before(const char *module,
             ident.pid = my_pid;
             ident.tid = my_tid;
 
-            printf("ident %d\n", ident.pid);
 
             // fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
             //             my_tid) + ".txt";
@@ -807,6 +806,11 @@ int advice_chrome_tracing_t::before(const char *module,
                 stats.mem = mem_start;
                 
             }
+            stats.ts = my_ts;
+
+            printf("identify: %s, %d, %d\n", ident.name.c_str(), ident.pid, ident.tid);
+            printf("stats: %f, %f, %ld, %f\n", stats.cpu, stats.wall, stats.mem, stats.ts);
+
             // if (myfile.is_open())
             // {
             //     if (m_cpu_mem_usage_enable == 1)
@@ -918,6 +922,8 @@ int advice_chrome_tracing_t::after(const char *module,
             }
         }
 
+        stats_after.ts = my_ts;
+
         m_identifier ident;
         m_statistics stats_before = {};
         if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
@@ -939,60 +945,23 @@ int advice_chrome_tracing_t::after(const char *module,
                 m_around_stack.erase(ident);
             }
 
-            stats_after.cpu = cpu_usage;
-            stats_after.mem = mem_usage;
-            stats_after.wall = wall_time;
-
-            // m_around_stack.erase(ident);
+            prev_ts = stats_before.ts;
 
             if (m_cpu_mem_usage_enable == 1) {
                 cpu_start = stats_before.cpu;
                 wall_start = stats_before.wall;
                 mem_start = stats_before.mem;
-                prev_ts = stats_before.ts;
             }
-            else if (m_compact_event_enable == 1) {
-                prev_ts = stats_before.ts;
-            }
-            // fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
-            //             my_tid) + ".txt";
-            // std::ifstream myfile(fname.c_str());
-            // if (myfile.is_open())
-            // {
-            //     std::vector<std::string> lines;
-            //     while (getline(myfile, line))
-            //     {
-            //         lines.push_back(line);
-            //     }
-            //     if (m_cpu_mem_usage_enable == 1)
-            //     {
-            //         cpu_start = std::stod(lines[0]);
-            //         wall_start = std:: stod(lines[1]);
-            //         mem_start = std::stol(lines[2]);
-            //         prev_ts = std::stod(lines[3]);
-            //     }
-            //     else if (m_compact_event_enable == 1)
-            //     {
-            //         prev_ts = std::stod(lines[0]);
-            //     }
-            //     myfile.close();
-
-            //     int status = remove(fname.c_str());
-            //     if (status != 0)
-            //     {
-            //         std::perror("Error deleting file\n");
-            //     }
-            // }
-
+            
+            printf("after cpu usage: %f\n", cpu_usage);
             cpu_usage = cpu_usage - cpu_start;
+            printf("total cpu usage: %f\n", cpu_usage);
             if (cpu_usage < 0.0001)
             {
                 cpu_usage = 0;
             }
             wall_time = wall_time - wall_start;
             cpu_percentage = (cpu_usage / wall_time) * 100;
-
-            throw std::invalid_argument(std::to_string(cpu_usage));
 
             if (std::string("around") == pcut && m_cpu_mem_usage_enable == 1)
             {
