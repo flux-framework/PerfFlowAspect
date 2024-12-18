@@ -790,11 +790,7 @@ int advice_chrome_tracing_t::before(const char *module,
             ident.name = my_name;
             ident.pid = my_pid;
             ident.tid = my_tid;
-
-
-            // fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
-            //             my_tid) + ".txt";
-            // std::ofstream myfile(fname.c_str());
+            
             if (m_cpu_mem_usage_enable == 1)
             {
                 cpu_start = get_cpu_time();
@@ -807,24 +803,7 @@ int advice_chrome_tracing_t::before(const char *module,
                 
             }
             stats.ts = my_ts;
-
-            printf("identify: %s, %d, %d\n", ident.name.c_str(), ident.pid, ident.tid);
-            printf("stats: %f, %f, %ld, %f\n", stats.cpu, stats.wall, stats.mem, stats.ts);
-
-            // if (myfile.is_open())
-            // {
-            //     if (m_cpu_mem_usage_enable == 1)
-            //     {
-            //         myfile << std::to_string(cpu_start) << "\n";
-            //         myfile << std::to_string(wall_start) << "\n";
-            //         myfile << std::to_string(mem_start) << "\n";
-            //     }
-            //     myfile << std::to_string(my_ts) << "\n";
-            //     myfile.close();
-            // };
-
-            m_around_stack.emplace(ident, stats);
-            printf("Size of stack: %lu\n", m_around_stack.size());
+            m_around_stack[ident] = stats;
         }
 
         json_decref(event);
@@ -867,11 +846,6 @@ int advice_chrome_tracing_t::after(const char *module,
         wall_time = get_wall_time();
         mem_usage =  get_memory_usage();
     }
-
-    m_statistics stats_after;
-    stats_after.cpu = cpu_usage;
-    stats_after.wall = wall_time;
-    stats_after.mem = mem_usage;
 
     int rc;
     char *json_str;
@@ -922,8 +896,7 @@ int advice_chrome_tracing_t::after(const char *module,
             }
         }
 
-        stats_after.ts = my_ts;
-
+        // stats_after.ts = my_ts;
         m_identifier ident;
         m_statistics stats_before = {};
         if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
@@ -951,11 +924,14 @@ int advice_chrome_tracing_t::after(const char *module,
                 cpu_start = stats_before.cpu;
                 wall_start = stats_before.wall;
                 mem_start = stats_before.mem;
+                prev_ts = stats_before.ts;
+
+            }
+            else if (m_compact_event_enable == 1) {
+                prev_ts = stats_before.ts;
             }
             
-            printf("after cpu usage: %f\n", cpu_usage);
             cpu_usage = cpu_usage - cpu_start;
-            printf("total cpu usage: %f\n", cpu_usage);
             if (cpu_usage < 0.0001)
             {
                 cpu_usage = 0;
