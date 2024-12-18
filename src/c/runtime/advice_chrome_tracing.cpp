@@ -791,6 +791,7 @@ int advice_chrome_tracing_t::before(const char *module,
             ident.pid = my_pid;
             ident.tid = my_tid;
 
+            printf("ident %d\n", ident.pid);
 
             // fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
             //             my_tid) + ".txt";
@@ -804,6 +805,7 @@ int advice_chrome_tracing_t::before(const char *module,
                 stats.cpu = cpu_start;
                 stats.wall = wall_start;
                 stats.mem = mem_start;
+                
             }
             // if (myfile.is_open())
             // {
@@ -818,6 +820,7 @@ int advice_chrome_tracing_t::before(const char *module,
             // };
 
             m_around_stack.emplace(ident, stats);
+            printf("Size of stack: %lu\n", m_around_stack.size());
         }
 
         json_decref(event);
@@ -860,6 +863,11 @@ int advice_chrome_tracing_t::after(const char *module,
         wall_time = get_wall_time();
         mem_usage =  get_memory_usage();
     }
+
+    m_statistics stats_after;
+    stats_after.cpu = cpu_usage;
+    stats_after.wall = wall_time;
+    stats_after.mem = mem_usage;
 
     int rc;
     char *json_str;
@@ -911,7 +919,7 @@ int advice_chrome_tracing_t::after(const char *module,
         }
 
         m_identifier ident;
-        m_statistics stats_before = NULL, stats_after = NULL;
+        m_statistics stats_before = {};
         if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
                                               m_compact_event_enable == 1))
         {            
@@ -926,9 +934,8 @@ int advice_chrome_tracing_t::after(const char *module,
             ident.pid = my_pid;
             ident.tid = my_tid;
 
-            m_statistics stats_before = NULL;
             if (m_around_stack.find(ident) != m_around_stack.end()) {
-                m_around_stack[ident];
+                stats_before = m_around_stack[ident];
                 m_around_stack.erase(ident);
             }
 
@@ -944,7 +951,7 @@ int advice_chrome_tracing_t::after(const char *module,
                 mem_start = stats_before.mem;
                 prev_ts = stats_before.ts;
             }
-            else if (m_compant_event_enable == 1) {
+            else if (m_compact_event_enable == 1) {
                 prev_ts = stats_before.ts;
             }
             // fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
@@ -984,6 +991,8 @@ int advice_chrome_tracing_t::after(const char *module,
             }
             wall_time = wall_time - wall_start;
             cpu_percentage = (cpu_usage / wall_time) * 100;
+
+            throw std::invalid_argument(std::to_string(cpu_usage));
 
             if (std::string("around") == pcut && m_cpu_mem_usage_enable == 1)
             {
