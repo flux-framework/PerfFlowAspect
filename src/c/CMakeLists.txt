@@ -2,29 +2,18 @@ cmake_minimum_required(VERSION 3.12)
 
 project(PerfFlowAspect VERSION "0.1.0")
 
-# Fail if using Clang < 9.0
+# Fail if using Clang < 15.0
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    # require at least Clang 9.0
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
-        message(FATAL_ERROR "Clang++ version must be at least 9.0!")
+    # require at least Clang 15.0
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 15.0)
+        message(FATAL_ERROR "Clang++ version must be at least 15.0!")
     endif()
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 17)
         set(PERFFLOWASPECT_CLANG_18_NEWER TRUE CACHE BOOL "using >clang17")
         add_definitions(-DPERFFLOWASPECT_CLANG_18_NEWER)
     endif()
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 15)
-        set(PERFFLOWASPECT_CLANG_15_NEWER TRUE CACHE BOOL "using >clang15")
-        add_definitions(-DPERFFLOWASPECT_CLANG_15_NEWER)
-    endif()
-    if ((CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 11) AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 15))
-        set(PERFFLOWASPECT_CLANG_11_NEWER TRUE CACHE BOOL "using >=clang11")
-        set(PERFFLOWASPECT_CLANG_15_NEWER FALSE CACHE BOOL "using < clang15")
-        add_definitions(-DPERFFLOWASPECT_CLANG_11_NEWER)
-    elseif (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
-        set(PERFFLOWASPECT_CLANG_11_NEWER FALSE CACHE BOOL "using < clang11")
-    endif()
 else()
-    message(FATAL_ERROR "Unsupported CXX compiler: please use Clang >= 9.0")
+    message(FATAL_ERROR "Unsupported CXX compiler: please use Clang >= 15.0")
 endif()
 
 include(cmake/CMakeBasics.cmake)
