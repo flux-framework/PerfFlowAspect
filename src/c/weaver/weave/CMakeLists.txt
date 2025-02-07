@@ -1,26 +1,11 @@
-if (PERFFLOWASPECT_CLANG_15_NEWER)
-    # Add the new pass 
-    add_library(WeavePass MODULE
-        # List your source files here.
-        perfflow_weave_common.cpp
-        perfflow_weave_new_pass.cpp
-    )
-else()
-    # Add the legacy pass if we have Clang < 15.
-    add_library(WeavePass MODULE
-        # List your source files here.
-        perfflow_weave_common.cpp
-        perfflow_weave_legacy_pass.cpp
-    )
-endif()
+# Add the new pass 
+add_library(WeavePass MODULE
+    # List your source files here.
+    perfflow_weave_common.cpp
+	perfflow_weave_new_pass.cpp
+)
 
-if (PERFFLOWASPECT_CLANG_15_NEWER)
-    # Use C++17 to compile our pass
-    target_compile_features(WeavePass PRIVATE cxx_std_17 cxx_range_for cxx_auto_type)
-else()
-    # Use C++11/C++14 to compile our pass (i.e., supply -std=c++11) (pick default)
-    target_compile_features(WeavePass PRIVATE cxx_std_14 cxx_range_for cxx_auto_type)
-endif()
+target_compile_features(WeavePass PRIVATE cxx_std_17 cxx_range_for cxx_auto_type)
 
 
 # LLVM is (typically) built with no C++ RTTI. We need to match that;

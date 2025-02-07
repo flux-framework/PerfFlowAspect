@@ -11,9 +11,7 @@
 #include "llvm/IR/PassManager.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
-#if !defined(PERFFLOWASPECT_CLANG_15_NEWER)
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
-#endif
 #include "llvm/Support/raw_ostream.h"
 
 #include "perfflow_weave_new_pass.hpp"

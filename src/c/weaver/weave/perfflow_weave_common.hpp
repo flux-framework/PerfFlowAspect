@@ -15,17 +15,11 @@
 #include "llvm/IR/Attributes.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/LegacyPassManager.h"
-#if defined(PERFFLOWASPECT_CLANG_11_NEWER) || defined(PERFFLOWASPECT_CLANG_15_NEWER)
 #include "llvm/IR/AbstractCallSite.h"
-#else
-#include "llvm/IR/CallSite.h"
-#endif
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Argument.h"
 #include "llvm/IR/IRBuilder.h"
-#if !defined(PERFFLOWASPECT_CLANG_15_NEWER)
 #include "llvm/Transforms/IPO/PassManagerBuilder.h" // legacy optimization pipeline  in this header removed as of Clang17
-#endif
 #include "llvm/Support/raw_ostream.h"
 
 #include "../../parser/perfflow_parser.hpp"
