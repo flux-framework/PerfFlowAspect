@@ -777,6 +777,7 @@ int advice_chrome_tracing_t::before(const char *module,
         if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
                                               m_compact_event_enable == 1))
         {
+            /* initialize the identifier and statistics structures */
             m_statistics stats = {};
             m_identifier ident = {};
             
@@ -787,10 +788,12 @@ int advice_chrome_tracing_t::before(const char *module,
             jtemp = json_object_get(event, "tid");
             int my_tid = (int) json_integer_value(jtemp);
 
+            /* set the identifier to contain name, process id, thread id */
             ident.name = my_name;
             ident.pid = my_pid;
             ident.tid = my_tid;
             
+            /* if logging, set statistics*/
             if (m_cpu_mem_usage_enable == 1)
             {
                 cpu_start = get_cpu_time();
@@ -802,8 +805,8 @@ int advice_chrome_tracing_t::before(const char *module,
                 stats.mem = mem_start;
                 
             }
-            stats.ts = my_ts;
-            m_around_stack[ident] = stats;
+            stats.ts = my_ts; /* always collect the timestamp */
+            m_around_stack[ident] = stats; /* map the statistics to identifier */
         }
 
         json_decref(event);
@@ -896,9 +899,9 @@ int advice_chrome_tracing_t::after(const char *module,
             }
         }
 
-        // stats_after.ts = my_ts;
-        m_identifier ident;
-        m_statistics stats_before = {};
+        /* reached the end of the event, consolidate the info */
+        m_identifier ident; /* the identifier of a node */
+        m_statistics stats_before = {}; /* the statistics collected from a before event*/
         if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
                                               m_compact_event_enable == 1))
         {            
@@ -913,13 +916,16 @@ int advice_chrome_tracing_t::after(const char *module,
             ident.pid = my_pid;
             ident.tid = my_tid;
 
+            /* finds and sets the before statistics */
             if (m_around_stack.find(ident) != m_around_stack.end()) {
                 stats_before = m_around_stack[ident];
                 m_around_stack.erase(ident);
             }
 
+            /* statistics & timing calculations */
             prev_ts = stats_before.ts;
-
+            
+            /* if collecting statistics, also collect at the End event */
             if (m_cpu_mem_usage_enable == 1) {
                 cpu_start = stats_before.cpu;
                 wall_start = stats_before.wall;
@@ -927,6 +933,7 @@ int advice_chrome_tracing_t::after(const char *module,
                 prev_ts = stats_before.ts;
 
             }
+            
             else if (m_compact_event_enable == 1) {
                 prev_ts = stats_before.ts;
             }
