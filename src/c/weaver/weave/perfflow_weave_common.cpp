@@ -62,25 +62,14 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
                        " operands \n";
             }
         }
-#if defined(PERFFLOWASPECT_CLANG_15_NEWER)
-        auto *fn = dyn_cast<Function> (e->getOperand(0));
-#else
-        auto *fn = dyn_cast<Function> (e->getOperand(0)->getOperand(0));
-#endif
+auto *fn = dyn_cast<Function> (e->getOperand(0));
         if (fn != NULL)
         {
             outs() << "I entered the part where we parse annotations. \n";
-#if defined(PERFFLOWASPECT_CLANG_15_NEWER)
-            auto anno = cast<ConstantDataArray>(
-                            cast<GlobalVariable>(e->getOperand(1))
-                            ->getOperand(0))
-                        ->getAsCString();
-#else
-            auto anno = cast<ConstantDataArray>(
-                            cast<GlobalVariable>(e->getOperand(1)->getOperand(0))
-                            ->getOperand(0))
-                        ->getAsCString();
-#endif
+auto anno = cast<ConstantDataArray>(
+        cast<GlobalVariable>(e->getOperand(1))
+            ->getOperand(0))
+            ->getAsCString();
 
             std::string pcut, scope, flow;
             if (perfflow_parser_parse(anno.data(), pcut, scope, flow) == 0)
@@ -202,11 +191,7 @@ bool weave_ns::WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
     auto &context = m.getContext();
     Type *voidType = Type::getVoidTy(context);
     Type *int32Type = Type::getInt32Ty(context);
-#ifdef PERFFLOWASPECT_CLANG_18_NEWER
     Type *int8Type = Type::getInt8Ty(context);
-#else
-    Type *int8Type = Type::getInt8PtrTy(context);
-#endif
     std::vector<llvm::Type *> params;
     params.push_back(int32Type);
     params.push_back(int8Type);
