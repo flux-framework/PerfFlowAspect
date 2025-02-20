@@ -840,7 +840,6 @@ int advice_chrome_tracing_t::after(const char *module,
                                    const char *flow,
                                    const char *pcut)
 {
-    
     double cpu_usage, wall_time, duration;
     long mem_usage;
     if (std::string("around") == pcut)
@@ -904,7 +903,7 @@ int advice_chrome_tracing_t::after(const char *module,
         m_statistics stats_before = {}; /* the statistics collected from a before event*/
         if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
                                               m_compact_event_enable == 1))
-        {            
+        {
             jtemp = json_object_get(event, "name");
             std::string my_name = json_string_value(jtemp);
             jtemp = json_object_get(event, "pid");
