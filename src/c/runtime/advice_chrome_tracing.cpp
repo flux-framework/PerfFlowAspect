@@ -780,7 +780,7 @@ int advice_chrome_tracing_t::before(const char *module,
             /* initialize the identifier and statistics structures */
             m_statistics stats = {};
             m_identifier ident = {};
-            
+
             jtemp = json_object_get(event, "name");
             std::string my_name = json_string_value(jtemp);
             jtemp = json_object_get(event, "pid");
@@ -923,7 +923,7 @@ int advice_chrome_tracing_t::after(const char *module,
 
             /* statistics & timing calculations */
             prev_ts = stats_before.ts;
-            
+
             /* if collecting statistics, also collect at the End event */
             if (m_cpu_mem_usage_enable == 1) {
                 cpu_start = stats_before.cpu;
@@ -932,11 +932,11 @@ int advice_chrome_tracing_t::after(const char *module,
                 prev_ts = stats_before.ts;
 
             }
-            
+
             else if (m_compact_event_enable == 1) {
                 prev_ts = stats_before.ts;
             }
-            
+
             cpu_usage = cpu_usage - cpu_start;
             if (cpu_usage < 0.0001)
             {
