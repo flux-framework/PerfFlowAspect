@@ -792,7 +792,7 @@ int advice_chrome_tracing_t::before(const char *module,
             ident.name = my_name;
             ident.pid = my_pid;
             ident.tid = my_tid;
-            
+
             /* if logging, set statistics*/
             if (m_cpu_mem_usage_enable == 1)
             {
@@ -803,7 +803,7 @@ int advice_chrome_tracing_t::before(const char *module,
                 stats.cpu = cpu_start;
                 stats.wall = wall_start;
                 stats.mem = mem_start;
-                
+
             }
             stats.ts = my_ts; /* always collect the timestamp */
             m_around_stack[ident] = stats; /* map the statistics to identifier */
@@ -916,7 +916,8 @@ int advice_chrome_tracing_t::after(const char *module,
             ident.tid = my_tid;
 
             /* finds and sets the before statistics */
-            if (m_around_stack.find(ident) != m_around_stack.end()) {
+            if (m_around_stack.find(ident) != m_around_stack.end())
+            {
                 stats_before = m_around_stack[ident];
                 m_around_stack.erase(ident);
             }
@@ -925,7 +926,8 @@ int advice_chrome_tracing_t::after(const char *module,
             prev_ts = stats_before.ts;
 
             /* if collecting statistics, also collect at the End event */
-            if (m_cpu_mem_usage_enable == 1) {
+            if (m_cpu_mem_usage_enable == 1)
+            {
                 cpu_start = stats_before.cpu;
                 wall_start = stats_before.wall;
                 mem_start = stats_before.mem;
@@ -933,7 +935,8 @@ int advice_chrome_tracing_t::after(const char *module,
 
             }
 
-            else if (m_compact_event_enable == 1) {
+            else if (m_compact_event_enable == 1)
+            {
                 prev_ts = stats_before.ts;
             }
 
