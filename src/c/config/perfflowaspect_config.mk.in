@@ -1,0 +1,6 @@
+PERFFLOWASPECT_DIR = @CMAKE_INSTALL_PREFIX@
+
+# setup rpath helper
+PERFFLOWASPECT_LINK_RPATH = -Wl,-rpath,$(PERFFLOWASPECT_DIR)/lib
+
+PERFFLOWASPECT_LIB_FLAGS = -L $(PERFFLOWASPECT_DIR)/lib -lperfflowaspect -Wc,-Xclang,-load
