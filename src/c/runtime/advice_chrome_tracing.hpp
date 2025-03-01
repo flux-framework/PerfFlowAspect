@@ -65,6 +65,37 @@ private:
     pthread_mutex_t m_after_counter_mutex;
     pthread_mutex_t m_mutex;
     std::map<std::string, std::string> m_perfflow_options;
+   
+    /* the collected statistics from running a trace */
+    struct m_statistics {
+        double cpu;
+        double wall;
+        long mem;
+        double ts;
+    };
+
+    /* a node is identified by the process id and thread id */
+    struct m_identifier {
+        std::string name;
+        int pid;
+        int tid;
+
+	/* check if a node is the same, or if a node should be ordered before */
+        friend bool operator==(const m_identifier& l, const m_identifier& r) {
+            std::tuple<std::string, int, int> lval = std::make_tuple(l.name, l.pid, l.tid);
+            std::tuple<std::string, int, int> rval = std::make_tuple(r.name, r.pid, r.tid);
+            return (lval == rval);
+        };
+
+        friend bool operator<(const m_identifier& l, const m_identifier &r) {
+            std::tuple<std::string, int, int> lval = std::make_tuple(l.name, l.pid, l.tid);
+            std::tuple<std::string, int, int> rval = std::make_tuple(r.name, r.pid, r.tid);
+            return (lval < rval);
+        };
+    };
+
+    /* a mapping of nodes to their statistics */
+    std::map<m_identifier, m_statistics> m_around_stack;
 };
 
 /*
