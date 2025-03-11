@@ -11,7 +11,6 @@
 #include "llvm/IR/PassManager.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
-// #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include "perfflow_weave_new_pass.hpp"
@@ -62,12 +61,12 @@ PassPluginLibraryInfo getNewWeavingPassPluginInfo()
     const auto pass_callback = [](PassBuilder & PB)
     {
         PB.registerPipelineEarlySimplificationEPCallback(
-            [&](ModulePassManager & MPM, auto)
+              [&](ModulePassManager & MPM, auto)
         {
             MPM.addPass(NewWeavingPass());
             return true;
         }
-        );
+          );
     };
 
     return {LLVM_PLUGIN_API_VERSION, "new-weaving-pass", LLVM_VERSION_STRING, pass_callback};
