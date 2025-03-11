@@ -62,14 +62,14 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
                        " operands \n";
             }
         }
-auto *fn = dyn_cast<Function> (e->getOperand(0));
+        auto *fn = dyn_cast<Function> (e->getOperand(0));
         if (fn != NULL)
         {
             outs() << "I entered the part where we parse annotations. \n";
-auto anno = cast<ConstantDataArray>(
-        cast<GlobalVariable>(e->getOperand(1))
-            ->getOperand(0))
-            ->getAsCString();
+            auto anno = cast<ConstantDataArray>(
+                            cast<GlobalVariable>(e->getOperand(1))
+                            ->getOperand(0))
+                        ->getAsCString();
 
             std::string pcut, scope, flow;
             if (perfflow_parser_parse(anno.data(), pcut, scope, flow) == 0)
