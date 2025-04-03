@@ -61,12 +61,12 @@ PassPluginLibraryInfo getNewWeavingPassPluginInfo()
     const auto pass_callback = [](PassBuilder & PB)
     {
         PB.registerPipelineEarlySimplificationEPCallback(
-              [&](ModulePassManager & MPM, auto)
+            [&](ModulePassManager & MPM, auto)
         {
             MPM.addPass(NewWeavingPass());
             return true;
         }
-          );
+        );
     };
 
     return {LLVM_PLUGIN_API_VERSION, "new-weaving-pass", LLVM_VERSION_STRING, pass_callback};
