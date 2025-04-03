@@ -777,6 +777,10 @@ int advice_chrome_tracing_t::before(const char *module,
         if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
                                               m_compact_event_enable == 1))
         {
+            /* initialize the identifier and statistics structures */
+            m_statistics stats = {};
+            m_identifier ident = {};
+
             jtemp = json_object_get(event, "name");
             std::string my_name = json_string_value(jtemp);
             jtemp = json_object_get(event, "pid");
@@ -784,27 +788,25 @@ int advice_chrome_tracing_t::before(const char *module,
             jtemp = json_object_get(event, "tid");
             int my_tid = (int) json_integer_value(jtemp);
 
-            fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
-                        my_tid) + ".txt";
-            std::ofstream myfile(fname.c_str());
+            /* set the identifier to contain name, process id, thread id */
+            ident.name = my_name;
+            ident.pid = my_pid;
+            ident.tid = my_tid;
+
+            /* if logging, set statistics*/
             if (m_cpu_mem_usage_enable == 1)
             {
                 cpu_start = get_cpu_time();
                 wall_start = get_wall_time();
                 mem_start = get_memory_usage();
-            }
 
-            if (myfile.is_open())
-            {
-                if (m_cpu_mem_usage_enable == 1)
-                {
-                    myfile << std::to_string(cpu_start) << "\n";
-                    myfile << std::to_string(wall_start) << "\n";
-                    myfile << std::to_string(mem_start) << "\n";
-                }
-                myfile << std::to_string(my_ts) << "\n";
-                myfile.close();
-            };
+                stats.cpu = cpu_start;
+                stats.wall = wall_start;
+                stats.mem = mem_start;
+
+            }
+            stats.ts = my_ts; /* always collect the timestamp */
+            m_around_stack[ident] = stats; /* map the statistics to identifier */
         }
 
         json_decref(event);
@@ -896,6 +898,9 @@ int advice_chrome_tracing_t::after(const char *module,
             }
         }
 
+        /* reached the end of the event, consolidate the info */
+        m_identifier ident; /* the identifier of a node */
+        m_statistics stats_before = {}; /* the statistics collected from a before event*/
         if (std::string("around") == pcut && (m_cpu_mem_usage_enable == 1 ||
                                               m_compact_event_enable == 1))
         {
@@ -906,34 +911,33 @@ int advice_chrome_tracing_t::after(const char *module,
             jtemp = json_object_get(event, "tid");
             int my_tid = (int) json_integer_value(jtemp);
 
-            fname = my_name + "_" + std::to_string(my_pid) + "_" + std::to_string(
-                        my_tid) + ".txt";
-            std::ifstream myfile(fname.c_str());
-            if (myfile.is_open())
-            {
-                std::vector<std::string> lines;
-                while (getline(myfile, line))
-                {
-                    lines.push_back(line);
-                }
-                if (m_cpu_mem_usage_enable == 1)
-                {
-                    cpu_start = std::stod(lines[0]);
-                    wall_start = std:: stod(lines[1]);
-                    mem_start = std::stol(lines[2]);
-                    prev_ts = std::stod(lines[3]);
-                }
-                else if (m_compact_event_enable == 1)
-                {
-                    prev_ts = std::stod(lines[0]);
-                }
-                myfile.close();
+            ident.name = my_name;
+            ident.pid = my_pid;
+            ident.tid = my_tid;
 
-                int status = remove(fname.c_str());
-                if (status != 0)
-                {
-                    std::perror("Error deleting file\n");
-                }
+            /* finds and sets the before statistics */
+            if (m_around_stack.find(ident) != m_around_stack.end())
+            {
+                stats_before = m_around_stack[ident];
+                m_around_stack.erase(ident);
+            }
+
+            /* statistics & timing calculations */
+            prev_ts = stats_before.ts;
+
+            /* if collecting statistics, also collect at the End event */
+            if (m_cpu_mem_usage_enable == 1)
+            {
+                cpu_start = stats_before.cpu;
+                wall_start = stats_before.wall;
+                mem_start = stats_before.mem;
+                prev_ts = stats_before.ts;
+
+            }
+
+            else if (m_compact_event_enable == 1)
+            {
+                prev_ts = stats_before.ts;
             }
 
             cpu_usage = cpu_usage - cpu_start;
