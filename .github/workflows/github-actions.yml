@@ -127,8 +127,8 @@ jobs:
 
       - name: Install python dependencies
         run: |
-          pipx install flake8 rstfmt
-          pipx install black flake8
+          pipx install flake8==7.1.2 rstfmt
+          pipx install black
 
       - name: Format check with flake8 and black
         run: |
