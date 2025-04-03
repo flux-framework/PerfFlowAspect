@@ -13,6 +13,15 @@
 # check format for all *.cpp, *.h, and *.c files
 FILES=$(find src/c -type f  \( -name "*.[ch]" -o -name *.cpp \))
 
+ASTYLE_VERSION="$(astyle --version 2>&1 | cut -d" " -f4)"
+TARGET_VERSION="3.6.6"
+if awk "BEGIN {print ($ASTYLE_VERSION == $TARGET_VERSION)}" | grep -q "1"; then
+    : # do nothing
+else
+    echo -e "Please use astyle $TARGET_VERSION"
+    exit
+fi
+
 astyle --errors-to-stdout \
        --preserve-date \
        --style=allman \
