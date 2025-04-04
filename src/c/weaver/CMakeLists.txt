@@ -1,6 +1,3 @@
-# support C++14 features used by LLVM 10.0.0
-# set(CMAKE_CXX_STANDARD 14)
-
 if(LLVM_FOUND)
     add_definitions(${LLVM_DEFINITIONS})
     include_directories(${LLVM_INCLUDE_DIRS})
