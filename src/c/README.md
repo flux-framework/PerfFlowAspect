@@ -36,29 +36,29 @@ different Linux distributions.
 
 **redhat**                | **ubuntu**              | **version**
 ----------                | ----------              | -----------
-clang                     | clang                   | >= 9.0
-llvm-devel                | llvm-dev                | >= 9.0
+clang                     | clang                   | == 18.0
+llvm-devel                | llvm-dev                | == 18.0
 jansson-devel             | libjansson-dev          | >= 2.6
 openssl-devel             | libssl-dev              | >= 1.0.2
 cmake                     | cmake                   | >= 3.10
-flex                      | flex                    | >= 2.5.37
-bison                     | bison                   | >= 3.0.4
+flex                      | flex                    | == 2.6.1
+bison                     | bison                   | == 3.0.4
 make                      | make                    | >= 3.82
+(optional) cuda           | (optional) cuda         | >= 12.8
 
 ##### Installing RedHat/CentOS Packages
 ```
-yum install clang llvm-devel gcc gcc-c++ jansson-devel openssl-devel make make flex bison
+yum install clang llvm-devel gcc gcc-c++ jansson-devel openssl-devel cmake make flex bison
 ```
 
 ##### Installing Ubuntu Packages
 ```
 apt-get update
-apt install clang llvm-dev libjansson-dev libssl-dev bison flex make cmake make flex bison
+apt install clang llvm-dev libjansson-dev libssl-dev cmake make flex bison
 ```
 
 ##### Building PerfFlowAspect
 ```console
-$ module load clang/10.0.1-gcc-8.3.1 (on LLNL systems only)
 $ cd PerfFlowAspect/src/c
 $ mkdir build && cd build
 $ cmake -DCMAKE_CXX_COMPILER=clang++ ../
