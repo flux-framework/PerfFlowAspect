@@ -6,7 +6,7 @@ jobs:
 
   build-c:
     name: check c bindings
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         config: [boilerplate, release, debug_cuda_only, debug_mpi_only, debug_threads_only]
@@ -49,7 +49,7 @@ jobs:
       - name: Setup Build Env
         run: |
           sudo apt-get update
-          sudo apt install clang llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich
+          sudo apt install clang-18 llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich
           clang++ --version
 
       - name: Compile check
@@ -57,7 +57,7 @@ jobs:
           cd src/c
           mkdir build install
           cd build
-          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm-10/cmake -DCMAKE_INSTALL_PREFIX=../install"
+          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm-18/cmake -DCMAKE_INSTALL_PREFIX=../install"
           export CMAKE_OPTS="${CMAKE_OPTS} -DCMAKE_BUILD_TYPE=${{matrix.CMAKE_BUILD_TYPE}}"
           export CMAKE_OPTS="${CMAKE_OPTS} -DPERFFLOWASPECT_WITH_CUDA=${{matrix.PERFFLOWASPECT_WITH_CUDA}}"
           export CMAKE_OPTS="${CMAKE_OPTS} -DPERFFLOWASPECT_WITH_MPI=${{matrix.PERFFLOWASPECT_WITH_MPI}}"

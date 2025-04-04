@@ -58,9 +58,9 @@ Build Dependencies and Versions
    +----------------+----------------+-----------+
    | redhat         | ubuntu         | version   |
    +================+================+===========+
-   | clang          | clang          | >= 6.0    |
+   | clang          | clang          | == 18.0   |
    +----------------+----------------+-----------+
-   | llvm-devel     | llvm-dev       | >= 6.0    |
+   | llvm-devel     | llvm-dev       | == 18.0   |
    +----------------+----------------+-----------+
    | jansson-devel  | libjansson-dev | >= 2.6    |
    +----------------+----------------+-----------+
@@ -68,11 +68,14 @@ Build Dependencies and Versions
    +----------------+----------------+-----------+
    | cmake          | cmake          | >= 3.10   |
    +----------------+----------------+-----------+
-   | flex           | flex           | >= 2.5.37 |
+   | flex           | flex           | == 2.6.1  |
    +----------------+----------------+-----------+
-   | bison          | bison          | >= 3.0.4  |
+   | bison          | bison          | == 3.0.4  |
    +----------------+----------------+-----------+
    | make           | make           | >= 3.82   |
+   +----------------+----------------+-----------+
+   | (optional)     | (optional)     | >= 12.8   |
+   | cuda           | cuda           |           |
    +----------------+----------------+-----------+
 
 Building PerfFlowAspect
@@ -86,7 +89,6 @@ directory which may differ across different Linux distributions.
 
 .. code:: bash
 
-   $ module load clang/10.0.1-gcc-8.3.1 (on LLNL systems only)
    $ cd PerfFlowAspect/src/c
    $ mkdir build && cd build
    $ cmake -DCMAKE_CXX_COMPILER=clang++ ../

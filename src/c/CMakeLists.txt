@@ -2,19 +2,13 @@ cmake_minimum_required(VERSION 3.12)
 
 project(PerfFlowAspect VERSION "0.1.0")
 
-# Fail if using Clang < 9.0
+# Fail if using Clang < 18.0
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    # require at least Clang 9.0
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
-        message(FATAL_ERROR "Clang++ version must be at least 9.0!")
-    elseif (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 11)
-        set(PERFFLOWASPECT_CLANG_11_NEWER TRUE CACHE BOOL "using >=clang11")
-        add_definitions(-DPERFFLOWASPECT_CLANG_11_NEWER)
-    elseif (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 11)
-        set(PERFFLOWASPECT_CLANG_11_NEWER FALSE CACHE BOOL "using >=clang11")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0)
+        message(FATAL_ERROR "Clang++ version must be equal to 18.0!")
     endif()
 else()
-    message(FATAL_ERROR "Unsupported CXX compiler: please use Clang >= 9.0")
+    message(FATAL_ERROR "Unsupported CXX compiler: please use Clang == 18.0")
 endif()
 
 include(cmake/CMakeBasics.cmake)

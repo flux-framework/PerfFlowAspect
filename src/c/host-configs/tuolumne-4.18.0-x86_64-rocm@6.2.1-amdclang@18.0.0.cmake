@@ -8,5 +8,5 @@
 # SPDX-License-Identifier: LGPL-3.0
 ##############################################################
 
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-14.0.6/bin/clang++" CACHE PATH "")
-set(LLVM_DIR "/usr/tce/packages/clang/clang-14.0.6/lib/cmake/llvm" CACHE PATH "")
+set(CMAKE_C_COMPILER "/opt/rocm-6.2.1/lib/llvm/bin/amdclang" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/opt/rocm-6.2.1/lib/llvm/bin/amdclang++" CACHE PATH "")
