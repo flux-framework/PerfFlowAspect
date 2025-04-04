@@ -58,9 +58,9 @@ Build Dependencies and Versions
    +----------------+----------------+-----------+
    | redhat         | ubuntu         | version   |
    +================+================+===========+
-   | clang          | clang          | >= 6.0    |
+   | clang          | clang          | >= 18.0    |
    +----------------+----------------+-----------+
-   | llvm-devel     | llvm-dev       | >= 6.0    |
+   | llvm-devel     | llvm-dev       | >= 18.0    |
    +----------------+----------------+-----------+
    | jansson-devel  | libjansson-dev | >= 2.6    |
    +----------------+----------------+-----------+
@@ -86,7 +86,6 @@ directory which may differ across different Linux distributions.
 
 .. code:: bash
 
-   $ module load clang/10.0.1-gcc-8.3.1 (on LLNL systems only)
    $ cd PerfFlowAspect/src/c
    $ mkdir build && cd build
    $ cmake -DCMAKE_CXX_COMPILER=clang++ ../
