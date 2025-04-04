@@ -20,8 +20,6 @@ using namespace llvm;
 
 bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
 {
-    outs() << "I am in modifyAnnotatedFunctions \n";
-
     auto annotations = m.getNamedGlobal("llvm.global.annotations");
     if (!annotations)
     {
@@ -32,40 +30,16 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
 
     if (annotations->getNumOperands() <= 0)
     {
-        outs() << "I have failed as there are no operands!\n";
         return changed;
-    }
-    else
-    {
-        outs() << "Annotations has " << annotations->getNumOperands() << " operands.\n";
-        outs() << "Annotations operand 0 has name: " << annotations->getOperand(
-                   0)->getName() << "\n";
     }
 
     auto a = cast<ConstantArray> (annotations->getOperand(0));
     for (unsigned int i = 0; i < a->getNumOperands(); i++)
     {
         auto e = cast<ConstantStruct> (a->getOperand(i));
-        if (!e)
-        {
-            outs() << "I failed here at obtaining the struct. \n";
-        }
-        else
-        {
-            outs() << "e has " << e->getNumOperands() << " operands.\n";
-            outs() << "Printing e's operands: \n";
-            for (unsigned int k = 0; k < e->getNumOperands(); k++)
-            {
-                outs() << " Operand " << k << " name is: " << e->getOperand(
-                           k)->getName() << "\n";
-                outs() << "Operand " << k << " has " << e->getOperand(k)->getNumOperands() <<
-                       " operands \n";
-            }
-        }
         auto *fn = dyn_cast<Function> (e->getOperand(0));
         if (fn != NULL)
         {
-            outs() << "I entered the part where we parse annotations. \n";
             auto anno = cast<ConstantDataArray>(
                             cast<GlobalVariable>(e->getOperand(1))
                             ->getOperand(0))
