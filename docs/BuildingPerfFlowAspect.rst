@@ -74,7 +74,8 @@ Build Dependencies and Versions
    +----------------+----------------+-----------+
    | make           | make           | >= 3.82   |
    +----------------+----------------+-----------+
-   | (optional) cuda| (optional) cuda| >= 12.8   |
+   | (optional)     | (optional)     | >= 12.8   |
+   | cuda           | cuda           |           |
    +----------------+----------------+-----------+
 
 Building PerfFlowAspect
