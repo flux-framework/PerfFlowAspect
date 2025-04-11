@@ -5,7 +5,7 @@ set(SMOKETESTS
     smoketest_class
 )
 
-set(perfflow_deps "-L../runtime -lperfflow_runtime" OpenSSL::Crypto)
+set(perfflow_deps "-L../runtime -lperfflow_runtime" OpenSSL::Crypto adiak::adiak)
 
 message(STATUS "Adding CXX unit tests")
 foreach(TEST ${SMOKETESTS})
@@ -29,6 +29,13 @@ if(MPI_FOUND)
 else()
     option(PERFFLOWASPECT_WITH_MPI "Build MPI smoketest" OFF)
 endif()
+
+if(PERFFLOWASPECT_WITH_ADIAK)
+    message(STATUS " [*] Adding test: smoketest_adiak")
+    link_directories(${adiak_LIBRARY_DIRS})
+endif()
+
+
 
 if(PERFFLOWASPECT_WITH_MULTITHREADS)
     message(STATUS " [*] Adding test: smoketest_MT")
