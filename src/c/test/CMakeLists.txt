@@ -5,7 +5,7 @@ set(SMOKETESTS
     smoketest_class
 )
 
-set(perfflow_deps "-L../runtime -lperfflow_runtime" OpenSSL::Crypto adiak::adiak)
+set(perfflow_deps "-L../runtime -lperfflow_runtime" OpenSSL::Crypto)
 
 message(STATUS "Adding CXX unit tests")
 foreach(TEST ${SMOKETESTS})
@@ -31,8 +31,9 @@ else()
 endif()
 
 if(PERFFLOWASPECT_WITH_ADIAK)
+    find_package(adiak QUIET)
     message(STATUS " [*] Adding test: smoketest_adiak")
-    link_directories(${adiak_LIBRARY_DIRS})
+    
 endif()
 
 

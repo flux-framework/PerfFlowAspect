@@ -15,6 +15,9 @@ include(cmake/CMakeBasics.cmake)
 
 include(cmake/Setup3rdParty.cmake)
 
+option(PERFFLOWASPECT_WITH_ADIAK "Build with Adiak" ON)
+
+
 include(GNUInstallDirs)
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
