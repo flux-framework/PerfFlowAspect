@@ -30,6 +30,14 @@ else()
     option(PERFFLOWASPECT_WITH_MPI "Build MPI smoketest" OFF)
 endif()
 
+if(PERFFLOWASPECT_WITH_ADIAK)
+    find_package(adiak QUIET)
+    message(STATUS " [*] Adding test: smoketest_adiak")
+    
+endif()
+
+
+
 if(PERFFLOWASPECT_WITH_MULTITHREADS)
     message(STATUS " [*] Adding test: smoketest_MT")
     add_executable(smoketest_MT smoketest_MT.cpp)

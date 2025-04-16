@@ -35,7 +35,8 @@ private:
 
     bool insertBefore(Module &m, Function &f, StringRef &a,
                                int async, std::string &scope, std::string &flow, std::string pcut); 
-
+    
+    bool insertAdiak(Module &m, Function &f);
 public:
     bool modifyAnnotatedFunctions(Module &m);
 
