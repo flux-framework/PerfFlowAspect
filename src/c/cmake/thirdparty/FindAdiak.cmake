@@ -1,8 +1,9 @@
 set(adiak_DIR "/g/g14/greene36/Adiak/install/lib/cmake/adiak")
 find_package(adiak REQUIRED)
-set(perfflow_deps adiak::adiak)
-message(STATUS "Building Adiak smoketest (PERFFLOWASPECT_WITH_ADIAK == ON)")
-
+if(adiak_FOUND)
+	message(STATUS "Building with Adiak")
+	set(perfflow_deps "${perfflow_deps}" adiak::adiak)
+endif()
 #if(adiak_FOUND)
 #    message(STATUS "Adiak found: ${adiak_FOUND}")
 #    message(STATUS "Adiak include directories: ${adiak_INCLUDE_DIRS}")
