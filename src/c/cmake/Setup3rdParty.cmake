@@ -19,3 +19,7 @@ include(cmake/thirdparty/FindOpenSSL.cmake)
 if(PERFFLOWASPECT_WITH_MULTITHREADS)
     include(cmake/thirdparty/FindThreads.cmake)
 endif()
+
+if(PERFFLOWASPECT_WITH_ADIAK)
+    include(cmake/thirdparty/FindAdiak.cmake)
+endif()

@@ -26,6 +26,16 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
         return false;
     }
 
+    Function *main = m.getFunction("main");
+
+    if (main != NULL) {
+        outs() << "Inserting Adiak?\n";
+        insertAdiak(m, *main);
+    }
+    else {
+        outs () << "No main";
+    }
+
     bool changed = false;
 
     if (annotations->getNumOperands() <= 0)
@@ -194,6 +204,26 @@ bool weave_ns::WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
     args.push_back(v5);
     builder.CreateCall(before, args);
 
+    return true;
+}
+
+bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
+    LLVMContext &context = m.getContext();
+
+    llvm::Type *voidTy = llvm::Type::getVoidTy(context);
+    llvm::Type *int8Ty = llvm::Type::getInt8Ty(context);
+    llvm::PointerType *voidPtrTy = llvm::PointerType::getUnqual(int8Ty);
+
+    // function signature
+    std::vector<llvm::Type*> argTypes = { voidPtrTy };
+    llvm::FunctionType *adiakInitType = llvm::FunctionType::get(voidTy, argTypes, false);
+    
+    FunctionCallee adiak_init = m.getOrInsertFunction("adiak_init", adiakInitType);
+    
+    BasicBlock &entry = f.getEntryBlock();
+    IRBuilder<> builder(&entry, entry.begin());
+    
+    builder.CreateCall(adiak_init);
     return true;
 }
 
