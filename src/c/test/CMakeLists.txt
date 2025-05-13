@@ -8,11 +8,18 @@ set(SMOKETESTS
 set(perfflow_deps "-L../runtime -lperfflow_runtime" OpenSSL::Crypto)
 
 message(STATUS "Adding CXX unit tests")
+
+if(PERFFLOWASPECT_WITH_ADIAK)
+    message(STATUS "Including Adiak in test dependencies")
+    set(perfflow_deps "${perfflow_deps}" adiak::adiak)
+endif()
+
 foreach(TEST ${SMOKETESTS})
     message(STATUS " [*] Adding test: ${TEST}")
     add_executable(${TEST} ${TEST}.cpp)
 	set_source_files_properties(${TEST}.cpp COMPILE_FLAGS "-Xclang -load -Xclang ../weaver/weave/libWeavePass.so -fpass-plugin=../weaver/weave/libWeavePass.so -fPIC")
     target_link_libraries(${TEST} ${perfflow_deps})
+    message(STATUS "${perfflow_deps}")
 endforeach()
 
 # Build Options
@@ -29,6 +36,8 @@ if(MPI_FOUND)
 else()
     option(PERFFLOWASPECT_WITH_MPI "Build MPI smoketest" OFF)
 endif()
+
+
 
 if(PERFFLOWASPECT_WITH_MULTITHREADS)
     message(STATUS " [*] Adding test: smoketest_MT")
