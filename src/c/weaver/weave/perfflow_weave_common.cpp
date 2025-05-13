@@ -210,21 +210,190 @@ bool weave_ns::WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
 bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
     LLVMContext &context = m.getContext();
 
-    llvm::Type *voidTy = llvm::Type::getVoidTy(context);
-    llvm::Type *int8Ty = llvm::Type::getInt8Ty(context);
-    llvm::PointerType *voidPtrTy = llvm::PointerType::getUnqual(int8Ty);
+    // the adiak_init() call
+    // return and argument types
+    Type *voidTy = Type::getVoidTy(context);
+    Type *int8Ty = Type::getInt8Ty(context);
+    Type *int32Ty = Type::getInt32Ty(context);
+    PointerType *voidPtrTy = PointerType::getUnqual(int8Ty);
 
-    // function signature
-    std::vector<llvm::Type*> argTypes = { voidPtrTy };
-    llvm::FunctionType *adiakInitType = llvm::FunctionType::get(voidTy, argTypes, false);
-    
-    FunctionCallee adiak_init = m.getOrInsertFunction("adiak_init", adiakInitType);
-    
+    // the beginning of main
     BasicBlock &entry = f.getEntryBlock();
     IRBuilder<> builder(&entry, entry.begin());
+
+    // adiak_init function signature
+    std::vector<Type*> initArgs = { voidPtrTy };
+    FunctionType *adiakInitType = FunctionType::get(voidTy, initArgs, false);
+    FunctionCallee adiakInit = m.getOrInsertFunction("adiak_init", adiakInitType);
     
-    builder.CreateCall(adiak_init);
+    // call adiak_init(NULL)
+    Value *nullPtr = Constant::getNullValue(voidPtrTy);
+    builder.CreateCall(adiakInit, {nullPtr});
+
+    // call adiak_collect_all()
+    std::vector<Type*> collectArgs = { };  // No arguments
+    FunctionType *collectType = FunctionType::get(int32Ty, collectArgs, false);
+    FunctionCallee collectAll = m.getOrInsertFunction("adiak_collect_all", collectType);
+    builder.CreateCall(collectAll, {});
+
+    // insert the print callback
+    Function *cb = printAdiakCallback(m);
+
+    // register cb with adiak_list_namevals
+    Type *cbTy = cb->getType();
+    PointerType *cbPtrTy = PointerType::getUnqual(cbTy);
+    std::vector<Type*> listNamevalsArgs = { 
+        int32Ty,
+        int32Ty,
+        cbPtrTy,
+        voidPtrTy
+    };  
+    FunctionType *listNamevalsType = FunctionType::get(voidTy, listNamevalsArgs, false);
+    FunctionCallee listNamevals = m.getOrInsertFunction("adiak_list_namevals", listNamevalsType);
+
+    // call the cb function
+    Value *adiakVersion = builder.getInt32(1);
+    Value *categoryAll = builder.getInt32(1);
+    Value *cbPtr = builder.CreateBitCast(cb, cbPtrTy);
+    builder.CreateCall(listNamevals, {adiakVersion, categoryAll, cbPtr, nullPtr});
+
     return true;
+}
+
+Function* weave_ns::WeaveCommon::printAdiakCallback(Module &m) {
+    LLVMContext &context = m.getContext();
+    Type *voidTy = Type::getVoidTy(context);
+    Type *int8Ty = Type::getInt8Ty(context);
+    Type *int32Ty = Type::getInt32Ty(context);
+    Type *int64Ty = Type::getInt64Ty(context);
+    StructType *adiakValueTy = StructType::getTypeByName(context, "union.adiak_value_t");
+    StructType *datatypeTy = StructType::getTypeByName(context, "struct.adiak_datatype_t");
+    if (!adiakValueTy)
+        adiakValueTy = StructType::create(context, "union.adiak_value_t");
+    if (!datatypeTy)
+        datatypeTy = StructType::create(context, "struct.adiak_datatype_t");
+
+    datatypeTy->setBody({
+        int32Ty,
+    }, false);
+    PointerType *voidPtrTy = PointerType::getUnqual(int8Ty);
+    PointerType *charPtrTy = PointerType::getUnqual(int8Ty);
+    PointerType *valuePtrTy = PointerType::getUnqual(adiakValueTy);
+    PointerType *datatypePtrTy = PointerType::getUnqual(datatypeTy);
+
+
+    // void (*adiak_nameval_cb_t)(const char *name, 
+    //      int category, const char *subcategory, 
+    //          adiak_value_t *value, adiak_datatype_t *t, void *opaque_value)
+    std::vector<llvm::Type*> cbArgs = {
+        charPtrTy,           // const char *name
+        int32Ty,             // adiak_category_t category
+        charPtrTy,           // const char *subcategory
+        valuePtrTy,          // adiak_value_t *value
+        datatypePtrTy,       // adiak_datatype_t *t
+        voidPtrTy            // void *opaque_value
+    };
+
+    // callback signature
+    FunctionType *cbType = llvm::FunctionType::get(voidTy, cbArgs, false);
+    Function *cb = Function::Create(cbType, Function::ExternalLinkage, "print_callback", &m);
+
+
+    // parameter names
+    auto argIter = cb->arg_begin();
+    Value *nameParam = argIter++;
+    nameParam->setName("name");
+    Value *categoryParam = argIter++;
+    categoryParam->setName("category");
+    Value *subParam = argIter++;
+    subParam->setName("subcategory");
+    Value *valueParam = argIter++;
+    valueParam->setName("value");
+    Value *typeParam = argIter++;
+    typeParam->setName("type");
+    Value *argParam = argIter;
+    argParam->setName("opaque");
+
+    // function body
+    BasicBlock *entry = BasicBlock::Create(context, "entry", cb);
+    BasicBlock *defaultBlock = BasicBlock::Create(context, "default_case", cb);
+    BasicBlock *uintCase = BasicBlock::Create(context, "uint_case", cb);
+    BasicBlock *stringCase = BasicBlock::Create(context, "string_case", cb);
+    BasicBlock *dateCase = BasicBlock::Create(context, "version_case", cb);
+
+
+    IRBuilder<> builder(entry);
+
+    // adiak_datatype_t struct. we only care about the first value, which contains the type
+    Value *dtypePtr = builder.CreateStructGEP(
+        datatypeTy,
+        typeParam,
+        0,
+        "dtypePtr"
+    );
+
+    Value *dtypeVal = builder.CreateLoad(int32Ty, dtypePtr, "dtype");
+
+    // find the printf functoin
+    std::vector<llvm::Type*> printfArgs = { charPtrTy };
+    FunctionType *printfType = llvm::FunctionType::get(int32Ty, printfArgs, true);
+    FunctionCallee printfFunc = m.getOrInsertFunction("printf", printfType);
+
+    Value *formatPrefix = builder.CreateGlobalStringPtr("Adiak: Name: %s, Type: %d, Value: ");
+    builder.CreateCall(printfFunc, {formatPrefix, nameParam, dtypeVal});
+
+    // switch to handle different adiak_type_t
+    SwitchInst *type = builder.CreateSwitch(dtypeVal, defaultBlock, 1);
+    type->addCase(builder.getInt32(ADIAK_UINT), uintCase);
+    type->addCase(builder.getInt32(ADIAK_VERSION), stringCase);
+    type->addCase(builder.getInt32(ADIAK_PATH), stringCase);
+    type->addCase(builder.getInt32(ADIAK_STRING), stringCase);
+    type->addCase(builder.getInt32(ADIAK_DATE), dateCase);
+
+
+    {
+        // CASE FOR ADIAK_UINT
+        builder.SetInsertPoint(uintCase);
+
+        Value *uintPtr = builder.CreateBitCast(valueParam, llvm::PointerType::getUnqual(int32Ty));
+        Value *uintVal = builder.CreateLoad(int32Ty, uintPtr);
+
+        Value *uintFmt = builder.CreateGlobalStringPtr("%u\n");
+        builder.CreateCall(printfFunc, {uintFmt, uintVal});
+        builder.CreateRetVoid();
+    }
+
+    {
+        // CASE FOR ADIAK_STRING, ADIAK_PATH, ADIAK_VERSION
+        builder.SetInsertPoint(stringCase);
+
+        PointerType *strPtrPtrTy = llvm::PointerType::getUnqual(voidPtrTy);
+        Value *strPtrPtr = builder.CreateBitCast(valueParam, strPtrPtrTy);
+        Value *stringVal = builder.CreateLoad(voidPtrTy, strPtrPtr);
+
+        Value *stringFmt = builder.CreateGlobalStringPtr("%s\n");
+        builder.CreateCall(printfFunc, {stringFmt, stringVal});
+        builder.CreateRetVoid();
+    }
+
+    {
+        // CASE FOR ADIAK_DATE
+        builder.SetInsertPoint(dateCase);
+
+        Value *datePtr = builder.CreateBitCast(valueParam, llvm::PointerType::getUnqual(int64Ty));
+        Value *dateVal = builder.CreateLoad(int64Ty, datePtr);
+
+        Value *dateFmt = builder.CreateGlobalStringPtr("%ld\n");
+        builder.CreateCall(printfFunc, {dateFmt, dateVal});
+        builder.CreateRetVoid();    
+    }
+
+    builder.SetInsertPoint(defaultBlock);
+    Value *unknownFmt = builder.CreateGlobalStringPtr("err: not implemented type\n");
+    builder.CreateCall(printfFunc, {unknownFmt});
+    builder.CreateRetVoid();
+
+    return cb;
 }
 
 /*

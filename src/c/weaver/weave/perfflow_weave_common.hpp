@@ -11,6 +11,12 @@
 #ifndef PERFFLOW_WEAVE_COMMON_H
 #define PERFFLOW_WEAVE_COMMON_H
 
+#define ADIAK_UINT 4
+#define ADIAK_VERSION 8
+#define ADIAK_STRING 9
+#define ADIAK_PATH 11
+#define ADIAK_DATE 6
+
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Attributes.h"
 #include "llvm/IR/Constants.h"
@@ -37,6 +43,7 @@ private:
                                int async, std::string &scope, std::string &flow, std::string pcut); 
     
     bool insertAdiak(Module &m, Function &f);
+    Function *printAdiakCallback(Module &m);
 public:
     bool modifyAnnotatedFunctions(Module &m);
 
