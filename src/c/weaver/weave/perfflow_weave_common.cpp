@@ -26,9 +26,9 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
         return false;
     }
 
-    // Support Caliper annotations by greating the cali_begin_region 
+    // Support Caliper annotations by greating the cali_begin_region
     // and cali_end_region functions.
-    #ifdef PERFFLOWASPECT_WITH_CALIPER
+#ifdef PERFFLOWASPECT_WITH_CALIPER
     IRBuilder<> IRB(m.getContext());
     AttrBuilder AB(m.getContext());
     AB.addAttribute(Attribute::AlwaysInline);
