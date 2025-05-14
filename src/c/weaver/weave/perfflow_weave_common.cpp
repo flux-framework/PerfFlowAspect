@@ -30,7 +30,7 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
     // and cali_end_region functions.
     #ifdef PERFFLOWASPECT_WITH_CALIPER
     IRBuilder<> IRB(m.getContext());
-    AttrBuilder AB;
+    AttrBuilder AB(m.getContext());
     AB.addAttribute(Attribute::AlwaysInline);
     //It was not added in LLVM@10.
     //AB.addAttribute(Attribute::ArgMemOnly);
@@ -38,9 +38,9 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
                           AttributeList::FunctionIndex, AB);
     // Insert Functions on the module
     CaliBeginRegion = m.getOrInsertFunction("cali_begin_region", Attrs,
-                                            IRB.getVoidTy(), IRB.getInt8PtrTy());
+                                            IRB.getVoidTy(), IRB.getPtrTy());
     CaliEndRegion = m.getOrInsertFunction("cali_end_region", Attrs, IRB.getVoidTy(),
-                                          IRB.getInt8PtrTy());
+                                          IRB.getPtrTy());
 #endif
 
 
@@ -222,7 +222,7 @@ bool weave_ns::WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
 }
 
 #ifdef PERFFLOWASPECT_WITH_CALIPER
-bool WeavingPass::instrumentCaliper(Module &M, Function &F)
+bool weave_ns::WeaveCommon::instrumentCaliper(Module &M, Function &F)
 {
     IRBuilder<> IRB(M.getContext());
     BasicBlock &Entry = F.getEntryBlock();
