@@ -8,7 +8,7 @@ find_package(caliper REQUIRED
              NO_SYSTEM_ENVIRONMENT_PATH
              NO_CMAKE_SYSTEM_PATH)
 
-message(STATUS "FOUND Caliper: ${caliper_INSTALL_PREFIX}")
+message(STATUS "FOUND Caliper: ${caliper_DIR}")
 
 #set(ADIAK_FOUND TRUE)
 set(CALIPER_FOUND TRUE)
