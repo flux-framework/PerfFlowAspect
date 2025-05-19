@@ -27,7 +27,7 @@ if(PERFFLOWASPECT_WITH_CALIPER)
     endif()
 
     if(caliper_DIR)
-        message(STATUS "PPP ${caliper_DIR}")
+        message(STATUS "${caliper_DIR}")
         include(cmake/thirdparty/FindCaliper.cmake)
     endif()
 
