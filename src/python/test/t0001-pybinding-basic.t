@@ -4,7 +4,7 @@ test_description='Test basics of Perfflow Aspect python binding'
 
 . ../../common/sharness/sharness.sh
 
-export PYTHONPATH=../../
+export PYTHONPATH=../../:$PYTHONPATH
 
 fixup_ctf_file(){
     ifn=$1 &&
