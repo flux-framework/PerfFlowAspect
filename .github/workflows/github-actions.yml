@@ -75,7 +75,7 @@ jobs:
         run: |
           mkdir build && mkdir install
           cd build
-          cmake -DCMAKE_INSTALL_PREFIX=../install ../
+          cmake -DWITH_PYTHON_BINDINGS=On -DCMAKE_INSTALL_PREFIX=../install ../
           make VERBOSE=1
           make install
 
@@ -125,6 +125,8 @@ jobs:
           cd src/python
           python -m pip install -r requirements.txt
           python -m pip list
+          # Export path for caliper
+          export PYTHONPATH="/home/runner/work/PerfFlowAspect/PerfFlowAspect/Caliper/install/lib/${{ matrix.python-version }}/site-packages:$PYTHONPATH"
 
       - name: Run Python Smoke Tests
         run: |
