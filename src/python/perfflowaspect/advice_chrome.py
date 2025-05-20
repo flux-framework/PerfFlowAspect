@@ -385,8 +385,6 @@ class ChromeTracingAdvice:
 
             # If Caliper is enabled, call begin_region
             if ChromeTracingAdvice.enable_caliper:
-                print("Here in Caliper enabled region")
-                print("Function is" + str(func))
                 begin_region(str(func))
             
             rc = func(*args, **kwargs)
