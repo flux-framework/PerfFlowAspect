@@ -385,13 +385,15 @@ class ChromeTracingAdvice:
 
             # If Caliper is enabled, call begin_region
             if ChromeTracingAdvice.enable_caliper:
-                begin_region(str(func))
+                print("Here in Caliper enabled region")
+                print("Function is" + str(func))
+                pycaliper.instrumentation.begin_region(str(func))
             
             rc = func(*args, **kwargs)
             
             # If Caliper is enabled, call end_region
             if ChromeTracingAdvice.enable_caliper:
-                end_region(str(func))
+                pycaliper.instrumentation.end_region(str(func))
 
             # Obtain end timestamp to calculate durations. This will include the Caliper overhead.
             ts_end = time.time() * 1000000
