@@ -21,7 +21,6 @@ import hashlib
 import psutil
 from urllib.parse import urlparse
 from .aspect_base import perfflowaspect
-from pycaliper.instrumentation import begin_region, end_region
 
 # TODO: move those into ChromeTracingAdvice
 counter_mutex = threading.Lock()
@@ -214,6 +213,11 @@ class ChromeTracingAdvice:
     caliper_flag = perfflow_options["caliper-enable"]
     if caliper_flag in ["True", "true", "TRUE"]:
         enable_caliper = True
+        # Only include caliper when it is enabled. 
+        # Importing this generally causes CI tests to fail, esp the t0001.t test
+        # which relies on relative PYTHOHPATH.
+        from pycaliper.instrumentation import begin_region, end_region
+
     elif caliper_flag in ["False", "false", "FALSE"]:
         enable_caliper = False
 
