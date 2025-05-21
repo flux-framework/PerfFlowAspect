@@ -43,7 +43,7 @@ def cannonicalize_perfflow_options():
         perfflow_options["log-event"] = "Verbose"
     if perfflow_options.get("log-format") is None:
         perfflow_options["log-format"] = "Array"
-    # Caliper is disabled by default    
+    # Caliper is disabled by default
     if perfflow_options.get("caliper-enable") is None:
         perfflow_options["caliper-enable"] = "False"
 
@@ -384,7 +384,7 @@ class ChromeTracingAdvice:
 
             # If Caliper is enabled, call begin_region
             if ChromeTracingAdvice.enable_caliper:
-                # Only include caliper when it is enabled. 
+                # Only include caliper when it is enabled.
                 # Importing this generally causes CI tests to fail, esp the t0001.t test
                 # which relies on relative PYTHOHPATH.
                 try:
@@ -392,14 +392,14 @@ class ChromeTracingAdvice:
                 except ImportError:
                     print("Caliper is enabled but pycaliper could not be imported.")
                     begin_region = None
-                # Call Caliper's begin region    
+                # Call Caliper's begin region
                 begin_region(str(func))
-            
+
             rc = func(*args, **kwargs)
-            
+
             # If Caliper is enabled, call end_region
             if ChromeTracingAdvice.enable_caliper:
-                # Only include caliper when it is enabled. 
+                # Only include caliper when it is enabled.
                 # Importing this generally causes CI tests to fail, esp the t0001.t test
                 # which relies on relative PYTHOHPATH.
                 try:
@@ -407,7 +407,7 @@ class ChromeTracingAdvice:
                 except ImportError:
                     print("Caliper is enabled but pycaliper could not be imported.")
                     end_region = None
-                # Call Caliper's end region    
+                # Call Caliper's end region
                 end_region(str(func))
 
             # Obtain end timestamp to calculate durations. This will include the Caliper overhead.
