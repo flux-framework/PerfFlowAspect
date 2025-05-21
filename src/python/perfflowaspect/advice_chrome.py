@@ -213,16 +213,6 @@ class ChromeTracingAdvice:
     caliper_flag = perfflow_options["caliper-enable"]
     if caliper_flag in ["True", "true", "TRUE"]:
         enable_caliper = True
-        # Only include caliper when it is enabled. 
-        # Importing this generally causes CI tests to fail, esp the t0001.t test
-        # which relies on relative PYTHOHPATH.
-        try:
-            from pycaliper.instrumentation import begin_region, end_region
-            print("Caliper is enabled and pycaliper was imported succesfully.")
-        except ImportError:
-            print("Caliper is enabled but pycaliper could not be imported.")
-            begin_region = None
-            end_region = None
     elif caliper_flag in ["False", "false", "FALSE"]:
         enable_caliper = False
 
@@ -394,12 +384,32 @@ class ChromeTracingAdvice:
 
             # If Caliper is enabled, call begin_region
             if ChromeTracingAdvice.enable_caliper:
+                # Only include caliper when it is enabled. 
+                # Importing this generally causes CI tests to fail, esp the t0001.t test
+                # which relies on relative PYTHOHPATH.
+                try:
+                    from pycaliper.instrumentation import begin_region
+                    print("Caliper is enabled and pycaliper was imported succesfully.")
+                except ImportError:
+                    print("Caliper is enabled but pycaliper could not be imported.")
+                    begin_region = None
+                # Call Caliper's begin region    
                 begin_region(str(func))
             
             rc = func(*args, **kwargs)
             
             # If Caliper is enabled, call end_region
             if ChromeTracingAdvice.enable_caliper:
+                # Only include caliper when it is enabled. 
+                # Importing this generally causes CI tests to fail, esp the t0001.t test
+                # which relies on relative PYTHOHPATH.
+                try:
+                    from pycaliper.instrumentation import end_region
+                    print("Caliper is enabled and pycaliper was imported succesfully.")
+                except ImportError:
+                    print("Caliper is enabled but pycaliper could not be imported.")
+                    end_region = None
+                # Call Caliper's end region    
                 end_region(str(func))
 
             # Obtain end timestamp to calculate durations. This will include the Caliper overhead.
