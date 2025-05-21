@@ -216,7 +216,11 @@ class ChromeTracingAdvice:
         # Only include caliper when it is enabled. 
         # Importing this generally causes CI tests to fail, esp the t0001.t test
         # which relies on relative PYTHOHPATH.
-        from pycaliper.instrumentation import begin_region, end_region
+        try:
+            from pycaliper.instrumentation import begin_region, end_region
+            print("Caliper is enabled and pycaliper was imported succesfully.")
+        except ImportError:
+            print("Caliper is enabled but pycaliper could not be imported.")
 
     elif caliper_flag in ["False", "false", "FALSE"]:
         enable_caliper = False
