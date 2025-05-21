@@ -382,11 +382,9 @@ class ChromeTracingAdvice:
                 cpu_start = cpu_start[0]
                 time_start = time.time()
 
-            # If Caliper is enabled, call begin_region
+            # If Caliper is enabled, import pycaliper and call begin_region
+            # Conditional import preserves current behavior of t0001.t 
             if ChromeTracingAdvice.enable_caliper:
-                # Only include caliper when it is enabled.
-                # Importing this generally causes CI tests to fail, esp the t0001.t test
-                # which relies on relative PYTHOHPATH.
                 try:
                     from pycaliper.instrumentation import begin_region
                 except ImportError:
@@ -397,11 +395,9 @@ class ChromeTracingAdvice:
 
             rc = func(*args, **kwargs)
 
-            # If Caliper is enabled, call end_region
+            # If Caliper is enabled, import pycaliper and call end_region
+            # Conditional import preserves current behavior of t0001.t 
             if ChromeTracingAdvice.enable_caliper:
-                # Only include caliper when it is enabled.
-                # Importing this generally causes CI tests to fail, esp the t0001.t test
-                # which relies on relative PYTHOHPATH.
                 try:
                     from pycaliper.instrumentation import end_region
                 except ImportError:

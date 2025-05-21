@@ -103,6 +103,8 @@ variable. Separate multiple variables with a colon as follows:
 +----------------------+--------------------------------------------------------------+---------------+---------------------------------+
 | log-format           | Dump JSON events in array or object format                   | Array         | Array, Object                   |
 +----------------------+--------------------------------------------------------------+---------------+---------------------------------+
+| caliper-enable       | Toggle Caliper data collection on/off (for Python only).     | False         | True, False                     |
++----------------------+--------------------------------------------------------------+---------------+---------------------------------+
 
 **********************************************
  Visualization of PerfFlowAspect Output Files
