@@ -221,7 +221,8 @@ class ChromeTracingAdvice:
             print("Caliper is enabled and pycaliper was imported succesfully.")
         except ImportError:
             print("Caliper is enabled but pycaliper could not be imported.")
-
+            begin_region = None
+            end_region = None
     elif caliper_flag in ["False", "false", "FALSE"]:
         enable_caliper = False
 
