@@ -389,7 +389,6 @@ class ChromeTracingAdvice:
                 # which relies on relative PYTHOHPATH.
                 try:
                     from pycaliper.instrumentation import begin_region
-                    print("Caliper is enabled and pycaliper was imported succesfully.")
                 except ImportError:
                     print("Caliper is enabled but pycaliper could not be imported.")
                     begin_region = None
@@ -405,7 +404,6 @@ class ChromeTracingAdvice:
                 # which relies on relative PYTHOHPATH.
                 try:
                     from pycaliper.instrumentation import end_region
-                    print("Caliper is enabled and pycaliper was imported succesfully.")
                 except ImportError:
                     print("Caliper is enabled but pycaliper could not be imported.")
                     end_region = None
