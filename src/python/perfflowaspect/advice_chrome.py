@@ -383,7 +383,7 @@ class ChromeTracingAdvice:
                 time_start = time.time()
 
             # If Caliper is enabled, import pycaliper and call begin_region
-            # Conditional import preserves current behavior of t0001.t 
+            # Conditional import preserves current behavior of t0001.t
             if ChromeTracingAdvice.enable_caliper:
                 try:
                     from pycaliper.instrumentation import begin_region
@@ -396,7 +396,7 @@ class ChromeTracingAdvice:
             rc = func(*args, **kwargs)
 
             # If Caliper is enabled, import pycaliper and call end_region
-            # Conditional import preserves current behavior of t0001.t 
+            # Conditional import preserves current behavior of t0001.t
             if ChromeTracingAdvice.enable_caliper:
                 try:
                     from pycaliper.instrumentation import end_region

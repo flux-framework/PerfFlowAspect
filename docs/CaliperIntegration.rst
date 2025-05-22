@@ -12,21 +12,23 @@
 PerfFlowAspect can be built with Caliper to leverage collection of additional
 performance data, such as hardware performance counters on CPUs and GPU
 measurements on NVIDIA GPUs. `Caliper <https://github.com/llnl/caliper>`_ is an
-instrumentation and performance annotation library. 
+instrumentation and performance annotation library.
 
-PerfFlowAspect supports the Caliper integration for both C/C++ and Python codebases.
-This enables a single PerfFlowAspect annotation to generate both `.pfw`
-trace files and `.cali` files, so users do not need any additional annotations to 
-obtain Caliper data.
+PerfFlowAspect supports the Caliper integration for both C/C++ and Python
+codebases. This enables a single PerfFlowAspect annotation to generate both
+`.pfw` trace files and `.cali` files, so users do not need any additional
+annotations to obtain Caliper data.
 
 A Caliper install is required before building PerfFlowAspect in this case.
 Caliper can be configured at runtime, as shown in examples below.
 
-************
+*************
  C/C++ Build
-************
-Caliper needs to be is built with the same `clang` compiler chain as PerfFlowAspect.
-These can be specified with the `-DCMAKE_C_COMPILER` and  `-DCMAKE_CXX_COMPILER`.
+*************
+
+Caliper needs to be is built with the same `clang` compiler chain as
+PerfFlowAspect. These can be specified with the `-DCMAKE_C_COMPILER` and
+`-DCMAKE_CXX_COMPILER`.
 
 .. code:: bash
 
@@ -35,9 +37,9 @@ These can be specified with the `-DCMAKE_C_COMPILER` and  `-DCMAKE_CXX_COMPILER`
          -DWITH_PYTHON_BINDINGS=On \
          -Dcaliper_DIR=<path-to-install>/share/lib/caliper ../
 
-**************
+***************
  C/C++ Example
-**************
+***************
 
 .. code:: bash
 
@@ -94,18 +96,18 @@ These can be specified with the `-DCMAKE_C_COMPILER` and  `-DCMAKE_CXX_COMPILER`
      _Z3barv        0.009124      0.009124      0.009124   0.009124 regionprofile
        _Z3basv      0.000074      0.000074      0.000074   0.000074 regionprofile
 
-
 ****************
  Python Example
 ****************
 
-For Python applications, Caliper can be enabled by setting the `caliper-enable` option.
-In this case, `PYTHONPATH` needs to be set to include the `pycaliper` package from Caliper installation.
+For Python applications, Caliper can be enabled by setting the `caliper-enable`
+option. In this case, `PYTHONPATH` needs to be set to include the `pycaliper`
+package from Caliper installation.
 
 .. code:: bash
 
    export PYTHONPATH=<path-to-caliper-install>/lib/python<X.Y>/site-packages
-   PERFFLOW_OPTIONS="caliper-enable=True" CALI_CONFIG=runtime-report ./smoketest.py 
+   PERFFLOW_OPTIONS="caliper-enable=True" CALI_CONFIG=runtime-report ./smoketest.py
 
    Inside main
    foo
@@ -120,7 +122,7 @@ In this case, `PYTHONPATH` needs to be set to include the `pycaliper` package fr
    foo
    bar
    bas
-   Path                                   Time (E) Time (I) Time % (E) Time % (I) 
-   <function foo at 0x155546a24540>       0.004692 0.009423  47.547246  95.486397 
-      <function bar at 0x155546a24400>    0.004659 0.004731  47.213609  47.939151 
-         <function bas at 0x15554732de40> 0.000072 0.000072   0.725542   0.725542 
+   Path                                   Time (E) Time (I) Time % (E) Time % (I)
+   <function foo at 0x155546a24540>       0.004692 0.009423  47.547246  95.486397
+      <function bar at 0x155546a24400>    0.004659 0.004731  47.213609  47.939151
+         <function bas at 0x15554732de40> 0.000072 0.000072   0.725542   0.725542
