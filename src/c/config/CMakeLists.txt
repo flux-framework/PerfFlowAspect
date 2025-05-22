@@ -42,6 +42,8 @@ configure_package_config_file(
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/perfflowaspect-config.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/perfflowaspect-config-version.cmake
+    perfflowaspect_setup_deps.cmake
+    perfflowaspect_setup_targets.cmake
     DESTINATION ${PERFFLOWASPECT_INSTALL_CMAKE_MODULE_DIR})
 
 # Create pkg-config .pc file

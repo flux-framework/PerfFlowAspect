@@ -43,6 +43,9 @@ def cannonicalize_perfflow_options():
         perfflow_options["log-event"] = "Verbose"
     if perfflow_options.get("log-format") is None:
         perfflow_options["log-format"] = "Array"
+    # Caliper is disabled by default
+    if perfflow_options.get("caliper-enable") is None:
+        perfflow_options["caliper-enable"] = "False"
 
 
 def parse_perfflow_options():
@@ -207,6 +210,12 @@ class ChromeTracingAdvice:
 
     logger = None
 
+    caliper_flag = perfflow_options["caliper-enable"]
+    if caliper_flag in ["True", "true", "TRUE"]:
+        enable_caliper = True
+    elif caliper_flag in ["False", "false", "FALSE"]:
+        enable_caliper = False
+
     def __init__(self):
         pass
 
@@ -361,7 +370,7 @@ class ChromeTracingAdvice:
     def around(func):
         @functools.wraps(func)
         def trace(*args, **kwargs):
-            # Obtain start timestamp for tracing consistency.
+            # Obtain start timestamp for tracing consistency. This will inclide the Caliper overhead.
             ts_start = time.time() * 1000000
 
             if not ChromeTracingAdvice.enable_compact_log_event:
@@ -373,9 +382,31 @@ class ChromeTracingAdvice:
                 cpu_start = cpu_start[0]
                 time_start = time.time()
 
+            # If Caliper is enabled, import pycaliper and call begin_region
+            # Conditional import preserves current behavior of t0001.t
+            if ChromeTracingAdvice.enable_caliper:
+                try:
+                    from pycaliper.instrumentation import begin_region
+                except ImportError:
+                    print("Caliper is enabled but pycaliper could not be imported.")
+                    begin_region = None
+                # Call Caliper's begin region
+                begin_region(str(func))
+
             rc = func(*args, **kwargs)
 
-            # Obtain end timestamp to calculate durations.
+            # If Caliper is enabled, import pycaliper and call end_region
+            # Conditional import preserves current behavior of t0001.t
+            if ChromeTracingAdvice.enable_caliper:
+                try:
+                    from pycaliper.instrumentation import end_region
+                except ImportError:
+                    print("Caliper is enabled but pycaliper could not be imported.")
+                    end_region = None
+                # Call Caliper's end region
+                end_region(str(func))
+
+            # Obtain end timestamp to calculate durations. This will include the Caliper overhead.
             ts_end = time.time() * 1000000
 
             if ChromeTracingAdvice.enable_cpu_mem_usage:

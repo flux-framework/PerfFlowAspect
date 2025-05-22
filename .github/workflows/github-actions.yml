@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        config: [boilerplate, release, debug_cuda_only, debug_mpi_only, debug_threads_only]
+        config: [boilerplate, release, debug_cuda_only, debug_mpi_only, debug_threads_only, boilerplate_caliper]
 
         include:
           - config: boilerplate
@@ -17,31 +17,43 @@ jobs:
             PERFFLOWASPECT_WITH_MPI: ON
             PERFFLOWASPECT_WITH_MULTITHREADS: ON
             CMAKE_BUILD_TYPE: Debug
+            PERFFLOWASPECT_WITH_CALIPER: OFF
 
           - config: release
             PERFFLOWASPECT_WITH_CUDA: OFF
             PERFFLOWASPECT_WITH_MPI: ON
             PERFFLOWASPECT_WITH_MULTITHREADS: ON
             CMAKE_BUILD_TYPE: Release
+            PERFFLOWASPECT_WITH_CALIPER: OFF
 
           - config: debug_cuda_only
             PERFFLOWASPECT_WITH_CUDA: OFF
             PERFFLOWASPECT_WITH_MPI: OFF
             PERFFLOWASPECT_WITH_MULTITHREADS: OFF
             CMAKE_BUILD_TYPE: Debug
+            PERFFLOWASPECT_WITH_CALIPER: OFF
 
           - config: debug_mpi_only
             PERFFLOWASPECT_WITH_CUDA: OFF
             PERFFLOWASPECT_WITH_MPI: ON
             PERFFLOWASPECT_WITH_MULTITHREADS: OFF
             CMAKE_BUILD_TYPE: Debug
+            PERFFLOWASPECT_WITH_CALIPER: OFF
 
           - config: debug_threads_only
             PERFFLOWASPECT_WITH_CUDA: OFF
             PERFFLOWASPECT_WITH_MPI: OFF
             PERFFLOWASPECT_WITH_MULTITHREADS: ON
             CMAKE_BUILD_TYPE: Debug
+            PERFFLOWASPECT_WITH_CALIPER: OFF
 
+          - config: boilerplate_caliper
+            PERFFLOWASPECT_WITH_CUDA: OFF
+            PERFFLOWASPECT_WITH_MPI: OFF
+            PERFFLOWASPECT_WITH_MULTITHREADS: OFF
+            CMAKE_BUILD_TYPE: Debug
+            PERFFLOWASPECT_WITH_CALIPER: ON
+    
     steps:
       # Checkout PerfFlowAspect repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
@@ -49,8 +61,23 @@ jobs:
       - name: Setup Build Env
         run: |
           sudo apt-get update
-          sudo apt install clang-18 llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich
+          sudo apt install clang-18 llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich pybind11-dev
           clang++ --version
+
+      - name: Clone Caliper
+        uses: actions/checkout@v2
+        with:
+          repository: LLNL/Caliper
+          path: Caliper
+
+      - name: Build Caliper
+        working-directory: Caliper
+        run: |
+          mkdir build && mkdir install
+          cd build
+          cmake -DWITH_PYTHON_BINDINGS=On -DCMAKE_INSTALL_PREFIX=../install ../
+          make VERBOSE=1
+          make install
 
       - name: Compile check
         run: |
@@ -62,6 +89,7 @@ jobs:
           export CMAKE_OPTS="${CMAKE_OPTS} -DPERFFLOWASPECT_WITH_CUDA=${{matrix.PERFFLOWASPECT_WITH_CUDA}}"
           export CMAKE_OPTS="${CMAKE_OPTS} -DPERFFLOWASPECT_WITH_MPI=${{matrix.PERFFLOWASPECT_WITH_MPI}}"
           export CMAKE_OPTS="${CMAKE_OPTS} -DPERFFLOWASPECT_WITH_MULTITHREADS=${{matrix.PERFFLOWASPECT_WITH_MULTITHREADS}}"
+          export CMAKE_OPTS="${CMAKE_OPTS} -DPERFFLOWASPECT_WITH_CALIPER=${{matrix.PERFFLOWASPECT_WITH_CALIPER}} -Dcaliper_DIR=/home/runner/work/PerfFlowAspect/PerfFlowAspect/Caliper/install"
           echo -e ${CMAKE_OPTS}
           cmake ${CMAKE_OPTS} ..
           # build
@@ -97,6 +125,8 @@ jobs:
           cd src/python
           python -m pip install -r requirements.txt
           python -m pip list
+          # Export path for caliper
+          export PYTHONPATH="/home/runner/work/PerfFlowAspect/PerfFlowAspect/Caliper/install/lib/${{ matrix.python-version }}/site-packages:$PYTHONPATH"
 
       - name: Run Python Smoke Tests
         run: |

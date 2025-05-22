@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.12)
 
 project(PerfFlowAspect VERSION "0.1.0")
 
+# Higher-level build options.
+option(PERFFLOWASPECT_WITH_CALIPER "Build with Caliper support" OFF)
+
 # Fail if using Clang < 18.0
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0)

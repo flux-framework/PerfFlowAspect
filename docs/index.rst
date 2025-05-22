@@ -85,6 +85,7 @@ uniformity as to how performance is measured and controlled.
 
    BuildingPerfFlowAspect
    Annotations
+   CaliperIntegration
    UpcomingFeatures
 
 .. toctree::
