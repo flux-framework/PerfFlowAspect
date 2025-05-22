@@ -1,17 +1,12 @@
-set(adiak_DIR "/g/g14/greene36/Adiak/install/lib/cmake/adiak")
-find_package(adiak REQUIRED)
-if(adiak_FOUND)
-	message(STATUS "Building with Adiak")
-	set(perfflow_deps "${perfflow_deps}" adiak::adiak)
-endif()
-#if(adiak_FOUND)
-#    message(STATUS "Adiak found: ${adiak_FOUND}")
-#    message(STATUS "Adiak include directories: ${adiak_INCLUDE_DIRS}")
-#    message(STATUS "Adiak library directories: ${adiak_LIBRARY_DIRS}")
-#    message(STATUS "Adiak libraries: ${adiak_LIBRARIES}")
-#else()
-#    message(FATAL_ERROR "Adiak not found.")
-#endif()
-#
-#include_directories(${adiak_INCLUDE_DIRS})
-#link_directories(${adiak_LIBRARY_DIRS})
+message(STATUS "Looking for Adiak in ${adiak_DIR}")
+find_package(adiak REQUIRED 
+			PATHS ${adiak_DIR}/lib/cmake/adiak
+			NO_DEFAULT_PATH
+			NO_CMAKE_ENVIRONMENT_PATH
+			NO_CMAKE_PATH
+			NO_SYSTEM_ENVIRONMENT_PATH
+			NO_CMAKE_SYSTEM_PATH)
+
+message(STATUS "FOUND Adiak: ${adiak_DIR}")
+set(ADIAK_FOUND TRUE)
+set(PERFFLOWASPECT_ADIAK_ENABLED TRUE)

@@ -663,6 +663,16 @@ long advice_chrome_tracing_t::get_memory_usage()
     return max_ram_usage;
 }
 
+#ifdef PERFFLOWASPECT_WITH_ADIAK
+long advice_chrome_tracing_t::get_adiak_statistics()
+{
+    adiak_datatype_t *t;
+    adiak_value_t *val;
+    int cat;
+    adiak_get_nameval("adiak_version", &t, &val, &cat, NULL);
+}
+#endif
+
 int advice_chrome_tracing_t::with_flow(const char *module,
                                        const char *function,
                                        const char *flow,
@@ -746,6 +756,7 @@ int advice_chrome_tracing_t::before(const char *module,
     double my_ts = 0, cpu_start, wall_start;
     std::string fname;
     long mem_start;
+
 
     if (m_enable_logging)
     {

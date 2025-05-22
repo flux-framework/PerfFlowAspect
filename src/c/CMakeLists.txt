@@ -11,7 +11,7 @@ else()
     message(FATAL_ERROR "Unsupported CXX compiler: please use Clang == 18.0")
 endif()
 
-option(PERFFLOWASPECT_WITH_ADIAK "Build with Adiak" ON)
+option(PERFFLOWASPECT_WITH_ADIAK "Build with Adiak" OFF)
 
 include(cmake/CMakeBasics.cmake)
 

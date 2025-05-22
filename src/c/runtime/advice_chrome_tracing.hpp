@@ -16,6 +16,10 @@
 #include <string>
 #include "advice_base.hpp"
 
+#ifdef PERFFLOWASPECT_WITH_ADIAK
+#include <adiak_tool.h>
+#endif
+
 class advice_chrome_tracing_t : public advice_base_t
 {
 public:
@@ -43,6 +47,9 @@ private:
     double get_wall_time();
     double get_cpu_time();
     long get_memory_usage();
+#ifdef PERFFLOWASPECT_WITH_ADIAK
+    long get_adiak_statistics();
+#endif
 
     int cannonicalize_perfflow_options ();
     int parse_perfflow_options ();
