@@ -230,16 +230,21 @@ int advice_chrome_tracing_t::flush_if(size_t size)
                     m_ofs << "  \"otherData\": {" << std::endl;
                     #ifdef PERFFLOWASPECT_WITH_ADIAK
                     {
-                        std::string meta_adiak_version = get_adiak_statistics();
-                        if (!meta_adiak_version.empty()) {
-                            m_ofs << "    \"adiak_version\": \""
-                            << meta_adiak_version
-                            << "\""
-                            << std::endl;
+                        const char *key;
+                        json_t *val;
+                        json_t *metadata = get_adiak_statistics();
+                        size_t total = json_object_size(metadata);
+                        size_t idx = 0;
+                        json_object_foreach(metadata, key, val) {
+                            char *v = json_dumps(val, JSON_ENCODE_ANY);
+                            m_ofs << "    \"" << key << "\": " << v;
+                            free(v);
+                            if (++idx < total) {
+                                m_ofs << ",";
+                            }
+                            m_ofs << "\n";
                         }
-                        else {
-                            m_ofs << "WHAT!!!" << std::endl;
-                        }
+                        json_decref(metadata);
                     }
                     #endif
                     m_ofs << "" << std::endl;
@@ -678,16 +683,44 @@ long advice_chrome_tracing_t::get_memory_usage()
 }
 
 #ifdef PERFFLOWASPECT_WITH_ADIAK
-std::string advice_chrome_tracing_t::get_adiak_statistics()
-{
-    adiak_datatype_t *t = nullptr;
-    adiak_value_t *val = nullptr;
-    int cat = 0;
-    int rc = adiak_get_nameval("adiakversion", &t, &val, &cat, nullptr);
-    if (rc != 0 || t->dtype != adiak_version) {
-        return {};
+void advice_chrome_tracing_t::adiak_cb(const char *name, int cat, const char *subcat, adiak_value_t *val, adiak_datatype_t *t, void *opaque) {
+    json_t *obj = static_cast<json_t*>(opaque);
+    json_t *metadata = nullptr;
+    
+    switch (t->dtype) {
+        case adiak_version:
+        case adiak_string:
+        case adiak_catstring:
+        case adiak_path:
+            metadata = json_string(reinterpret_cast<const char*>(val->v_ptr));
+            break;
+        case adiak_long:
+        case adiak_date:
+            metadata = json_integer(val->v_long);
+            break;
+        case adiak_double:
+            metadata = json_real(val->v_double);
+            break;
+        default:
+            return;
     }
-    return std::string(static_cast<char*>(val->v_ptr));
+    json_object_set_new(obj, name, metadata);
+}
+
+json_t *advice_chrome_tracing_t::get_adiak_statistics()
+{
+    // adiak_datatype_t *t = nullptr;
+    // adiak_value_t *val = nullptr;
+    // int cat = 0;
+    // int rc = adiak_get_nameval("adiakversion", &t, &val, &cat, nullptr);
+    // if (rc != 0 || t->dtype != adiak_version) {
+    //     return {};
+    // }
+    // return std::string(static_cast<char*>(val->v_ptr));
+    json_t *adiak_metadata = json_object();
+    adiak_list_namevals(1, adiak_category_all, adiak_cb, adiak_metadata);
+    return adiak_metadata;
+
 }
 #endif
 
