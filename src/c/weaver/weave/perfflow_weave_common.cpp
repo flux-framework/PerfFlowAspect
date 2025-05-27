@@ -26,6 +26,7 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
         return false;
     }
 
+    #ifdef PERFFLOWASPECT_WITH_ADIAK
     Function *main = m.getFunction("main");
 
     if (main != NULL) {
@@ -35,6 +36,7 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
     else {
         outs () << "No main";
     }
+    #endif
 
     bool changed = false;
 
@@ -207,6 +209,7 @@ bool weave_ns::WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
     return true;
 }
 
+#ifdef PERFFLOWASPECT_WITH_ADIAK
 bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
     LLVMContext &context = m.getContext();
 
@@ -236,26 +239,44 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
     FunctionCallee collectAll = m.getOrInsertFunction("adiak_collect_all", collectType);
     builder.CreateCall(collectAll, {});
 
+    // adiak_fini signature
+    FunctionType *adiakFinishType = FunctionType::get(voidTy, {}, false);
+    FunctionCallee adiakFinish = m.getOrInsertFunction("adiak_fini", adiakFinishType);
+
+    // find all places where the function terminates from a ReturnInst
+    std::vector<ReturnInst*> returns;
+    for (BasicBlock &bb : f) {
+        if (auto *ret = dyn_cast<ReturnInst>(bb.getTerminator())) {
+            returns.push_back(ret);
+        }
+    }
+
+    // insert adiak_fini at those return instructions
+    for (ReturnInst *ret : returns) {
+        builder.SetInsertPoint(ret);
+        builder.CreateCall(adiakFinish, {});
+    }
+
     // insert the print callback
-    Function *cb = printAdiakCallback(m);
+    // Function *cb = printAdiakCallback(m);
 
     // register cb with adiak_list_namevals
-    Type *cbTy = cb->getType();
-    PointerType *cbPtrTy = PointerType::getUnqual(cbTy);
-    std::vector<Type*> listNamevalsArgs = { 
-        int32Ty,
-        int32Ty,
-        cbPtrTy,
-        voidPtrTy
-    };  
-    FunctionType *listNamevalsType = FunctionType::get(voidTy, listNamevalsArgs, false);
-    FunctionCallee listNamevals = m.getOrInsertFunction("adiak_list_namevals", listNamevalsType);
+    // Type *cbTy = cb->getType();
+    // PointerType *cbPtrTy = PointerType::getUnqual(cbTy);
+    // std::vector<Type*> listNamevalsArgs = { 
+    //     int32Ty,
+    //     int32Ty,
+    //     cbPtrTy,
+    //     voidPtrTy
+    // };  
+    // FunctionType *listNamevalsType = FunctionType::get(voidTy, listNamevalsArgs, false);
+    // FunctionCallee listNamevals = m.getOrInsertFunction("adiak_list_namevals", listNamevalsType);
 
     // call the cb function
-    Value *adiakVersion = builder.getInt32(1);
-    Value *categoryAll = builder.getInt32(1);
-    Value *cbPtr = builder.CreateBitCast(cb, cbPtrTy);
-    builder.CreateCall(listNamevals, {adiakVersion, categoryAll, cbPtr, nullPtr});
+    // Value *adiakVersion = builder.getInt32(1);
+    // Value *categoryAll = builder.getInt32(1);
+    // Value *cbPtr = builder.CreateBitCast(cb, cbPtrTy);
+    // builder.CreateCall(listNamevals, {adiakVersion, categoryAll, cbPtr, nullPtr});
 
     return true;
 }
@@ -395,6 +416,7 @@ Function* weave_ns::WeaveCommon::printAdiakCallback(Module &m) {
 
     return cb;
 }
+#endif
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

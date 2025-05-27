@@ -41,9 +41,10 @@ private:
 
     bool insertBefore(Module &m, Function &f, StringRef &a,
                                int async, std::string &scope, std::string &flow, std::string pcut); 
-    
+    #ifdef PERFFLOWASPECT_WITH_ADIAK
     bool insertAdiak(Module &m, Function &f);
     Function *printAdiakCallback(Module &m);
+    #endif
 public:
     bool modifyAnnotatedFunctions(Module &m);
 
