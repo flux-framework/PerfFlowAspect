@@ -48,7 +48,7 @@ private:
     double get_cpu_time();
     long get_memory_usage();
 #ifdef PERFFLOWASPECT_WITH_ADIAK
-    long get_adiak_statistics();
+    std::string get_adiak_statistics();
 #endif
 
     int cannonicalize_perfflow_options ();

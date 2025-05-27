@@ -228,6 +228,20 @@ int advice_chrome_tracing_t::flush_if(size_t size)
                     m_ofs << "{" << std::endl;
                     m_ofs << "  \"displayTimeUnit\": \"us\"," << std::endl;
                     m_ofs << "  \"otherData\": {" << std::endl;
+                    #ifdef PERFFLOWASPECT_WITH_ADIAK
+                    {
+                        std::string meta_adiak_version = get_adiak_statistics();
+                        if (!meta_adiak_version.empty()) {
+                            m_ofs << "    \"adiak_version\": \""
+                            << meta_adiak_version
+                            << "\""
+                            << std::endl;
+                        }
+                        else {
+                            m_ofs << "WHAT!!!" << std::endl;
+                        }
+                    }
+                    #endif
                     m_ofs << "" << std::endl;
                     m_ofs << "  }," << std::endl;
                     m_ofs << "  \"traceEvents\": [" << std::endl;
@@ -664,12 +678,16 @@ long advice_chrome_tracing_t::get_memory_usage()
 }
 
 #ifdef PERFFLOWASPECT_WITH_ADIAK
-long advice_chrome_tracing_t::get_adiak_statistics()
+std::string advice_chrome_tracing_t::get_adiak_statistics()
 {
-    adiak_datatype_t *t;
-    adiak_value_t *val;
-    int cat;
-    adiak_get_nameval("adiak_version", &t, &val, &cat, NULL);
+    adiak_datatype_t *t = nullptr;
+    adiak_value_t *val = nullptr;
+    int cat = 0;
+    int rc = adiak_get_nameval("adiakversion", &t, &val, &cat, nullptr);
+    if (rc != 0 || t->dtype != adiak_version) {
+        return {};
+    }
+    return std::string(static_cast<char*>(val->v_ptr));
 }
 #endif
 
@@ -1033,6 +1051,7 @@ int advice_chrome_tracing_t::after(const char *module,
 
         free(json_str);
         json_decref(event);
+
         return flush_if(FLUSH_SIZE);
     }
     else
