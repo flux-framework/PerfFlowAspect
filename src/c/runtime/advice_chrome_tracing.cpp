@@ -698,9 +698,16 @@ void advice_chrome_tracing_t::adiak_cb(const char *name, int cat, const char *su
         case adiak_date:
             metadata = json_integer(val->v_long);
             break;
+        case adiak_ulong:
+            metadata = json_integer(unsigned(val->v_long));
+            break;
         case adiak_double:
             metadata = json_real(val->v_double);
             break;
+        case adiak_int:
+            metadata = json_integer(val->v_int);
+        case adiak_uint:
+            metadata = json_integer(unsigned(val->v_int));
         default:
             return;
     }
@@ -709,18 +716,9 @@ void advice_chrome_tracing_t::adiak_cb(const char *name, int cat, const char *su
 
 json_t *advice_chrome_tracing_t::get_adiak_statistics()
 {
-    // adiak_datatype_t *t = nullptr;
-    // adiak_value_t *val = nullptr;
-    // int cat = 0;
-    // int rc = adiak_get_nameval("adiakversion", &t, &val, &cat, nullptr);
-    // if (rc != 0 || t->dtype != adiak_version) {
-    //     return {};
-    // }
-    // return std::string(static_cast<char*>(val->v_ptr));
     json_t *adiak_metadata = json_object();
     adiak_list_namevals(1, adiak_category_all, adiak_cb, adiak_metadata);
     return adiak_metadata;
-
 }
 #endif
 
