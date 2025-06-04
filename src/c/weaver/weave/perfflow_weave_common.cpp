@@ -220,27 +220,33 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
     Type *int32Ty = Type::getInt32Ty(context);
     PointerType *voidPtrTy = PointerType::getUnqual(int8Ty);
 
-    // the beginning of main
-    // BasicBlock &entry = f.getEntryBlock();
-    // IRBuilder<> builder(&entry, entry.begin());
-
     // adiak_init function signature
     std::vector<Type*> initArgs = { voidPtrTy };
     FunctionType *adiakInitType = FunctionType::get(voidTy, initArgs, false);
     FunctionCallee adiakInit = m.getOrInsertFunction("adiak_init", adiakInitType);
 
-    GlobalVariable *mpiWorld = m.getNamedGlobal("MPI_COMM_WORLD");
-    if (!mpiWorld) {
-        mpiWorld = new GlobalVariable(
-            m,
-            voidPtrTy,
-            /*isConstant=*/false,
-            GlobalValue::ExternalLinkage,
-            /*Initializer=*/nullptr,
-            "MPI_COMM_WORLD"
-        );
+    IRBuilder<> builder(context);
+    Value *arg;
+    BasicBlock &entry = f.getEntryBlock();
+    builder.SetInsertPoint(&entry, entry.begin());
+
+    #ifdef PERFFLOWASPECT_WITH_MPI
+    // find the MPI communicator, MPI_COMM_WORLD
+    // OpenMPI exposes this as MPI_COMM_WORLD
+    // MPICH exposes this as a constant 0x44000000
+    if (GlobalVariable *gv = m.getNamedGlobal("MPI_COMM_WORLD")) {
+        arg = builder.CreateLoad(gv->getValueType(), gv);
     }
-    
+    else {
+        Constant *commVal = ConstantInt::get(int32Ty, 0x44000000); 
+        auto *commGV = new GlobalVariable(
+            m, 
+            int32Ty, 
+            true, 
+            GlobalValue::PrivateLinkage, commVal, "perfflow_mpi_comm_world");
+        arg = builder.CreateBitCast(commGV, voidPtrTy);
+    }
+
     CallInst *mpi = nullptr;
     // find each instruction to see if there is a call instruction
     for (BasicBlock &bb : f) {
@@ -254,27 +260,21 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
             }
         }
         if (mpi) {
+            auto insertPosition = BasicBlock::iterator(mpi);
+            ++insertPosition;
+            builder.SetInsertPoint(mpi->getParent(), insertPosition);
+            builder.CreateCall(adiakInit, {arg});
             break;
         }
     }
-    IRBuilder<> builder(context);
-    Value *arg;
-
-    if (mpi) {
-        auto insertPosition = BasicBlock::iterator(mpi);
-        ++insertPosition;
-        builder.SetInsertPoint(mpi->getParent(), insertPosition);
-        arg = builder.CreateLoad(voidPtrTy, mpiWorld, "comm_world");
-    } else {
-        BasicBlock &entry = f.getEntryBlock();
-        builder.SetInsertPoint(&entry, entry.begin());
+    if (!mpi) {
         arg = Constant::getNullValue(voidPtrTy);
+        builder.CreateCall(adiakInit, {arg});
     }
-    
+    #else
+    arg = Constant::getNullValue(voidPtrTy);
     builder.CreateCall(adiakInit, {arg});
-    
-    // call adiak_init(NULL)
-    // Value *nullPtr = Constant::getNullValue(voidPtrTy);
+    #endif
 
     // call adiak_collect_all()
     FunctionType *collectType = FunctionType::get(int32Ty, {}, false);

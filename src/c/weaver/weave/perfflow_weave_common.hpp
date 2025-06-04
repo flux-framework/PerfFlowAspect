@@ -11,12 +11,6 @@
 #ifndef PERFFLOW_WEAVE_COMMON_H
 #define PERFFLOW_WEAVE_COMMON_H
 
-#define ADIAK_UINT 4
-#define ADIAK_VERSION 8
-#define ADIAK_STRING 9
-#define ADIAK_PATH 11
-#define ADIAK_DATE 6
-
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Attributes.h"
 #include "llvm/IR/Constants.h"
@@ -27,6 +21,10 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/Support/raw_ostream.h"
 #include "../../parser/perfflow_parser.hpp"
+
+#ifdef PERFFLOWASPECT_WITH_MPI
+#include "mpi.h"
+#endif
 
 using namespace llvm;
 
