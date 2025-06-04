@@ -11,6 +11,8 @@
 set(CMAKE_C_COMPILER "/opt/rocm-6.2.1/lib/llvm/bin/amdclang" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/opt/rocm-6.2.1/lib/llvm/bin/amdclang++" CACHE PATH "")
 
+set(PERFFLOWASPECT_WITH_CUDA "OFF" CACHE BOOL "")
+
 # To enable fine-grained profiling with Caliper, utilize the below options.
 # Caliper should be built with the same compilers as the PerfFlowAspect.
 # set(PERFFLOWASPECT_WITH_CALIPER ON CACHE BOOL "") 
