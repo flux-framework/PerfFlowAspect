@@ -234,13 +234,17 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
     // find the MPI communicator, MPI_COMM_WORLD
     // OpenMPI exposes this as ompi_comm_world (untested)
     // MPICH exposes this as a constant 0x44000000
-    if (GlobalVariable *gv = m.getGlobalVariable("ompi_comm_world")) {
-        arg = builder.CreateLoad(gv->getValueType(), gv);
+    GlobalVariable *gv = m.getGlobalVariable("ompi_mpi_comm_world");
+    if (!gv) {
+        gv = m.getGlobalVariable("MPI_COMM_WORLD");
+    }
+    if (gv) {
+        arg = builder.CreateBitCast(gv, voidPtrTy, "mpi_comm_world_void");
     }
     else {
-        AllocaInst *alloc = builder.CreateAlloca(int32Ty, nullptr, "weave_mpi_comm");
         uint64_t mpiValue = 0x44000000;
         Value *commVal = ConstantInt::get(int32Ty, mpiValue);
+        AllocaInst *alloc = builder.CreateAlloca(int32Ty, nullptr, "weave_mpi_comm");
         builder.CreateStore(commVal, alloc);
         arg = builder.CreateBitCast(
             alloc,
@@ -250,7 +254,7 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
     }
 
     CallInst *mpi = nullptr;
-    // find each instruction to see if there is a call instruction
+    // find each instruction to see if there is an MPI_Init call instruction
     for (BasicBlock &bb : f) {
         for (Instruction &i : bb) {
             if (auto *call = dyn_cast<CallInst>(&i)) {
@@ -261,20 +265,19 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
                 }
             }
         }
-        if (mpi) {
-            auto insertPosition = BasicBlock::iterator(mpi);
-            ++insertPosition;
-            builder.SetInsertPoint(mpi->getParent(), insertPosition);
-            builder.CreateCall(adiakInit, {arg});
-            break;
-
-        }
+        if (mpi) break;
     }
-
-    if (!mpi) {
+    if (mpi) {
+        BasicBlock *mpiBlock = mpi->getParent();
+        auto insertPos = BasicBlock::iterator(mpi);
+        ++insertPos;
+        builder.SetInsertPoint(mpiBlock, insertPos);
+    } else {
         arg = Constant::getNullValue(voidPtrTy);
-        builder.CreateCall(adiakInit, {arg});
     }
+
+    builder.CreateCall(adiakInit, {arg});
+
     #else
     arg = Constant::getNullValue(voidPtrTy);
     builder.CreateCall(adiakInit, {arg});
@@ -284,6 +287,16 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
     FunctionType *collectType = FunctionType::get(int32Ty, {}, false);
     FunctionCallee collectAll = m.getOrInsertFunction("adiak_collect_all", collectType);
     builder.CreateCall(collectAll, {});
+
+    // call adiak_walltime()
+    FunctionCallee walltime = m.getOrInsertFunction("adiak_walltime", collectType);
+    builder.CreateCall(walltime, {});
+
+    FunctionCallee systime = m.getOrInsertFunction("adiak_systime", collectType);
+    builder.CreateCall(systime, {});
+
+    FunctionCallee cputime = m.getOrInsertFunction("adiak_cputime", collectType);
+    builder.CreateCall(cputime, {});
 
     // adiak_fini signature
     FunctionType *adiakFinishType = FunctionType::get(voidTy, {}, false);

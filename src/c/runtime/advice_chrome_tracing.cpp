@@ -706,8 +706,18 @@ void advice_chrome_tracing_t::adiak_cb(const char *name, int cat, const char *su
             break;
         case adiak_int:
             metadata = json_integer(val->v_int);
+            break;
         case adiak_uint:
             metadata = json_integer(unsigned(val->v_int));
+            break;
+        case adiak_timeval: {
+            struct timeval *tv = (struct timeval *)(val->v_ptr);
+            json_t *tv_obj = json_object();
+            json_object_set_new(tv_obj, "tv_sec",  json_integer(tv->tv_sec));
+            json_object_set_new(tv_obj, "tv_usec", json_integer(tv->tv_usec));
+            metadata = tv_obj;
+            break;
+        }
         default:
             return;
     }
