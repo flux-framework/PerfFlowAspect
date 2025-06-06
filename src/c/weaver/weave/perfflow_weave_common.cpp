@@ -232,19 +232,21 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
 
     #ifdef PERFFLOWASPECT_WITH_MPI
     // find the MPI communicator, MPI_COMM_WORLD
-    // OpenMPI exposes this as MPI_COMM_WORLD
+    // OpenMPI exposes this as ompi_comm_world (untested)
     // MPICH exposes this as a constant 0x44000000
-    if (GlobalVariable *gv = m.getNamedGlobal("MPI_COMM_WORLD")) {
+    if (GlobalVariable *gv = m.getGlobalVariable("ompi_comm_world")) {
         arg = builder.CreateLoad(gv->getValueType(), gv);
     }
     else {
-        Constant *commVal = ConstantInt::get(int32Ty, 0x44000000); 
-        auto *commGV = new GlobalVariable(
-            m, 
-            int32Ty, 
-            true, 
-            GlobalValue::PrivateLinkage, commVal, "perfflow_mpi_comm_world");
-        arg = builder.CreateBitCast(commGV, voidPtrTy);
+        AllocaInst *alloc = builder.CreateAlloca(int32Ty, nullptr, "weave_mpi_comm");
+        uint64_t mpiValue = 0x44000000;
+        Value *commVal = ConstantInt::get(int32Ty, mpiValue);
+        builder.CreateStore(commVal, alloc);
+        arg = builder.CreateBitCast(
+            alloc,
+            voidPtrTy,
+            "mpi_comm_world_void"
+        );
     }
 
     CallInst *mpi = nullptr;
@@ -265,8 +267,10 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
             builder.SetInsertPoint(mpi->getParent(), insertPosition);
             builder.CreateCall(adiakInit, {arg});
             break;
+
         }
     }
+
     if (!mpi) {
         arg = Constant::getNullValue(voidPtrTy);
         builder.CreateCall(adiakInit, {arg});
