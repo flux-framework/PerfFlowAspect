@@ -228,25 +228,27 @@ int advice_chrome_tracing_t::flush_if(size_t size)
                     m_ofs << "{" << std::endl;
                     m_ofs << "  \"displayTimeUnit\": \"us\"," << std::endl;
                     m_ofs << "  \"otherData\": {" << std::endl;
-                    #ifdef PERFFLOWASPECT_WITH_ADIAK
+#ifdef PERFFLOWASPECT_WITH_ADIAK
                     {
                         const char *key;
                         json_t *val;
                         json_t *metadata = get_adiak_statistics();
                         size_t total = json_object_size(metadata);
                         size_t idx = 0;
-                        json_object_foreach(metadata, key, val) {
+                        json_object_foreach(metadata, key, val)
+                        {
                             char *v = json_dumps(val, JSON_ENCODE_ANY);
                             m_ofs << "    \"" << key << "\": " << v;
                             free(v);
-                            if (++idx < total) {
+                            if (++idx < total)
+                            {
                                 m_ofs << ",";
                             }
                             m_ofs << "\n";
                         }
                         json_decref(metadata);
                     }
-                    #endif
+#endif
                     m_ofs << "" << std::endl;
                     m_ofs << "  }," << std::endl;
                     m_ofs << "  \"traceEvents\": [" << std::endl;
@@ -683,11 +685,14 @@ long advice_chrome_tracing_t::get_memory_usage()
 }
 
 #ifdef PERFFLOWASPECT_WITH_ADIAK
-void advice_chrome_tracing_t::adiak_cb(const char *name, int cat, const char *subcat, adiak_value_t *val, adiak_datatype_t *t, void *opaque) {
-    json_t *obj = static_cast<json_t*>(opaque);
+void advice_chrome_tracing_t::adiak_cb(const char *name, int cat,
+                                       const char *subcat, adiak_value_t *val, adiak_datatype_t *t, void *opaque)
+{
+    json_t *obj = static_cast<json_t *>(opaque);
     json_t *metadata = nullptr;
-    
-    switch (t->dtype) {
+
+    switch (t->dtype)
+    {
         case adiak_version:
         case adiak_string:
         case adiak_catstring:
@@ -710,7 +715,8 @@ void advice_chrome_tracing_t::adiak_cb(const char *name, int cat, const char *su
         case adiak_uint:
             metadata = json_integer(unsigned(val->v_int));
             break;
-        case adiak_timeval: {
+        case adiak_timeval:
+        {
             struct timeval *tv = (struct timeval *)(val->v_ptr);
             json_t *tv_obj = json_object();
             json_object_set_new(tv_obj, "tv_sec",  json_integer(tv->tv_sec));

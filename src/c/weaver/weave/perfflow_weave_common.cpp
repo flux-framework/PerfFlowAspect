@@ -26,17 +26,19 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
         return false;
     }
 
-    #ifdef PERFFLOWASPECT_WITH_ADIAK
+#ifdef PERFFLOWASPECT_WITH_ADIAK
     Function *main = m.getFunction("main");
 
-    if (main != NULL) {
+    if (main != NULL)
+    {
         outs() << "Inserting Adiak?\n";
         insertAdiak(m, *main);
     }
-    else {
-        outs () << "No main";
+    else
+    {
+        outs() << "No main";
     }
-    #endif
+#endif
 
     bool changed = false;
 
@@ -210,7 +212,8 @@ bool weave_ns::WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
 }
 
 #ifdef PERFFLOWASPECT_WITH_ADIAK
-bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
+bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f)
+{
     LLVMContext &context = m.getContext();
 
     // the adiak_init() call
@@ -221,7 +224,7 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
     PointerType *voidPtrTy = PointerType::getUnqual(int8Ty);
 
     // adiak_init function signature
-    std::vector<Type*> initArgs = { voidPtrTy };
+    std::vector<Type *> initArgs = { voidPtrTy };
     FunctionType *adiakInitType = FunctionType::get(voidTy, initArgs, false);
     FunctionCallee adiakInit = m.getOrInsertFunction("adiak_init", adiakInitType);
 
@@ -230,62 +233,79 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
     BasicBlock &entry = f.getEntryBlock();
     builder.SetInsertPoint(&entry, entry.begin());
 
-    #ifdef PERFFLOWASPECT_WITH_MPI
+#ifdef PERFFLOWASPECT_WITH_MPI
     // find the MPI communicator, MPI_COMM_WORLD
     // OpenMPI exposes this as ompi_comm_world (untested)
     // MPICH exposes this as a constant 0x44000000
     GlobalVariable *gv = m.getGlobalVariable("ompi_mpi_comm_world");
-    if (!gv) {
+    if (!gv)
+    {
         gv = m.getGlobalVariable("MPI_COMM_WORLD");
     }
-    if (gv) {
-        arg = builder.CreateBitCast(gv, voidPtrTy, "mpi_comm_world_void");
+    if (gv)
+    {
+        // ompi_mpi_comm_world is a pointer to mpi_predefined_communicator_t struct
+        // the first value holds the actual communicator
+        StructType *ompCommStruct = cast<StructType>(gv->getValueType());
+        Value *ompCommStructPtr = builder.CreateBitCast(gv,
+                                  PointerType::getUnqual(ompCommStruct));
+        Value *commPtr = builder.CreateStructGEP(ompCommStruct, ompCommStructPtr, 0);
+        arg = builder.CreateBitCast(commPtr, voidPtrTy, "mpi_comm_world_void");
     }
-    else {
+    else
+    {
         uint64_t mpiValue = 0x44000000;
         Value *commVal = ConstantInt::get(int32Ty, mpiValue);
         AllocaInst *alloc = builder.CreateAlloca(int32Ty, nullptr, "weave_mpi_comm");
         builder.CreateStore(commVal, alloc);
         arg = builder.CreateBitCast(
-            alloc,
-            voidPtrTy,
-            "mpi_comm_world_void"
-        );
+                  alloc,
+                  voidPtrTy,
+                  "mpi_comm_world_void"
+              );
     }
 
     CallInst *mpi = nullptr;
     // find each instruction to see if there is an MPI_Init call instruction
-    for (BasicBlock &bb : f) {
-        for (Instruction &i : bb) {
-            if (auto *call = dyn_cast<CallInst>(&i)) {
-                if (Function *callee = call->getCalledFunction()) {
-                    if (callee->getName() == "MPI_Init") {
+    for (BasicBlock &bb : f)
+    {
+        for (Instruction &i : bb)
+        {
+            if (auto *call = dyn_cast<CallInst>(&i))
+            {
+                if (Function *callee = call->getCalledFunction())
+                {
+                    if (callee->getName() == "MPI_Init")
+                    {
                         mpi = call;
                     }
                 }
             }
         }
-        if (mpi) break;
+        if (mpi) { break; }
     }
-    if (mpi) {
+    if (mpi)
+    {
         BasicBlock *mpiBlock = mpi->getParent();
         auto insertPos = BasicBlock::iterator(mpi);
         ++insertPos;
         builder.SetInsertPoint(mpiBlock, insertPos);
-    } else {
+    }
+    else
+    {
         arg = Constant::getNullValue(voidPtrTy);
     }
-
     builder.CreateCall(adiakInit, {arg});
 
-    #else
+#else
     arg = Constant::getNullValue(voidPtrTy);
     builder.CreateCall(adiakInit, {arg});
-    #endif
+#endif
 
     // call adiak_collect_all()
     FunctionType *collectType = FunctionType::get(int32Ty, {}, false);
-    FunctionCallee collectAll = m.getOrInsertFunction("adiak_collect_all", collectType);
+    FunctionCallee collectAll = m.getOrInsertFunction("adiak_collect_all",
+                                collectType);
     builder.CreateCall(collectAll, {});
 
     // call adiak_walltime()
@@ -300,18 +320,22 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f) {
 
     // adiak_fini signature
     FunctionType *adiakFinishType = FunctionType::get(voidTy, {}, false);
-    FunctionCallee adiakFinish = m.getOrInsertFunction("adiak_fini", adiakFinishType);
+    FunctionCallee adiakFinish = m.getOrInsertFunction("adiak_fini",
+                                 adiakFinishType);
 
     // find all places where the function terminates from a ReturnInst
-    std::vector<ReturnInst*> returns;
-    for (BasicBlock &bb : f) {
-        if (auto *ret = dyn_cast<ReturnInst>(bb.getTerminator())) {
+    std::vector<ReturnInst *> returns;
+    for (BasicBlock &bb : f)
+    {
+        if (auto *ret = dyn_cast<ReturnInst>(bb.getTerminator()))
+        {
             returns.push_back(ret);
         }
     }
 
     // insert adiak_fini at those return instructions
-    for (ReturnInst *ret : returns) {
+    for (ReturnInst *ret : returns)
+    {
         builder.SetInsertPoint(ret);
         builder.CreateCall(adiakFinish, {});
     }
