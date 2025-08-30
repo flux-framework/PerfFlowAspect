@@ -56,3 +56,12 @@ ${CMAKE_CURRENT_BINARY_DIR}/perfflowaspect.pc)
 
 install(FILES ${PROJECT_BINARY_DIR}/config/perfflowaspect.pc
         DESTINATION share)
+
+# generated the config.mk
+configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/perfflowaspect_config.mk.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/perfflowaspect_config.mk")
+
+# install the config.mk
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/perfflowaspect_config.mk"
+        DESTINATION ${PERFFLOWASPECT_INSTALL_CMAKE_MODULE_DIR})
+
