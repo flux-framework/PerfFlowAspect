@@ -117,6 +117,10 @@ after the execution of the annotated function whereas
 `pointcut=before` or `pointcut=after` will only advise
 either corresponding point of function execution.
 
+### Auspices
+
+Part of this work was supported by the LLNL-LDRD Program under Project No. 24-SI-005.
+
 ### License
 
 SPDX-License-Identifier: LGPL-3.0
