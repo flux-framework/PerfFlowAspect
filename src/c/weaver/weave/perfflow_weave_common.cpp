@@ -153,7 +153,18 @@ bool weave_ns::WeaveCommon::insertAfter(Module &m, Function &f, StringRef &a,
     for (BasicBlock &bb : f)
     {
         Instruction *inst = bb.getTerminator();
-        if (isa<ReturnInst>(inst) || isa<ResumeInst>(inst))
+        bool exitFlag = false;
+        printf("outside\n");
+        if (auto *callInst = dyn_cast<CallInst>(inst)) {
+            printf("inside first if\n");
+            if (auto *callee = callInst->getCalledFunction()) {
+                printf("inside second if, %s\n", callee->getName().str().c_str());
+                if (callee->getName() == "exit" || callee->getName() == "abort" || callee->getName() == "pthread_exit") {
+                    exitFlag = true;
+                }
+            }
+        }
+        if (isa<ReturnInst>(inst) || isa<ResumeInst>(inst) || exitFlag)
         {
             IRBuilder<> builder(inst);
             Value *v1 = builder.CreateGlobalStringPtr(m.getName(), "str");
