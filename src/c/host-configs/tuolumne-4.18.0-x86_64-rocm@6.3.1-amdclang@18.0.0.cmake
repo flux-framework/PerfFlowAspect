@@ -8,8 +8,8 @@
 # SPDX-License-Identifier: LGPL-3.0
 ##############################################################
 
-set(CMAKE_C_COMPILER "/opt/rocm-6.3.1/lib/llvm/bin/amdclang" CACHE PATH "")
-set(CMAKE_CXX_COMPILER "/opt/rocm-6.3.1/lib/llvm/bin/amdclang++" CACHE PATH "")
+set(CMAKE_C_COMPILER "/opt/rocm-6.4.2/lib/llvm/bin/amdclang" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/opt/rocm-6.4.2/lib/llvm/bin/amdclang++" CACHE PATH "")
 
 set(PERFFLOWASPECT_WITH_CUDA "OFF" CACHE BOOL "")
 
