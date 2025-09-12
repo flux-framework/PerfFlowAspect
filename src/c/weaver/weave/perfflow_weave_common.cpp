@@ -153,19 +153,21 @@ bool weave_ns::WeaveCommon::insertAfter(Module &m, Function &f, StringRef &a,
     for (BasicBlock &bb : f)
     {
         Instruction *inst = bb.getTerminator();
-        bool exitFlag = false;
-        printf("outside\n");
-        if (auto *callInst = dyn_cast<CallInst>(inst)) {
-            printf("inside first if\n");
-            if (auto *callee = callInst->getCalledFunction()) {
-                printf("inside second if, %s\n", callee->getName().str().c_str());
-                if (callee->getName() == "exit" || callee->getName() == "abort" || callee->getName() == "pthread_exit") {
-                    exitFlag = true;
+        bool valid = false;
+        if (isa<ReturnInst>(inst) || isa<ResumeInst>(inst))
+        {
+            valid = true;
+        } else if (isa<UnreachableInst>(inst)) {
+            if (auto *call = dyn_cast<CallInst>(inst->getPrevNode())) {
+                Function *callee = call->getCalledFunction();
+                if (callee && callee->getName() == "pthread_exit" || callee->getName() == "exit" || callee->getName() == "abort") {
+                    inst = inst->getPrevNode();
+                    valid = true;
                 }
             }
         }
-        if (isa<ReturnInst>(inst) || isa<ResumeInst>(inst) || exitFlag)
-        {
+
+        if (valid) {
             IRBuilder<> builder(inst);
             Value *v1 = builder.CreateGlobalStringPtr(m.getName(), "str");
             Value *v2 = builder.CreateGlobalStringPtr(f.getName(), "str");
