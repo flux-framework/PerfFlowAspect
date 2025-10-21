@@ -61,10 +61,9 @@ PassPluginLibraryInfo getNewWeavingPassPluginInfo()
     const auto pass_callback = [](PassBuilder & PB)
     {
         PB.registerPipelineEarlySimplificationEPCallback(
-            [&](ModulePassManager & MPM, auto)
+            [&](ModulePassManager & MPM, OptimizationLevel OL, ThinOrFullLTOPhase TOFLTOP)
         {
             MPM.addPass(NewWeavingPass());
-            return true;
         }
         );
     };
