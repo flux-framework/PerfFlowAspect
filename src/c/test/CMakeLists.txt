@@ -57,9 +57,18 @@ endif()
 
 if(PERFFLOWASPECT_WITH_CUDA)
     message(STATUS " [*] Adding test: smoketest_cuda")
-	set(CUDA_NVCC_FLAGS  "-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=../../../weaver/weave/libWeavePass.so -Xcompiler=-fpass-plugin=../../../weaver/weave/libWeavePass.so")
-    cuda_add_executable(smoketest_cuda smoketest_cuda_wrapper.cpp smoketest_cuda_kernel.cu)
-    target_link_libraries(smoketest_cuda ${perfflow_deps} ${CUDA_LIBRARIES})
+    list(APPEND CUDA_NVCC_FLAGS
+        "-ccbin ${CMAKE_CXX_COMPILER}"
+    )
+    cuda_add_executable(smoketest_cuda
+        smoketest_cuda_wrapper.cpp
+        smoketest_cuda_kernel.cu
+    )
+    set_source_files_properties(smoketest_cuda_wrapper.cpp COMPILE_FLAGS "-Xclang -load -Xclang ${CMAKE_BINARY_DIR}/weaver/weave/libWeavePass.so -fpass-plugin=${CMAKE_BINARY_DIR}/weaver/weave/libWeavePass.so  -fPIC")
+    target_link_libraries(smoketest_cuda
+        ${perfflow_deps}
+        ${CUDA_LIBRARIES}
+    )
 endif()
 
 configure_file(t0001-cbinding-basic.t.in
