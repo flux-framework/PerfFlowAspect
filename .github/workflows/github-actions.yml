@@ -62,7 +62,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt install clang-20 llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich pybind11-dev
-          clang++ --version
+          clang++-20 --version
 
       - name: Clone Caliper
         uses: actions/checkout@v2
@@ -84,7 +84,7 @@ jobs:
           cd src/c
           mkdir build install
           cd build
-          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR=/usr/lib/llvm-20/cmake -DCMAKE_INSTALL_PREFIX=../install"
+          export CMAKE_OPTS="-DCMAKE_CXX_COMPILER=clang++-20 -DLLVM_DIR=/usr/lib/llvm-20/cmake -DCMAKE_INSTALL_PREFIX=../install"
           export CMAKE_OPTS="${CMAKE_OPTS} -DCMAKE_BUILD_TYPE=${{matrix.CMAKE_BUILD_TYPE}}"
           export CMAKE_OPTS="${CMAKE_OPTS} -DPERFFLOWASPECT_WITH_CUDA=${{matrix.PERFFLOWASPECT_WITH_CUDA}}"
           export CMAKE_OPTS="${CMAKE_OPTS} -DPERFFLOWASPECT_WITH_MPI=${{matrix.PERFFLOWASPECT_WITH_MPI}}"
