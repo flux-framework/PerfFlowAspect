@@ -5,13 +5,13 @@ project(PerfFlowAspect VERSION "0.1.0")
 # Higher-level build options.
 option(PERFFLOWASPECT_WITH_CALIPER "Build with Caliper support" OFF)
 
-# Fail if using Clang < 18.0
+# Fail if using Clang < 20.0
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0)
-        message(FATAL_ERROR "Clang++ version must be equal to 18.0!")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 20.0)
+        message(FATAL_ERROR "Clang++ version must be equal to 20.0!")
     endif()
 else()
-    message(FATAL_ERROR "Unsupported CXX compiler: please use Clang == 18.0")
+    message(FATAL_ERROR "Unsupported CXX compiler: please use Clang == 20.0")
 endif()
 
 include(cmake/CMakeBasics.cmake)

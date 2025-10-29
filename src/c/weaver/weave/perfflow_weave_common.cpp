@@ -169,11 +169,11 @@ bool weave_ns::WeaveCommon::insertAfter(Module &m, Function &f, StringRef &a,
 
         if (valid) {
             IRBuilder<> builder(inst);
-            Value *v1 = builder.CreateGlobalStringPtr(m.getName(), "str");
-            Value *v2 = builder.CreateGlobalStringPtr(f.getName(), "str");
-            Value *v3 = builder.CreateGlobalStringPtr(StringRef(scope), "str");
-            Value *v4 = builder.CreateGlobalStringPtr(StringRef(flow), "str");
-            Value *v5 = builder.CreateGlobalStringPtr(StringRef(pcut), "str");
+            Value *v1 = builder.CreateGlobalString(m.getName(), "str");
+            Value *v2 = builder.CreateGlobalString(f.getName(), "str");
+            Value *v3 = builder.CreateGlobalString(StringRef(scope), "str");
+            Value *v4 = builder.CreateGlobalString(StringRef(flow), "str");
+            Value *v5 = builder.CreateGlobalString(StringRef(pcut), "str");
             std::vector<Value *> args;
             args.push_back(ConstantInt::get(Type::getInt32Ty(context), async));
             args.push_back(v1);
@@ -216,11 +216,11 @@ bool weave_ns::WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
     //                                          weaveFuncTy);
     auto &entry = f.getEntryBlock();
     IRBuilder<> builder(&entry);
-    Value *v1 = builder.CreateGlobalStringPtr(m.getName(), "str");
-    Value *v2 = builder.CreateGlobalStringPtr(f.getName(), "str");
-    Value *v3 = builder.CreateGlobalStringPtr(StringRef(scope), "str");
-    Value *v4 = builder.CreateGlobalStringPtr(StringRef(flow), "str");
-    Value *v5 = builder.CreateGlobalStringPtr(StringRef(pcut), "str");
+    Value *v1 = builder.CreateGlobalString(m.getName(), "str");
+    Value *v2 = builder.CreateGlobalString(f.getName(), "str");
+    Value *v3 = builder.CreateGlobalString(StringRef(scope), "str");
+    Value *v4 = builder.CreateGlobalString(StringRef(flow), "str");
+    Value *v5 = builder.CreateGlobalString(StringRef(pcut), "str");
     builder.SetInsertPoint(&entry, entry.begin());
     std::vector<Value *> args;
     args.push_back(ConstantInt::get(Type::getInt32Ty(context), async));
@@ -243,7 +243,7 @@ bool weave_ns::WeaveCommon::instrumentCaliper(Module &M, Function &F)
 
     IRB.SetInsertPoint(Entry.getTerminator());
     std::string FunctionName = F.getName().str();
-    auto *FnStr = IRB.CreateGlobalStringPtr(FunctionName);
+    auto *FnStr = IRB.CreateGlobalString(FunctionName);
     IRB.CreateCall(CaliBeginRegion, {FnStr});
 
     bool RetFound = false;
