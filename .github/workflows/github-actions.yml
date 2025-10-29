@@ -61,7 +61,7 @@ jobs:
       - name: Setup Build Env
         run: |
           sudo apt-get update
-          sudo apt install clang-18 llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich pybind11-dev
+          sudo apt install clang-20 llvm-dev libjansson-dev libssl-dev bison flex make cmake mpich pybind11-dev
           clang++ --version
 
       - name: Clone Caliper
