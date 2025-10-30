@@ -36,8 +36,8 @@ different Linux distributions.
 
 **redhat**                | **ubuntu**              | **version**
 ----------                | ----------              | -----------
-clang                     | clang                   | == 18.0
-llvm-devel                | llvm-dev                | == 18.0
+clang                     | clang                   | == 20.0
+llvm-devel                | llvm-dev                | == 20.0
 jansson-devel             | libjansson-dev          | >= 2.6
 openssl-devel             | libssl-dev              | >= 1.0.2
 cmake                     | cmake                   | >= 3.10
