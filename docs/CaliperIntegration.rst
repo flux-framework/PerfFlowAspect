@@ -32,8 +32,8 @@ PerfFlowAspect. These can be specified with the `-DCMAKE_C_COMPILER` and
 
 .. code:: bash
 
-   cmake -DCMAKE_C_COMPILER=<path-to-clang18-compiler> \
-         -DCMAKE_C_COMPILER=<path-to-clang18++-compiler> \
+   cmake -DCMAKE_C_COMPILER=<path-to-clang20-compiler> \
+         -DCMAKE_C_COMPILER=<path-to-clang20++-compiler> \
          -DWITH_PYTHON_BINDINGS=On \
          -Dcaliper_DIR=<path-to-install>/share/lib/caliper ../
 
