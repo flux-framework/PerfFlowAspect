@@ -31,12 +31,12 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
 
     if (main != NULL)
     {
-        outs() << "Inserting Adiak?\n";
+        outs() << "WeavePass[INFO]: Found main to inject Adiak\n";
         insertAdiak(m, *main);
     }
     else
     {
-        outs() << "No main";
+        outs() << "WeavePass[WARN]: Could not find main to inject Adiak\n";
     }
 #endif
 
@@ -237,33 +237,15 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f)
     // find the MPI communicator, MPI_COMM_WORLD
     // OpenMPI exposes this as ompi_comm_world (untested)
     // MPICH exposes this as a constant 0x44000000
-    GlobalVariable *gv = m.getGlobalVariable("ompi_mpi_comm_world");
-    if (!gv)
-    {
-        gv = m.getGlobalVariable("MPI_COMM_WORLD");
-    }
-    if (gv)
-    {
-        // ompi_mpi_comm_world is a pointer to mpi_predefined_communicator_t struct
-        // the first value holds the actual communicator
-        StructType *ompCommStruct = cast<StructType>(gv->getValueType());
-        Value *ompCommStructPtr = builder.CreateBitCast(gv,
-                                  PointerType::getUnqual(ompCommStruct));
-        Value *commPtr = builder.CreateStructGEP(ompCommStruct, ompCommStructPtr, 0);
-        arg = builder.CreateBitCast(commPtr, voidPtrTy, "mpi_comm_world_void");
-    }
-    else
-    {
-        uint64_t mpiValue = 0x44000000;
-        Value *commVal = ConstantInt::get(int32Ty, mpiValue);
-        AllocaInst *alloc = builder.CreateAlloca(int32Ty, nullptr, "weave_mpi_comm");
-        builder.CreateStore(commVal, alloc);
-        arg = builder.CreateBitCast(
-                  alloc,
-                  voidPtrTy,
-                  "mpi_comm_world_void"
-              );
-    }
+    uint64_t mpiValue = 0x44000000;
+    Value *commVal = ConstantInt::get(int32Ty, mpiValue);
+    AllocaInst *alloc = builder.CreateAlloca(int32Ty, nullptr, "weave_mpi_comm");
+    builder.CreateStore(commVal, alloc);
+    arg = builder.CreateBitCast(
+              alloc,
+              voidPtrTy,
+              "mpi_comm_world_void"
+          );
 
     CallInst *mpi = nullptr;
     // find each instruction to see if there is an MPI_Init call instruction

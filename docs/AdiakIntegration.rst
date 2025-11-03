@@ -18,12 +18,12 @@ Adiak must be installed prior to PerfFlowAspect integration.
 *************
  C/C++ Build
 *************
-Adiak is enabled by specifying ``PERFFLOWASPECT_WITH_MPI=On`` along with the path to Adiak's package configuration file, i.e. ``<installpath>/lib/cmake/adiak>``.
+Adiak is enabled by specifying ``PERFFLOWASPECT_WITH_ADIAK=On`` along with the path to Adiak's package configuration file, i.e. ``<installpath>/lib/cmake/adiak>``.
 
 .. code:: bash
 
-   cmake -DCMAKE_C_COMPILER=<path-to-clang18-compiler> \
-         -DCMAKE_C_COMPILER=<path-to-clang18++-compiler> \
+   cmake -DCMAKE_C_COMPILER=<path-to-clang20-compiler> \
+         -DCMAKE_CXX_COMPILER=<path-to-clang20++-compiler> \
          -DPERFFLOWASPECT_WITH_ADIAK=On \
          -Dadiak_DIR=<installpath>/lib/cmake/adiak> ../
 
@@ -31,8 +31,8 @@ Adiak can gather additional metadata related to MPI. The flag ``PERFFLOWASPECT_W
 
 .. code:: bash
 
-   cmake -DCMAKE_C_COMPILER=<path-to-clang18-compiler> \
-         -DCMAKE_C_COMPILER=<path-to-clang18++-compiler> \
+   cmake -DCMAKE_C_COMPILER=<path-to-clang20-compiler> \
+         -DCMAKE_CXX_COMPILER=<path-to-clang20++-compiler> \
          -DPERFFLOWASPECT_WITH_ADIAK=On \
          -Dadiak_DIR=<installpath>/lib/cmake/adiak> \
          -DPERFFLOWASPECT_WITH_MPI=On ../

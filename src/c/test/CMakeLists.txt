@@ -57,9 +57,7 @@ endif()
 
 if(PERFFLOWASPECT_WITH_CUDA)
     message(STATUS " [*] Adding test: smoketest_cuda")
-    list(APPEND CUDA_NVCC_FLAGS
-        "-ccbin ${CMAKE_CXX_COMPILER}"
-    )
+    set(CUDA_NVCC_FLAGS  "-ccbin ${CMAKE_CXX_COMPILER} -Xcompiler=-Xclang -Xcompiler=-load -Xcompiler=-Xclang -Xcompiler=../../../weaver/weave/libWeavePass.so -Xcompiler=-fpass-plugin=../../../weaver/weave/libWeavePass.so")
     cuda_add_executable(smoketest_cuda
         smoketest_cuda_wrapper.cpp
         smoketest_cuda_kernel.cu
