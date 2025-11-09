@@ -362,6 +362,7 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f)
     return true;
 
 }
+#endif
 
 #ifdef PERFFLOWASPECT_WITH_CALIPER
 bool weave_ns::WeaveCommon::instrumentCaliper(Module &M, Function &F)
