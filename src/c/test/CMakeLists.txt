@@ -20,6 +20,11 @@ foreach(TEST ${SMOKETESTS})
 	set_source_files_properties(${TEST}.cpp COMPILE_FLAGS "-Xclang -load -Xclang ../weaver/weave/libWeavePass.so -fpass-plugin=../weaver/weave/libWeavePass.so -fPIC")
     target_link_libraries(${TEST} ${perfflow_deps})
     message(STATUS "${perfflow_deps}")
+    if(PERFFLOWASPECT_WITH_CALIPER)
+        target_link_libraries(${TEST} ${perfflow_deps} caliper)
+    else()
+        target_link_libraries(${TEST} ${perfflow_deps})
+    endif()
 endforeach()
 
 # Build Options
@@ -44,7 +49,11 @@ if(PERFFLOWASPECT_WITH_MULTITHREADS)
     add_executable(smoketest_MT smoketest_MT.cpp)
 	set_source_files_properties(smoketest_MT.cpp COMPILE_FLAGS "-Xclang -load -Xclang ../weaver/weave/libWeavePass.so -fpass-plugin=../weaver/weave/libWeavePass.so  -fPIC")
     set(THREADS_PREFER_PTHREAD_FLAG ON)
-    target_link_libraries(smoketest_MT ${perfflow_deps} pthread)
+    if(PERFFLOWASPECT_WITH_CALIPER)
+        target_link_libraries(smoketest_MT ${perfflow_deps} pthread caliper)
+    else()
+        target_link_libraries(smoketest_MT ${perfflow_deps} pthread)
+    endif()
 endif()
 
 if(PERFFLOWASPECT_WITH_MPI)
@@ -52,7 +61,11 @@ if(PERFFLOWASPECT_WITH_MPI)
     add_executable(smoketest_MPI smoketest_MPI.cpp)
 	set_source_files_properties(smoketest_MPI.cpp COMPILE_FLAGS "-Xclang -load -Xclang ../weaver/weave/libWeavePass.so -fpass-plugin=../weaver/weave/libWeavePass.so  -fPIC")
     include_directories(${MPI_INCLUDE_PATH})
-    target_link_libraries(smoketest_MPI ${perfflow_deps} ${MPI_LIBRARIES})
+    if(PERFFLOWASPECT_WITH_CALIPER)
+        target_link_libraries(smoketest_MPI ${perfflow_deps} ${MPI_LIBRARIES} caliper)
+    else()
+        target_link_libraries(smoketest_MPI ${perfflow_deps} ${MPI_LIBRARIES})
+    endif()
 endif()
 
 if(PERFFLOWASPECT_WITH_CUDA)
@@ -63,10 +76,11 @@ if(PERFFLOWASPECT_WITH_CUDA)
         smoketest_cuda_kernel.cu
     )
     set_source_files_properties(smoketest_cuda_wrapper.cpp COMPILE_FLAGS "-Xclang -load -Xclang ${CMAKE_BINARY_DIR}/weaver/weave/libWeavePass.so -fpass-plugin=${CMAKE_BINARY_DIR}/weaver/weave/libWeavePass.so  -fPIC")
-    target_link_libraries(smoketest_cuda
-        ${perfflow_deps}
-        ${CUDA_LIBRARIES}
-    )
+    if(PERFFLOWASPECT_WITH_CALIPER)
+        target_link_libraries(smoketest_cuda ${perfflow_deps} ${CUDA_LIBRARIES} caliper)
+    else()
+        target_link_libraries(smoketest_cuda ${perfflow_deps} ${CUDA_LIBRARIES})
+    endif()
 endif()
 
 configure_file(t0001-cbinding-basic.t.in

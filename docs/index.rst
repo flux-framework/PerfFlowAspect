@@ -86,6 +86,7 @@ uniformity as to how performance is measured and controlled.
    BuildingPerfFlowAspect
    Annotations
    AdiakIntegration
+   CaliperIntegration
    UpcomingFeatures
 
 .. toctree::

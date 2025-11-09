@@ -40,6 +40,24 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
     }
 #endif
 
+    // Support Caliper annotations by greating the cali_begin_region
+    // and cali_end_region functions.
+#ifdef PERFFLOWASPECT_WITH_CALIPER
+    IRBuilder<> IRB(m.getContext());
+    AttrBuilder AB(m.getContext());
+    AB.addAttribute(Attribute::AlwaysInline);
+    //It was not added in LLVM@10.
+    //AB.addAttribute(Attribute::ArgMemOnly);
+    AttributeList Attrs = AttributeList::get(m.getContext(),
+                          AttributeList::FunctionIndex, AB);
+    // Insert Functions on the module
+    CaliBeginRegion = m.getOrInsertFunction("cali_begin_region", Attrs,
+                                            IRB.getVoidTy(), IRB.getPtrTy());
+    CaliEndRegion = m.getOrInsertFunction("cali_end_region", Attrs, IRB.getVoidTy(),
+                                          IRB.getPtrTy());
+#endif
+
+
     bool changed = false;
 
     if (annotations->getNumOperands() <= 0)
@@ -54,6 +72,12 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
         auto *fn = dyn_cast<Function> (e->getOperand(0));
         if (fn != NULL)
         {
+#ifdef PERFFLOWASPECT_WITH_CALIPER
+            // We insert Caliper Instrumentation before weaver.
+            // Thus weaver will include Caliper overheads
+            changed |= instrumentCaliper(m, *fn);
+#endif
+
             auto anno = cast<ConstantDataArray>(
                             cast<GlobalVariable>(e->getOperand(1))
                             ->getOperand(0))
@@ -143,14 +167,27 @@ bool weave_ns::WeaveCommon::insertAfter(Module &m, Function &f, StringRef &a,
     for (BasicBlock &bb : f)
     {
         Instruction *inst = bb.getTerminator();
+        bool valid = false;
         if (isa<ReturnInst>(inst) || isa<ResumeInst>(inst))
         {
+            valid = true;
+        } else if (isa<UnreachableInst>(inst)) {
+            if (auto *call = dyn_cast<CallInst>(inst->getPrevNode())) {
+                Function *callee = call->getCalledFunction();
+                if (callee && callee->getName() == "pthread_exit" || callee->getName() == "exit" || callee->getName() == "abort") {
+                    inst = inst->getPrevNode();
+                    valid = true;
+                }
+            }
+        }
+
+        if (valid) {
             IRBuilder<> builder(inst);
-            Value *v1 = builder.CreateGlobalStringPtr(m.getName(), "str");
-            Value *v2 = builder.CreateGlobalStringPtr(f.getName(), "str");
-            Value *v3 = builder.CreateGlobalStringPtr(StringRef(scope), "str");
-            Value *v4 = builder.CreateGlobalStringPtr(StringRef(flow), "str");
-            Value *v5 = builder.CreateGlobalStringPtr(StringRef(pcut), "str");
+            Value *v1 = builder.CreateGlobalString(m.getName(), "str");
+            Value *v2 = builder.CreateGlobalString(f.getName(), "str");
+            Value *v3 = builder.CreateGlobalString(StringRef(scope), "str");
+            Value *v4 = builder.CreateGlobalString(StringRef(flow), "str");
+            Value *v5 = builder.CreateGlobalString(StringRef(pcut), "str");
             std::vector<Value *> args;
             args.push_back(ConstantInt::get(Type::getInt32Ty(context), async));
             args.push_back(v1);
@@ -193,11 +230,11 @@ bool weave_ns::WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
     //                                          weaveFuncTy);
     auto &entry = f.getEntryBlock();
     IRBuilder<> builder(&entry);
-    Value *v1 = builder.CreateGlobalStringPtr(m.getName(), "str");
-    Value *v2 = builder.CreateGlobalStringPtr(f.getName(), "str");
-    Value *v3 = builder.CreateGlobalStringPtr(StringRef(scope), "str");
-    Value *v4 = builder.CreateGlobalStringPtr(StringRef(flow), "str");
-    Value *v5 = builder.CreateGlobalStringPtr(StringRef(pcut), "str");
+    Value *v1 = builder.CreateGlobalString(m.getName(), "str");
+    Value *v2 = builder.CreateGlobalString(f.getName(), "str");
+    Value *v3 = builder.CreateGlobalString(StringRef(scope), "str");
+    Value *v4 = builder.CreateGlobalString(StringRef(flow), "str");
+    Value *v5 = builder.CreateGlobalString(StringRef(pcut), "str");
     builder.SetInsertPoint(&entry, entry.begin());
     std::vector<Value *> args;
     args.push_back(ConstantInt::get(Type::getInt32Ty(context), async));
@@ -323,6 +360,55 @@ bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f)
     }
 
     return true;
+
+}
+
+#ifdef PERFFLOWASPECT_WITH_CALIPER
+bool weave_ns::WeaveCommon::instrumentCaliper(Module &M, Function &F)
+{
+    IRBuilder<> IRB(M.getContext());
+    BasicBlock &Entry = F.getEntryBlock();
+    SplitBlock(&Entry, &*Entry.getFirstInsertionPt());
+
+    IRB.SetInsertPoint(Entry.getTerminator());
+    std::string FunctionName = F.getName().str();
+    auto *FnStr = IRB.CreateGlobalString(FunctionName);
+    IRB.CreateCall(CaliBeginRegion, {FnStr});
+
+    bool RetFound = false;
+    for (inst_iterator It = inst_begin(F), E = inst_end(F); It != E; ++It)
+    {
+        Instruction *I = &*It;
+        if (!isa<ReturnInst>(I) && !isa<CallInst>(I) && !isa<InvokeInst>(I))
+        {
+            continue;
+        }
+
+        if (isa<ReturnInst>(I))
+        {
+            IRB.SetInsertPoint(I);
+            IRB.CreateCall(CaliEndRegion, {FnStr});
+            RetFound = true;
+        }
+
+        // This is a call instruction
+        CallBase *CB = dyn_cast<CallBase>(I);
+        if (CB && CB->doesNotReturn())
+        {
+            IRB.SetInsertPoint(I);
+            IRB.CreateCall(CaliEndRegion, {FnStr});
+            RetFound = true;
+        }
+    }
+
+    // All functions need to have at least one exit block
+    if (!RetFound)
+    {
+        dbgs() << "Could not find return for " << FunctionName << "\n";
+        abort();
+    }
+
+    return RetFound;
 }
 #endif
 

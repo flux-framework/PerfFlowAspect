@@ -20,6 +20,9 @@
 #include "llvm/IR/Argument.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/Debug.h"
+#include "llvm/IR/InstIterator.h"
+#include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "../../parser/perfflow_parser.hpp"
 
 #ifdef PERFFLOWASPECT_WITH_MPI
@@ -39,11 +42,22 @@ private:
 
     bool insertBefore(Module &m, Function &f, StringRef &a,
                                int async, std::string &scope, std::string &flow, std::string pcut); 
-    #ifdef PERFFLOWASPECT_WITH_ADIAK
+#ifdef PERFFLOWASPECT_WITH_ADIAK
     bool insertAdiak(Module &m, Function &f);
-    #endif
+#endif
+
+#ifdef PERFFLOWASPECT_WITH_CALIPER
+    bool instrumentCaliper(Module &m, Function &f);
+#endif                                                      
+
+>>>>>>> upstream/main
 public:
     bool modifyAnnotatedFunctions(Module &m);
+
+#ifdef PERFFLOWASPECT_WITH_CALIPER
+    FunctionCallee CaliBeginRegion;
+    FunctionCallee CaliEndRegion;
+#endif
 
 }; 
 

@@ -17,6 +17,9 @@ include_directories(${JANSSON_INCLUDE_DIRS})
 if(PERFFLOWASPECT_WITH_ADIAK)
     include_directories(${adiak_INCLUDE_DIR})
 endif()
+if(PERFFLOWASPECT_WITH_CALIPER)
+    include_directories(${caliper_INCLUDE_DIR})
+endif()
 
 add_library(perfflow_runtime SHARED
             ${perfflow_runtime_sources}
@@ -29,6 +32,11 @@ if (PERFFLOWASPECT_WITH_ADIAK)
 else()
     target_link_libraries(perfflow_runtime ${JANSSON_LIBRARY}
                          OpenSSL::SSL OpenSSL::Crypto )
+endif()
+if(PERFFLOWASPECT_WITH_CALIPER)
+    target_link_libraries(perfflow_runtime ${JANSSON_LIBRARY} OpenSSL::SSL OpenSSL::Crypto caliper)
+else()
+    target_link_libraries(perfflow_runtime ${JANSSON_LIBRARY} OpenSSL::SSL OpenSSL::Crypto)
 endif()
 
 install(TARGETS perfflow_runtime
