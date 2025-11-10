@@ -25,6 +25,10 @@
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "../../parser/perfflow_parser.hpp"
 
+#ifdef PERFFLOWASPECT_WITH_MPI
+#include "mpi.h"
+#endif
+
 using namespace llvm;
 
 namespace weave_ns {
@@ -38,6 +42,9 @@ private:
 
     bool insertBefore(Module &m, Function &f, StringRef &a,
                                int async, std::string &scope, std::string &flow, std::string pcut); 
+#ifdef PERFFLOWASPECT_WITH_ADIAK
+    bool insertAdiak(Module &m, Function &f);
+#endif
 
 #ifdef PERFFLOWASPECT_WITH_CALIPER
     bool instrumentCaliper(Module &m, Function &f);

@@ -228,6 +228,27 @@ int advice_chrome_tracing_t::flush_if(size_t size)
                     m_ofs << "{" << std::endl;
                     m_ofs << "  \"displayTimeUnit\": \"us\"," << std::endl;
                     m_ofs << "  \"otherData\": {" << std::endl;
+#ifdef PERFFLOWASPECT_WITH_ADIAK
+                    {
+                        const char *key;
+                        json_t *val;
+                        json_t *metadata = get_adiak_statistics();
+                        size_t total = json_object_size(metadata);
+                        size_t idx = 0;
+                        json_object_foreach(metadata, key, val)
+                        {
+                            char *v = json_dumps(val, JSON_ENCODE_ANY);
+                            m_ofs << "    \"" << key << "\": " << v;
+                            free(v);
+                            if (++idx < total)
+                            {
+                                m_ofs << ",";
+                            }
+                            m_ofs << "\n";
+                        }
+                        json_decref(metadata);
+                    }
+#endif
                     m_ofs << "" << std::endl;
                     m_ofs << "  }," << std::endl;
                     m_ofs << "  \"traceEvents\": [" << std::endl;
@@ -663,6 +684,60 @@ long advice_chrome_tracing_t::get_memory_usage()
     return max_ram_usage;
 }
 
+#ifdef PERFFLOWASPECT_WITH_ADIAK
+void advice_chrome_tracing_t::adiak_cb(const char *name, int cat,
+                                       const char *subcat, adiak_value_t *val, adiak_datatype_t *t, void *opaque)
+{
+    json_t *obj = static_cast<json_t *>(opaque);
+    json_t *metadata = nullptr;
+
+    switch (t->dtype)
+    {
+        case adiak_version:
+        case adiak_string:
+        case adiak_catstring:
+        case adiak_path:
+            metadata = json_string(reinterpret_cast<const char*>(val->v_ptr));
+            break;
+        case adiak_long:
+        case adiak_date:
+            metadata = json_integer(val->v_long);
+            break;
+        case adiak_ulong:
+            metadata = json_integer(unsigned(val->v_long));
+            break;
+        case adiak_double:
+            metadata = json_real(val->v_double);
+            break;
+        case adiak_int:
+            metadata = json_integer(val->v_int);
+            break;
+        case adiak_uint:
+            metadata = json_integer(unsigned(val->v_int));
+            break;
+        case adiak_timeval:
+        {
+            struct timeval *tv = (struct timeval *)(val->v_ptr);
+            json_t *tv_obj = json_object();
+            json_object_set_new(tv_obj, "tv_sec",  json_integer(tv->tv_sec));
+            json_object_set_new(tv_obj, "tv_usec", json_integer(tv->tv_usec));
+            metadata = tv_obj;
+            break;
+        }
+        default:
+            return;
+    }
+    json_object_set_new(obj, name, metadata);
+}
+
+json_t *advice_chrome_tracing_t::get_adiak_statistics()
+{
+    json_t *adiak_metadata = json_object();
+    adiak_list_namevals(1, adiak_category_all, adiak_cb, adiak_metadata);
+    return adiak_metadata;
+}
+#endif
+
 int advice_chrome_tracing_t::with_flow(const char *module,
                                        const char *function,
                                        const char *flow,
@@ -746,6 +821,7 @@ int advice_chrome_tracing_t::before(const char *module,
     double my_ts = 0, cpu_start, wall_start;
     std::string fname;
     long mem_start;
+
 
     if (m_enable_logging)
     {
@@ -1022,6 +1098,7 @@ int advice_chrome_tracing_t::after(const char *module,
 
         free(json_str);
         json_decref(event);
+
         return flush_if(FLUSH_SIZE);
     }
     else

@@ -16,6 +16,13 @@ set_target_properties(WeavePass PROPERTIES
 
 target_link_libraries(WeavePass perfflow_parser ${JANSSON_LIB})
 
+if(PERFFLOWASPECT_WITH_MPI)
+    include_directories(${MPI_C_INCLUDE_PATH})
+    target_link_libraries(WeavePass ${MPI_C_LIBRARIES})
+    target_compile_definitions(WeavePass PRIVATE PERFFLOWASPECT_WITH_MPI)
+endif()
+
+
 add_library(WeavePassPlugin INTERFACE)
 target_compile_options(WeavePassPlugin INTERFACE
     "SHELL:$<BUILD_INTERFACE:-Xclang -load -Xclang $<TARGET_FILE:WeavePass>>$<INSTALL_INTERFACE:-Xclang -load -Xclang $<TARGET_FILE:perfflowaspect::WeavePass>>"
