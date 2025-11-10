@@ -50,7 +50,6 @@ private:
     bool instrumentCaliper(Module &m, Function &f);
 #endif                                                      
 
->>>>>>> upstream/main
 public:
     bool modifyAnnotatedFunctions(Module &m);
 
