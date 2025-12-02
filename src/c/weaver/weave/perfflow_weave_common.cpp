@@ -26,6 +26,20 @@ bool weave_ns::WeaveCommon::modifyAnnotatedFunctions(Module &m)
         return false;
     }
 
+#ifdef PERFFLOWASPECT_WITH_ADIAK
+    Function *main = m.getFunction("main");
+
+    if (main != NULL)
+    {
+        outs() << "WeavePass[INFO]: Found main to inject Adiak\n";
+        insertAdiak(m, *main);
+    }
+    else
+    {
+        outs() << "WeavePass[WARN]: Could not find main to inject Adiak\n";
+    }
+#endif
+
     // Support Caliper annotations by greating the cali_begin_region
     // and cali_end_region functions.
 #ifdef PERFFLOWASPECT_WITH_CALIPER
@@ -157,17 +171,27 @@ bool weave_ns::WeaveCommon::insertAfter(Module &m, Function &f, StringRef &a,
         if (isa<ReturnInst>(inst) || isa<ResumeInst>(inst))
         {
             valid = true;
-        } else if (isa<UnreachableInst>(inst)) {
-            if (auto *call = dyn_cast<CallInst>(inst->getPrevNode())) {
-                Function *callee = call->getCalledFunction();
-                if (callee && callee->getName() == "pthread_exit" || callee->getName() == "exit" || callee->getName() == "abort") {
-                    inst = inst->getPrevNode();
-                    valid = true;
+        }
+        else if (isa<UnreachableInst>(inst))
+        {
+            Instruction *prev = inst->getPrevNode();
+            if (prev && isa_and_present<CallInst>(prev))
+            {
+                auto *call = cast<CallInst>(prev);
+                if (Function *callee = call->getCalledFunction())
+                {
+                    StringRef name = callee->getName();
+                    if (name == "pthread_exit" || name == "exit" || name == "abort")
+                    {
+                        inst = prev;
+                        valid = true;
+                    }
                 }
             }
         }
 
-        if (valid) {
+        if (valid)
+        {
             IRBuilder<> builder(inst);
             Value *v1 = builder.CreateGlobalString(m.getName(), "str");
             Value *v2 = builder.CreateGlobalString(f.getName(), "str");
@@ -233,6 +257,122 @@ bool weave_ns::WeaveCommon::insertBefore(Module &m, Function &f, StringRef &a,
 
     return true;
 }
+
+#ifdef PERFFLOWASPECT_WITH_ADIAK
+bool weave_ns::WeaveCommon::insertAdiak(Module &m, Function &f)
+{
+    LLVMContext &context = m.getContext();
+
+    // the adiak_init() call
+    // return and argument types
+    Type *voidTy = Type::getVoidTy(context);
+    Type *int8Ty = Type::getInt8Ty(context);
+    Type *int32Ty = Type::getInt32Ty(context);
+    PointerType *voidPtrTy = PointerType::getUnqual(int8Ty);
+
+    // adiak_init function signature
+    std::vector<Type *> initArgs = { voidPtrTy };
+    FunctionType *adiakInitType = FunctionType::get(voidTy, initArgs, false);
+    FunctionCallee adiakInit = m.getOrInsertFunction("adiak_init", adiakInitType);
+
+    IRBuilder<> builder(context);
+    Value *arg;
+    BasicBlock &entry = f.getEntryBlock();
+    builder.SetInsertPoint(&entry, entry.begin());
+
+#ifdef PERFFLOWASPECT_WITH_MPI
+    // find the MPI communicator, MPI_COMM_WORLD
+    // OpenMPI exposes this as ompi_comm_world (untested)
+    // MPICH exposes this as a constant 0x44000000
+    uint64_t mpiValue = 0x44000000;
+    Value *commVal = ConstantInt::get(int32Ty, mpiValue);
+    AllocaInst *alloc = builder.CreateAlloca(int32Ty, nullptr, "weave_mpi_comm");
+    builder.CreateStore(commVal, alloc);
+    arg = builder.CreateBitCast(
+              alloc,
+              voidPtrTy,
+              "mpi_comm_world_void"
+          );
+
+    CallInst *mpi = nullptr;
+    // find each instruction to see if there is an MPI_Init call instruction
+    for (BasicBlock &bb : f)
+    {
+        for (Instruction &i : bb)
+        {
+            if (auto *call = dyn_cast<CallInst>(&i))
+            {
+                if (Function *callee = call->getCalledFunction())
+                {
+                    if (callee->getName() == "MPI_Init")
+                    {
+                        mpi = call;
+                    }
+                }
+            }
+        }
+        if (mpi) { break; }
+    }
+    if (mpi)
+    {
+        BasicBlock *mpiBlock = mpi->getParent();
+        auto insertPos = BasicBlock::iterator(mpi);
+        ++insertPos;
+        builder.SetInsertPoint(mpiBlock, insertPos);
+    }
+    else
+    {
+        arg = Constant::getNullValue(voidPtrTy);
+    }
+    builder.CreateCall(adiakInit, {arg});
+
+#else
+    arg = Constant::getNullValue(voidPtrTy);
+    builder.CreateCall(adiakInit, {arg});
+#endif
+
+    // call adiak_collect_all()
+    FunctionType *collectType = FunctionType::get(int32Ty, {}, false);
+    FunctionCallee collectAll = m.getOrInsertFunction("adiak_collect_all",
+                                collectType);
+    builder.CreateCall(collectAll, {});
+
+    // call adiak_walltime()
+    FunctionCallee walltime = m.getOrInsertFunction("adiak_walltime", collectType);
+    builder.CreateCall(walltime, {});
+
+    FunctionCallee systime = m.getOrInsertFunction("adiak_systime", collectType);
+    builder.CreateCall(systime, {});
+
+    FunctionCallee cputime = m.getOrInsertFunction("adiak_cputime", collectType);
+    builder.CreateCall(cputime, {});
+
+    // adiak_fini signature
+    FunctionType *adiakFinishType = FunctionType::get(voidTy, {}, false);
+    FunctionCallee adiakFinish = m.getOrInsertFunction("adiak_fini",
+                                 adiakFinishType);
+
+    // find all places where the function terminates from a ReturnInst
+    std::vector<ReturnInst *> returns;
+    for (BasicBlock &bb : f)
+    {
+        if (auto *ret = dyn_cast<ReturnInst>(bb.getTerminator()))
+        {
+            returns.push_back(ret);
+        }
+    }
+
+    // insert adiak_fini at those return instructions
+    for (ReturnInst *ret : returns)
+    {
+        builder.SetInsertPoint(ret);
+        builder.CreateCall(adiakFinish, {});
+    }
+
+    return true;
+
+}
+#endif
 
 #ifdef PERFFLOWASPECT_WITH_CALIPER
 bool weave_ns::WeaveCommon::instrumentCaliper(Module &M, Function &F)
