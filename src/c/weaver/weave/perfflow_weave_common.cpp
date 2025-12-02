@@ -171,17 +171,27 @@ bool weave_ns::WeaveCommon::insertAfter(Module &m, Function &f, StringRef &a,
         if (isa<ReturnInst>(inst) || isa<ResumeInst>(inst))
         {
             valid = true;
-        } else if (isa<UnreachableInst>(inst)) {
-            if (auto *call = dyn_cast<CallInst>(inst->getPrevNode())) {
-                Function *callee = call->getCalledFunction();
-                if (callee && callee->getName() == "pthread_exit" || callee->getName() == "exit" || callee->getName() == "abort") {
-                    inst = inst->getPrevNode();
-                    valid = true;
+        }
+        else if (isa<UnreachableInst>(inst))
+        {
+            Instruction *prev = inst->getPrevNode();
+            if (prev && isa_and_present<CallInst>(prev))
+            {
+                auto *call = cast<CallInst>(prev);
+                if (Function *callee = call->getCalledFunction())
+                {
+                    StringRef name = callee->getName();
+                    if (name == "pthread_exit" || name == "exit" || name == "abort")
+                    {
+                        inst = prev;
+                        valid = true;
+                    }
                 }
             }
         }
 
-        if (valid) {
+        if (valid)
+        {
             IRBuilder<> builder(inst);
             Value *v1 = builder.CreateGlobalString(m.getName(), "str");
             Value *v2 = builder.CreateGlobalString(f.getName(), "str");
