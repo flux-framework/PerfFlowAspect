@@ -14,6 +14,8 @@ else()
     message(FATAL_ERROR "Unsupported CXX compiler: please use Clang == 20.0")
 endif()
 
+option(PERFFLOWASPECT_WITH_ADIAK "Build with Adiak" OFF)
+
 include(cmake/CMakeBasics.cmake)
 
 include(cmake/Setup3rdParty.cmake)

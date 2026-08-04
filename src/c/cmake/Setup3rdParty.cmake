@@ -20,6 +20,21 @@ if(PERFFLOWASPECT_WITH_MULTITHREADS)
     include(cmake/thirdparty/FindThreads.cmake)
 endif()
 
+if(PERFFLOWASPECT_WITH_ADIAK)
+    if(NOT adiak_DIR)
+        message(FATAL_ERROR "PFA + Adiak needs explicit adiak_DIR")
+    endif()
+
+    if (adiak_DIR)
+        message(STATUS "${adiak_DIR}")
+        include(cmake/thirdparty/FindAdiak.cmake)
+    endif()
+
+    if (ADIAK_FOUND)
+        add_definitions(-DPERFFLOWASPECT_WITH_ADIAK)
+    endif()
+endif()
+
 if(PERFFLOWASPECT_WITH_CALIPER)
     # first Check for CALIPER_DIR
     if(NOT caliper_DIR)
