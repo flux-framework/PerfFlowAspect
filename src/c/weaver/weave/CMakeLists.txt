@@ -18,7 +18,7 @@ target_link_libraries(WeavePass perfflow_parser ${JANSSON_LIB})
 
 add_library(WeavePassPlugin INTERFACE)
 target_compile_options(WeavePassPlugin INTERFACE
-    "SHELL:$<BUILD_INTERFACE:-Xclang -load -Xclang $<TARGET_FILE:WeavePass>>$<INSTALL_INTERFACE:-Xclang -load -Xclang $<TARGET_FILE:perfflowaspect::WeavePass>>"
+    "SHELL:$<BUILD_INTERFACE:-Xclang -load -Xclang $<TARGET_FILE:WeavePass> -fpass-plugin=$<TARGET_FILE:WeavePass>>$<INSTALL_INTERFACE:-Xclang -load -Xclang $<TARGET_FILE:perfflowaspect::WeavePass> -fpass-plugin=$<TARGET_FILE:perfflowaspect::WeavePass>>"
 )
 
 install(TARGETS WeavePassPlugin
